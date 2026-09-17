@@ -68,6 +68,50 @@ def _measurements(section: Dict) -> Dict[str, float]:
     return {c: float(section[c]) for c in T.MEASUREMENT_COLUMNS}
 
 
+def _predict(sections: List[Dict], prefix) -> List[Dict]:
+    """Run the ML models over `sections`, returning one prediction per section."""
+    _ensure_pipeline_path()
+    import pandas as pd
+    from pipeline import model as M
+    from pipeline import preprocess
+
+    rows = []
+    for sec in sections:
+        label = sec["section_label"]
+        m = _measurements(sec)
+        rows.append({
+            "sample_id": "%s-%s" % (prefix, label),
+            "latitude": float(sec.get("latitude", 0.0)),
+            "longitude": float(sec.get("longitude", 0.0)),
+            "region": "fort_bend",
+            "zone": label,
+            "ph": m["ph"],
+            "ec": m["ec"],
+            "nitrogen": m["nitrogen"],
+            "phosphorus": m["phosphorus"],
+            "potassium": m["potassium"],
+        })
+    features = preprocess.build_features(pd.DataFrame(rows))
+    return M.predict_frame(_get_bundle(), features)
+
+
+def score_sections(sections: List[Dict]) -> List[Dict]:
+    """Health score only, for live map colouring while data is being entered.
+
+    Uses the same ML score as `run_analysis`, so a point keeps its colour when
+    the field is submitted. Each section needs `section_label` and the five
+    measurements; returns `[{section_label, health_score, health_category}]`.
+    """
+    return [
+        {
+            "section_label": sec["section_label"],
+            "health_score": round(float(ml["ml_health_score"]), 1),
+            "health_category": ml["ml_category_from_score"],
+        }
+        for sec, ml in zip(sections, _predict(sections, "F"))
+    ]
+
+
 def run_analysis(farm_name: str, date: str, sections: List[Dict],
                  farm_id: Optional[int] = None) -> Dict:
     """Analyze every section and return the full field report.
@@ -78,38 +122,13 @@ def run_analysis(farm_name: str, date: str, sections: List[Dict],
     """
     # Lazy heavy imports (see module note): only paid on the first submission.
     _ensure_pipeline_path()
-    import pandas as pd
     from pipeline import agronomy
-    from pipeline import model as M
-    from pipeline import preprocess
     from pipeline import recommender
     from pipeline import reporter
     from pipeline import thresholds as T
 
-    bundle = _get_bundle()
     prefix = farm_id if farm_id is not None else "F"
-
-    # Build the feature/id frame the pipeline expects.
-    rows = []
-    for sec in sections:
-        label = sec["section_label"]
-        m = _measurements(sec)
-        rows.append({
-            "sample_id": "%s-%s" % (prefix, label),
-            "latitude": float(sec["latitude"]),
-            "longitude": float(sec["longitude"]),
-            "region": "fort_bend",
-            "zone": label,
-            "ph": m["ph"],
-            "ec": m["ec"],
-            "nitrogen": m["nitrogen"],
-            "phosphorus": m["phosphorus"],
-            "potassium": m["potassium"],
-        })
-    df = pd.DataFrame(rows)
-
-    features = preprocess.build_features(df)
-    ml_results = M.predict_frame(bundle, features)
+    ml_results = _predict(sections, prefix)
 
     results: List[Dict] = []
     scores: List[float] = []

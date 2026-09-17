@@ -3,6 +3,8 @@
    React context store for the 4-step field workflow. State is persisted to
    localStorage under `ff_field_draft`: auto-saved on every change, loaded on
    mount, and cleared on a successful submit or an explicit reset.
+   Live soil health scores for the map colours are fetched as measurements are
+   entered and kept in memory only (they are derived from `data`).
    ========================================================================== */
 
 import {
@@ -14,11 +16,15 @@ import {
   useState,
 } from 'react'
 
+import api from '../api/client.js'
+
 const STORAGE_KEY = 'ff_field_draft'
 // Results of the last submit, kept separately so a refresh on Step 4 re-hydrates
 // the results view even though the editable draft is cleared on submit.
 const RESULTS_KEY = 'ff_last_results'
 const MEASUREMENTS = ['ph', 'ec', 'nitrogen', 'phosphorus', 'potassium']
+// Wait for typing to pause before asking the server for new scores.
+const SCORE_DEBOUNCE_MS = 450
 
 const DashboardContext = createContext(null)
 
@@ -82,7 +88,15 @@ function loadState() {
     if (rawResults) {
       const res = JSON.parse(rawResults)
       if (res && typeof res === 'object' && res.analysis) {
-        return { ...defaultState(), step: 4, analysis: res.analysis, farmId: res.farmId }
+        return {
+          ...defaultState(),
+          step: 4,
+          analysis: res.analysis,
+          farmId: res.farmId,
+          // Kept so the results map can redraw the boundary and grid cells.
+          polygon: Array.isArray(res.polygon) ? res.polygon : [],
+          points: Array.isArray(res.points) ? res.points : [],
+        }
       }
     }
     return defaultState()
@@ -129,6 +143,23 @@ function isSectionComplete(data, label) {
   })
 }
 
+/**
+ * Stable key for a point's five measurements, or `null` until all five are
+ * numeric. Points with identical readings share one cached score.
+ */
+function measurementKey(values) {
+  if (!values) return null
+  const nums = []
+  for (const field of MEASUREMENTS) {
+    const raw = values[field]
+    if (raw === undefined || raw === null || String(raw).trim() === '') return null
+    const n = Number(raw)
+    if (!Number.isFinite(n)) return null
+    nums.push(n)
+  }
+  return nums.join('|')
+}
+
 /** Next unused manual label in the `A1, A2, …` sequence. */
 function nextManualLabel(points) {
   const used = new Set(points.map((p) => p.label))
@@ -148,6 +179,10 @@ export default function DashboardProvider({ children }) {
   // immediately re-writing the just-cleared draft.
   const skipSaves = useRef(0)
 
+  // measurementKey -> ML health score, filled by /api/score as data comes in.
+  const [scoreCache, setScoreCache] = useState({})
+  const pendingScores = useRef(new Set())
+
   useEffect(() => {
     if (skipSaves.current > 0) {
       skipSaves.current -= 1
@@ -166,6 +201,50 @@ export default function DashboardProvider({ children }) {
       return { ...prev, ...next }
     })
   }, [])
+
+  // Score every point whose five measurements are complete and not yet cached.
+  // Each point is coloured as soon as its own data is in; failures just leave
+  // the point uncoloured until its values change again.
+  useEffect(() => {
+    const wanted = new Set()
+    for (const p of state.points) {
+      const key = measurementKey(state.data[p.label])
+      if (key && !(key in scoreCache) && !pendingScores.current.has(key)) {
+        wanted.add(key)
+      }
+    }
+    if (wanted.size === 0) return undefined
+
+    const timer = setTimeout(async () => {
+      const keys = [...wanted]
+      keys.forEach((k) => pendingScores.current.add(k))
+      try {
+        const res = await api.scoreSections(
+          keys.map((key) => {
+            const [ph, ec, nitrogen, phosphorus, potassium] = key.split('|').map(Number)
+            return { section_label: key, ph, ec, nitrogen, phosphorus, potassium }
+          })
+        )
+        const found = {}
+        for (const s of (res && res.scores) || []) {
+          if (Number.isFinite(s.health_score)) found[s.section_label] = s.health_score
+        }
+        setScoreCache((prev) => ({ ...prev, ...found }))
+      } catch {
+        /* offline / signed out: leave these points in the default colour */
+      } finally {
+        keys.forEach((k) => pendingScores.current.delete(k))
+      }
+    }, SCORE_DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+  }, [state.points, state.data, scoreCache])
+
+  // label -> score for points that currently have one.
+  const scores = {}
+  for (const p of state.points) {
+    const key = measurementKey(state.data[p.label])
+    if (key && key in scoreCache) scores[p.label] = scoreCache[key]
+  }
 
   /* -------------------------------------------------------- simple setters */
   const setFarmName = useCallback((farmName) => patch({ farmName }), [patch])
@@ -298,13 +377,16 @@ export default function DashboardProvider({ children }) {
   const submitSuccess = useCallback((analysis, farmId) => {
     try {
       localStorage.removeItem(STORAGE_KEY)
-      localStorage.setItem(RESULTS_KEY, JSON.stringify({ analysis, farmId }))
+      localStorage.setItem(
+        RESULTS_KEY,
+        JSON.stringify({ analysis, farmId, polygon: state.polygon, points: state.points })
+      )
     } catch {
       /* ignore */
     }
     skipSaves.current += 1
     setState((prev) => ({ ...prev, analysis, farmId, step: 4 }))
-  }, [])
+  }, [state.polygon, state.points])
 
   // Wipe everything back to a pristine step-1 draft.
   const resetDraft = useCallback(() => {
@@ -336,6 +418,7 @@ export default function DashboardProvider({ children }) {
     farmId: state.farmId,
     // derived
     completeCount,
+    scores,
     total: state.points.length,
     allComplete,
     // setters

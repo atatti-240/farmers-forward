@@ -12,6 +12,7 @@ Importable as `wsgi:app` (module-level `app`). Runs on port 5000 in dev.
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import secrets
@@ -97,6 +98,8 @@ auth.seed_default_admin()
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 MEASUREMENT_KEYS = ("ph", "ec", "nitrogen", "phosphorus", "potassium")
+# Auto grids cap at 12 x 12; leave room for manual points on top.
+MAX_SCORE_SECTIONS = 500
 
 
 # ---------------------------------------------------------------------------
@@ -126,13 +129,18 @@ def _clear_pending(keep_secret: bool = False) -> None:
         session.pop(key, None)
 
 
-def _validate_sections(payload) -> Tuple[List[Dict], str]:
+def _validate_sections(payload, require_crop: bool = True,
+                       max_sections: int = 0) -> Tuple[List[Dict], str]:
     """Validate + coerce the submit payload's sections.
 
+    With `require_crop=False` (live scoring) only the label and the five
+    measurements are required; coordinates and crop are ignored.
     Returns (clean_sections, error). On success error is ''.
     """
     if not isinstance(payload, list) or len(payload) == 0:
         return [], "sections must be a non-empty list"
+    if max_sections and len(payload) > max_sections:
+        return [], "at most %d sections per request" % max_sections
 
     clean: List[Dict] = []
     seen_labels = set()
@@ -145,6 +153,18 @@ def _validate_sections(payload) -> Tuple[List[Dict], str]:
         if label in seen_labels:
             return [], "duplicate section_label '%s'" % label
         seen_labels.add(label)
+
+        if not require_crop:
+            row = {"section_label": label}
+            for key in MEASUREMENT_KEYS:
+                try:
+                    row[key] = float(sec[key])
+                except (KeyError, TypeError, ValueError):
+                    return [], "section '%s' is missing a numeric '%s'" % (label, key)
+                if not math.isfinite(row[key]):
+                    return [], "section '%s' has a non-finite '%s'" % (label, key)
+            clean.append(row)
+            continue
 
         try:
             lat = float(sec["latitude"])
@@ -331,6 +351,18 @@ def submit():
         conn.close()
 
     return jsonify(analysis)
+
+
+@app.post("/api/score")
+@auth.login_required
+def score():
+    """Live health scores for the data-entry map (no storage, no crop needed)."""
+    data = request.get_json(silent=True) or {}
+    sections, err = _validate_sections(data.get("sections"), require_crop=False,
+                                       max_sections=MAX_SCORE_SECTIONS)
+    if err:
+        return jsonify({"error": err}), 400
+    return jsonify({"scores": model_runner.score_sections(sections)})
 
 
 @app.get("/api/results/<int:farm_id>")

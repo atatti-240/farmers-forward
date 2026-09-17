@@ -793,7 +793,40 @@
 .ff-finder-popup__coords { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; color: var(--pub-ink-muted); }
 .ff-finder-popup__remove { margin-top: 12px; width: 100%; }
 
+/* Soil health legend: a Leaflet control styled like the zoom buttons. */
+.ff-legend {
+  background: var(--pub-card);
+  color: var(--pub-ink);
+  border: 1.5px solid var(--pub-ink);
+  border-radius: 6px;
+  box-shadow: 3px 3px 0 rgba(48, 51, 46, 0.2);
+  padding: 8px 10px 7px;
+  width: 170px;
+  font-family: var(--pub-body);
+  cursor: default;
+}
+.ff-legend__title { margin: 0 0 6px; font-family: var(--pub-serif); font-weight: 600; font-size: 0.85rem; }
+.ff-legend__bar { height: 10px; border-radius: 3px; border: 1px solid var(--pub-ink-line); }
+.ff-legend__scale { display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.72rem; color: var(--pub-ink-muted); }
+.ff-legend__nodata { display: flex; align-items: center; gap: 6px; margin: 6px 0 0; padding-top: 6px; border-top: 1px dashed var(--ff-border); font-size: 0.72rem; color: var(--pub-ink-muted); }
+.ff-legend__dot { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #fff; box-shadow: 0 0 0 1px var(--pub-ink-line); }
+
+/* Results card: a score-coloured top edge and a dot beside the label, in the
+   same colour as the point's map marker. */
+.ff-result-card { border-top: 6px solid var(--score-color, var(--ff-border)); }
+.ff-result-card__name { display: inline-flex; align-items: center; gap: 10px; }
+.ff-result-card__dot {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--score-color);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1.5px var(--pub-ink-line);
+}
+
 @media (max-width: 480px) {
+  .ff-legend { width: 140px; padding: 6px 8px; }
   .leaflet-tooltip.ff-finder-tip { max-width: 130px; }
   .ff-finder__row { flex-wrap: wrap; }
   .ff-finder__row .ff-btn { flex: 1 1 100%; }

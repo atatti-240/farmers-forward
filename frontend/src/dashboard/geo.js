@@ -70,11 +70,14 @@ export function polygonBounds(polygon) {
  * matching manually placed points. Centers outside the polygon are skipped
  * without using up a label.
  *
+ * Each point also carries `cell: { row, col, rows, cols }` so its grid cell can
+ * be redrawn later with {@link gridCellRing} (e.g. to shade it by soil score).
+ *
  * @param {Array<[number, number]>} polygon - Closed field boundary.
  * @param {number} rows - Number of grid rows (>= 1).
  * @param {number} cols - Number of grid columns (>= 1).
- * @returns {Array<{label:string, lat:number, lng:number}>} Sample points whose
- *   centers lie inside the polygon.
+ * @returns {Array<{label:string, lat:number, lng:number, cell:Object}>} Sample
+ *   points whose centers lie inside the polygon.
  */
 export function autoGrid(polygon, rows, cols) {
   const r = Math.max(1, Math.floor(Number(rows)) || 0)
@@ -98,11 +101,71 @@ export function autoGrid(polygon, rows, cols) {
           label: `A${points.length + 1}`,
           lat,
           lng,
+          cell: { row, col, rows: r, cols: c },
         })
       }
     }
   }
   return points
+}
+
+/**
+ * The part of the field polygon that lies inside an auto-grid point's cell.
+ *
+ * Rebuilds the cell rectangle from the polygon's bounding box (exactly as
+ * {@link autoGrid} laid it out) and clips the polygon to it with
+ * Sutherland-Hodgman. Clipping against a rectangle is exact for any simple
+ * polygon, including concave fields.
+ *
+ * @param {Array<[number, number]>} polygon - Closed field boundary.
+ * @param {{row:number, col:number, rows:number, cols:number}} cell - A point's
+ *   `cell` from {@link autoGrid}.
+ * @returns {Array<[number, number]>|null} The clipped ring as `[lat, lng]`
+ *   pairs, or `null` for a manual point, a malformed cell or an empty result.
+ */
+export function gridCellRing(polygon, cell) {
+  if (!cell || !Array.isArray(polygon) || polygon.length < 3) return null
+  const { row, col, rows, cols } = cell
+  const ints = [row, col, rows, cols]
+  if (!ints.every(Number.isInteger) || rows < 1 || cols < 1) return null
+  if (row < 0 || row >= rows || col < 0 || col >= cols) return null
+  const bounds = polygonBounds(polygon)
+  const cellH = (bounds.maxLat - bounds.minLat) / rows
+  const cellW = (bounds.maxLng - bounds.minLng) / cols
+  const north = bounds.maxLat - row * cellH
+  const south = north - cellH
+  const west = bounds.minLng + col * cellW
+  const east = west + cellW
+
+  // Each edge: index into [lat, lng], boundary value, and which side is kept.
+  const edges = [
+    [0, south, 1],
+    [0, north, -1],
+    [1, west, 1],
+    [1, east, -1],
+  ]
+  let ring = polygon
+  for (const [axis, value, keep] of edges) {
+    if (ring.length === 0) break
+    const inside = (p) => (p[axis] - value) * keep >= 0
+    const next = []
+    for (let i = 0; i < ring.length; i++) {
+      const cur = ring[i]
+      const prev = ring[(i + ring.length - 1) % ring.length]
+      const curIn = inside(cur)
+      const prevIn = inside(prev)
+      if (curIn !== prevIn) {
+        const t = (value - prev[axis]) / (cur[axis] - prev[axis])
+        next.push([
+          prev[0] + (cur[0] - prev[0]) * t,
+          prev[1] + (cur[1] - prev[1]) * t,
+        ])
+      }
+      if (curIn) next.push(cur)
+    }
+    ring = next
+  }
+  return ring.length >= 3 ? ring : null
 }
 
 /**

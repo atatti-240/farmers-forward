@@ -120,6 +120,17 @@ export function submitField({ farm_name, date, sections }) {
 }
 
 /**
+ * Live soil health scores for the data-entry map. Nothing is stored.
+ * @param {Array<{ section_label: string, ph: number, ec: number,
+ *   nitrogen: number, phosphorus: number, potassium: number }>} sections
+ * @returns {Promise<{ scores: Array<{ section_label: string,
+ *   health_score: number, health_category: string }> }>}
+ */
+export function scoreSections(sections) {
+  return request('/score', { method: 'POST', body: { sections } })
+}
+
+/**
  * Fetch a stored analysis by farm id.
  * @param {number} farmId
  * @returns {Promise<Object>} the analysis result.
@@ -180,6 +191,7 @@ const api = {
   logout,
   me,
   submitField,
+  scoreSections,
   getResults,
   getHistory,
   sendContact,

@@ -53,7 +53,12 @@ Defined as CSS variables in `frontend/src/styles/theme.css` under `:root`:
 
 Health-score → color rule (used by backend AND frontend, keep identical):
 `score >= 70` → green `#2E9E5B`; `40 <= score < 70` → amber `#F5A623`;
-`score < 40` → red `#E8302A`.
+`score < 40` → red `#E8302A`. The backend keeps these buckets in
+`result.color`; the dashboard maps a score onto a smooth red → amber → green
+gradient through the same three colors (`frontend/src/dashboard/soilColor.js`:
+`scoreColor(score)`, stops at 20/55/85 = each bucket's midpoint, blended in
+HSL). Every map marker, grid-cell shade and score card uses `scoreColor`, so
+one point reads the same colour in steps 2 and 4. No score yet → `#9aa3af`.
 
 ---
 
@@ -244,6 +249,7 @@ Call `init_db()` and `seed_default_admin()` at import/startup. `if __name__ ==
 | POST | `/api/auth/logout` | none | - | `{ok:true}` clears session | - |
 | GET | `/api/auth/me` | none | - | `{authed:bool, username?:str}` | - |
 | POST | `/api/submit` | login_required | `{farm_name,date,sections:[{section_label,crop_type,latitude,longitude,ph,ec,nitrogen,phosphorus,potassium}]}` | the run_analysis dict (with farm_id) | 400 `{error}` if missing/empty sections |
+| POST | `/api/score` | login_required | `{sections:[{section_label,ph,ec,nitrogen,phosphorus,potassium}]}` (<= 500, no crop/coords) | `{scores:[{section_label,health_score,health_category}]}` | 400 `{error}` if a measurement is missing/non-finite |
 | GET | `/api/results/<int:farm_id>` | login_required | - | stored analysis dict | 404 `{error:'not found'}` |
 | GET | `/api/history` | login_required | - | `{farms:[{farm_id,farm_name,date,created_at,n_sections,mean_health_score}]}` | - |
 | POST | `/api/contact` | none | `{name,email,message}` | `{ok:true}` | 400 `{error}` if any empty or email invalid |
@@ -307,6 +313,7 @@ verifyOtp(code)             -> POST /api/auth/otp {code}              -> {ok} (t
 logout()                    -> POST /api/auth/logout                 -> {ok}
 me()                        -> GET  /api/auth/me                      -> {authed, username?}
 submitField({farm_name,date,sections}) -> POST /api/submit           -> analysis
+scoreSections(sections)     -> POST /api/score                       -> {scores}
 getResults(farmId)          -> GET  /api/results/:id                 -> analysis
 getHistory()                -> GET  /api/history                     -> {farms}
 sendContact({name,email,message}) -> POST /api/contact               -> {ok} (throws on 400)
@@ -513,8 +520,14 @@ a point opens a side panel for that section: read-only label + lat/long, and
 a required, searchable single-crop combobox (common suggestions plus custom text), and
 inputs ph, ec, nitrogen, phosphorus, potassium. Inputs auto-save to the store
 (→ localStorage) on every keystroke, so switching sections never loses data.
-Dot color: **green** when `sectionComplete`, **gray** otherwise (use CircleMarker
-fillColor). A `.ff-progress` bar showing `completeCount / points.length`.
+Dot color: `scoreColor(score)` once a point's five measurements are in (the
+store debounces them to `/api/score`, which returns the same ML score step 4
+shows), **gray** until then - each point colours as its own data lands, not
+when the field is finished. Auto-grid points also shade their grid cell
+(`gridCellRing(polygon, p.cell)`, `fillOpacity` 0.38) in a `<Pane>` below the
+markers, so the field reads as a heatmap; manual points have no cell and colour
+the dot only. A `<ScoreLegend showNoData />` control sits bottom-right.
+A `.ff-progress` bar showing `completeCount / points.length`.
 
 STEP 3 - Review + Submit: "Review All" table (`.ff-table`) of every section +
 its 5 values (+ lat/long). "Submit to Database" button - enabled only when ALL
@@ -526,12 +539,14 @@ On success store `analysis` + `farmId` in the store, clear the localStorage draf
 advance to step 4.
 
 STEP 4 - Results: for each section (from `analysis.results`): a `.ff-card` with
-the section label, a big color-coded score (green/amber/red per §1, use
-`result.color.hex`) + category, crop viability list (`crop_suitability.viable_now`),
+the section label, a big color-coded score (`scoreColor(result.health_score)`
+per §1) + category, crop viability list (`crop_suitability.viable_now`),
 and recommendations (pH fix / EC fix / NPK adjustments - render each rec's title,
-action, rate, cost, timing). A Leaflet map (satellite) overlaying the grid: color
-each sample point (CircleMarker) by `result.color.hex` (green healthy → red poor);
-if a polygon exists, also tint it. Download buttons: per section →
+action, rate, cost, timing). The card carries its score colour as
+`--score-color` (top edge + dot beside the label) so it matches its map marker.
+A Leaflet map (satellite) overlaying the grid: colour each sample point
+(CircleMarker) and its auto-grid cell by `scoreColor(result.health_score)`,
+with the same `<ScoreLegend />`; if a polygon exists, also tint it. Download buttons: per section →
 `<a href={api.reportSectionUrl(farmId,label)}>Download Report</a>`; and "Download
 All Reports" → `api.reportAllUrl(farmId)`. (Anchor downloads carry the session
 cookie; no JS fetch needed.) A "Start new field" button → `resetDraft()` → step 1.

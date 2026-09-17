@@ -2,12 +2,14 @@
    Farmers Forward - Step 2: Data Entry (BUILD_CONTRACT §5)
    The same gridded satellite map. Selecting a point opens a side panel for its
    five soil measurements (pH, EC, N, P, K) which auto-save to the store on
-   every keystroke. Point dots turn green once a section is complete.
+   every keystroke. As soon as a point's five values are in, its dot (and, for
+   auto-grid points, its grid cell) takes the soil health colour.
    ========================================================================== */
 
 import { useEffect, useRef, useState } from 'react'
 import {
   MapContainer,
+  Pane,
   TileLayer,
   Polygon,
   CircleMarker,
@@ -17,15 +19,16 @@ import {
 
 import CropPicker from '../components/CropPicker.jsx'
 import { useDashboard } from './DashboardProvider.jsx'
+import { gridCellRing } from './geo.js'
 import { InvalidateSizeOnVisible, TrackMapView } from './mapView.js'
+import ScoreLegend from './ScoreLegend.jsx'
+import { scoreColor } from './soilColor.js'
 
 const ESRI_URL =
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
 const ESRI_ATTR = 'Tiles © Esri'
 const CENTER = [29.53, -95.77]
 const ZOOM = 13
-const GREEN = '#2E9E5B'
-const GRAY = '#9aa3af'
 const BLUE = '#4AAFE0'
 
 const FIELDS = [
@@ -65,6 +68,7 @@ export default function Step2DataEntry() {
     data,
     setSectionData,
     sectionComplete,
+    scores,
     completeCount,
     total,
     mapView,
@@ -120,6 +124,7 @@ export default function Step2DataEntry() {
             <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} />
             <TrackMapView onChange={setMapView} />
             <InvalidateSizeOnVisible />
+            <ScoreLegend showNoData />
             {!mapView && <FitView polygon={polygon} points={points} />}
 
             {polygon.length >= 3 && (
@@ -130,12 +135,39 @@ export default function Step2DataEntry() {
                   weight: 2,
                   fillColor: BLUE,
                   fillOpacity: 0.1,
+                  // Let clicks through to the grid cells beneath.
+                  interactive: false,
                 }}
               />
             )}
 
+            {/* Auto-grid cells shaded by score (manual points have no cell), in a
+                pane under the markers (overlayPane is z-index 400) since they
+                load after them. */}
+            <Pane name="ff-cells" style={{ zIndex: 390 }}>
+              {points.map((p) => {
+                if (scores[p.label] === undefined) return null
+                const ring = gridCellRing(polygon, p.cell)
+                if (!ring) return null
+                const color = scoreColor(scores[p.label])
+                return (
+                  <Polygon
+                    key={`cell-${p.label}`}
+                    positions={ring}
+                    pathOptions={{
+                      color,
+                      weight: 1,
+                      opacity: 0.6,
+                      fillColor: color,
+                      fillOpacity: 0.38,
+                    }}
+                    eventHandlers={{ click: () => setSelected(p.label) }}
+                  />
+                )
+              })}
+            </Pane>
+
             {points.map((p) => {
-              const complete = sectionComplete(p.label)
               const isActive = p.label === selected
               return (
                 <CircleMarker
@@ -145,7 +177,7 @@ export default function Step2DataEntry() {
                   pathOptions={{
                     color: isActive ? '#1A1A2E' : '#fff',
                     weight: isActive ? 3 : 2,
-                    fillColor: complete ? GREEN : GRAY,
+                    fillColor: scoreColor(scores[p.label]),
                     fillOpacity: 1,
                   }}
                   eventHandlers={{ click: () => setSelected(p.label) }}
@@ -181,7 +213,7 @@ export default function Step2DataEntry() {
                       >
                         <span
                           className="ff-point-item__dot"
-                          style={{ background: complete ? GREEN : GRAY }}
+                          style={{ background: scoreColor(scores[p.label]) }}
                         />
                         <span className="ff-point-item__label">{p.label}</span>
                         <span className="ff-point-item__coords">

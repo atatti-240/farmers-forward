@@ -23,6 +23,7 @@ EXPECTED_RULES = {
     "/api/auth/logout",
     "/api/auth/me",
     "/api/submit",
+    "/api/score",
     "/api/results/<int:farm_id>",
     "/api/history",
     "/api/contact",

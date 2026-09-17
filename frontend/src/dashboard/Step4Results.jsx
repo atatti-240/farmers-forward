@@ -2,12 +2,14 @@
    Farmers Forward - Step 4: Results (BUILD_CONTRACT §5)
    Renders the analysis: a field-level summary, per-section colour-coded score
    cards with crop viability and recommendations, a satellite map colouring
-   each sample point by its health colour, and PDF download links.
+   each sample point (and its auto-grid cell) on the soil health gradient, and
+   PDF download links. Cards use the same colour as their map marker.
    ========================================================================== */
 
 import { useEffect, useRef } from 'react'
 import {
   MapContainer,
+  Pane,
   TileLayer,
   Polygon,
   CircleMarker,
@@ -17,23 +19,16 @@ import {
 
 import api from '../api/client.js'
 import { useDashboard } from './DashboardProvider.jsx'
-import { polygonCentroid } from './geo.js'
+import { gridCellRing, polygonCentroid } from './geo.js'
 import { InvalidateSizeOnVisible } from './mapView.js'
+import ScoreLegend from './ScoreLegend.jsx'
+import { scoreColor } from './soilColor.js'
 
 const ESRI_URL =
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
 const ESRI_ATTR = 'Tiles © Esri'
 const CENTER = [29.53, -95.77]
 const BLUE = '#4AAFE0'
-
-/** Health-score → hex, identical to the §1 rule (used for the field mean). */
-function scoreColor(score) {
-  const s = Number(score)
-  if (!Number.isFinite(s)) return '#5b6472'
-  if (s >= 70) return '#2E9E5B'
-  if (s >= 40) return '#F5A623'
-  return '#E8302A'
-}
 
 function fmtScore(v) {
   const n = Number(v)
@@ -60,7 +55,7 @@ function FitView({ polygon, positions }) {
 }
 
 export default function Step4Results() {
-  const { analysis, farmId, polygon, resetDraft } = useDashboard()
+  const { analysis, farmId, polygon, points, resetDraft } = useDashboard()
 
   if (!analysis || !Array.isArray(analysis.results)) {
     return (
@@ -87,6 +82,20 @@ export default function Step4Results() {
   const positions = results
     .filter((r) => Number.isFinite(Number(r.latitude)) && Number.isFinite(Number(r.longitude)))
     .map((r) => [Number(r.latitude), Number(r.longitude)])
+
+  // Grid cell for each result, taken from the submitted point with the same
+  // label and position (so a grid regenerated after submitting isn't used).
+  const cellRings = {}
+  for (const r of results) {
+    const p = (points || []).find(
+      (pt) =>
+        pt.label === r.section_label &&
+        Math.abs(pt.lat - Number(r.latitude)) < 1e-9 &&
+        Math.abs(pt.lng - Number(r.longitude)) < 1e-9
+    )
+    const ring = p ? gridCellRing(polygon, p.cell) : null
+    if (ring) cellRings[r.section_label] = ring
+  }
 
   const center =
     (polygon && polygon.length >= 3 && polygonCentroid(polygon)) ||
@@ -130,6 +139,7 @@ export default function Step4Results() {
         <MapContainer center={center} zoom={15} scrollWheelZoom>
           <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} />
           <InvalidateSizeOnVisible />
+          <ScoreLegend />
           <FitView polygon={polygon} positions={positions} />
 
           {polygon && polygon.length >= 3 && (
@@ -144,8 +154,30 @@ export default function Step4Results() {
             />
           )}
 
+          {/* Auto-grid cells, in a pane under the markers (overlayPane is 400). */}
+          <Pane name="ff-cells" style={{ zIndex: 390 }}>
+            {results.map((r) => {
+              const ring = cellRings[r.section_label]
+              if (!ring) return null
+              const color = scoreColor(r.health_score)
+              return (
+                <Polygon
+                  key={`cell-${r.section_label}`}
+                  positions={ring}
+                  pathOptions={{
+                    color,
+                    weight: 1,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.38,
+                  }}
+                />
+              )
+            })}
+          </Pane>
+
           {results.map((r) => {
-            const hex = (r.color && r.color.hex) || scoreColor(r.health_score)
+            const hex = scoreColor(r.health_score)
             const lat = Number(r.latitude)
             const lng = Number(r.longitude)
             if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
@@ -173,18 +205,25 @@ export default function Step4Results() {
       {/* Per-section cards */}
       <div className="ff-results-grid">
         {results.map((r) => {
-          const hex = (r.color && r.color.hex) || scoreColor(r.health_score)
+          const hex = scoreColor(r.health_score)
           const inputs = r.inputs || {}
           const viable =
             (r.crop_suitability && r.crop_suitability.viable_now) || []
           const recs = Array.isArray(r.recommendations) ? r.recommendations : []
           return (
-            <div key={r.section_label} className="ff-card ff-result-card">
+            <div
+              key={r.section_label}
+              className="ff-card ff-result-card"
+              style={{ '--score-color': hex }}
+            >
               <div className="ff-result-card__head">
-                <span className="ff-result-card__label">
-                  {r.section_label}
+                <span className="ff-result-card__name">
+                  <span className="ff-result-card__dot" aria-hidden="true" />
+                  <span className="ff-result-card__label">
+                    {r.section_label}
+                  </span>
                 </span>
-                <span className="ff-score" style={{ '--score-color': hex }}>
+                <span className="ff-score">
                   <span className="ff-score__num">
                     {fmtScore(r.health_score)}
                   </span>
