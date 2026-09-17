@@ -1,0 +1,464 @@
+/* ==========================================================================
+   Farmers Forward - global.css
+   Reset + base + utility classes (see BUILD_CONTRACT §3.4).
+   Depends on the brand tokens defined in theme.css.
+   ========================================================================== */
+
+/* ------------------------------------------------------------------ Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--ff-bg);
+  color: var(--ff-text);
+  font-family: var(--ff-font);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 0.5em;
+  color: var(--ff-text);
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+h1 { font-size: clamp(2rem, 4vw, 3rem); }
+h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); }
+h3 { font-size: 1.35rem; }
+h4 { font-size: 1.1rem; }
+
+p { margin: 0 0 1rem; }
+
+a {
+  color: var(--ff-blue-dark);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+img { max-width: 100%; display: block; }
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+ul, ol { margin: 0 0 1rem; padding-left: 1.25rem; }
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--ff-border);
+  margin: 1.5rem 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ff-blue);
+  outline-offset: 2px;
+}
+
+/* ----------------------------------------------------------------- Layout */
+.ff-container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.ff-section {
+  padding: 72px 0;
+}
+
+.ff-row {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.ff-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ff-spacer {
+  flex: 1 1 auto;
+}
+
+@media (max-width: 768px) {
+  .ff-section { padding: 48px 0; }
+  .ff-row { flex-direction: column; gap: 16px; }
+  .ff-container { padding: 0 18px; }
+}
+
+/* ---------------------------------------------------------------- Buttons */
+.ff-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border: 1px solid transparent;
+  border-radius: var(--ff-radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+  user-select: none;
+}
+.ff-btn:hover { text-decoration: none; }
+.ff-btn:active { transform: translateY(1px); }
+
+.ff-btn--primary {
+  background: var(--ff-blue);
+  color: #fff;
+  box-shadow: var(--ff-shadow);
+}
+.ff-btn--primary:hover { background: var(--ff-blue-dark); }
+
+.ff-btn--secondary {
+  background: var(--ff-surface);
+  color: var(--ff-blue-dark);
+  border-color: var(--ff-blue);
+}
+.ff-btn--secondary:hover {
+  background: var(--ff-blue-soft);
+  border-color: var(--ff-blue-dark);
+}
+
+.ff-btn--danger {
+  background: var(--ff-red);
+  color: #fff;
+  box-shadow: var(--ff-shadow);
+}
+.ff-btn--danger:hover { background: var(--ff-red-dark); }
+
+.ff-btn--ghost {
+  background: transparent;
+  color: var(--ff-text);
+  border-color: transparent;
+}
+.ff-btn--ghost:hover { background: var(--ff-blue-soft); color: var(--ff-blue-dark); }
+
+.ff-btn:disabled,
+.ff-btn[disabled],
+.ff-btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.ff-btn--block { width: 100%; }
+.ff-btn--sm { padding: 7px 14px; font-size: 0.85rem; }
+
+/* ------------------------------------------------------------------ Cards */
+.ff-card {
+  background: var(--ff-surface);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius);
+  box-shadow: var(--ff-shadow);
+  padding: 24px;
+}
+
+.ff-card__title {
+  margin: 0 0 16px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ff-text);
+}
+
+/* ------------------------------------------------------------------ Forms */
+.ff-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.ff-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ff-text);
+}
+
+.ff-input {
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--ff-text);
+  background: var(--ff-surface);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ff-input::placeholder { color: var(--ff-text-muted); opacity: 0.8; }
+.ff-input:focus {
+  outline: none;
+  border-color: var(--ff-blue);
+  box-shadow: 0 0 0 3px rgba(74, 175, 224, 0.25);
+}
+.ff-input:disabled {
+  background: var(--ff-bg);
+  color: var(--ff-text-muted);
+  cursor: not-allowed;
+}
+
+.ff-input--error {
+  border-color: var(--ff-red);
+}
+.ff-input--error:focus {
+  border-color: var(--ff-red);
+  box-shadow: 0 0 0 3px rgba(232, 48, 42, 0.2);
+}
+
+textarea.ff-input {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+.ff-help {
+  font-size: 0.82rem;
+  color: var(--ff-text-muted);
+}
+
+.ff-error-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ff-red);
+}
+
+/* --------------------------------------------------------------- Progress */
+.ff-progress {
+  width: 100%;
+  height: 12px;
+  background: var(--ff-blue-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.ff-progress__bar {
+  height: 100%;
+  width: 0;
+  background: var(--ff-blue);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* ----------------------------------------------------------------- Badges */
+.ff-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.4;
+  border-radius: 999px;
+  background: var(--ff-blue-soft);
+  color: var(--ff-blue-dark);
+  white-space: nowrap;
+}
+
+.ff-badge--green {
+  background: rgba(46, 158, 91, 0.14);
+  color: var(--ff-green);
+}
+.ff-badge--amber {
+  background: rgba(245, 166, 35, 0.16);
+  color: #b5760a;
+}
+.ff-badge--red {
+  background: rgba(232, 48, 42, 0.12);
+  color: var(--ff-red);
+}
+
+/* ---------------------------------------------------------------- Stepper */
+.ff-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.ff-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 8px 8px;
+  border-radius: 999px;
+  background: var(--ff-surface);
+  border: 1px solid var(--ff-border);
+  color: var(--ff-text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ff-step__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ff-bg);
+  border: 1px solid var(--ff-border);
+  color: var(--ff-text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+
+.ff-step--active {
+  border-color: var(--ff-blue);
+  color: var(--ff-blue-dark);
+  background: var(--ff-blue-soft);
+}
+.ff-step--active .ff-step__num {
+  background: var(--ff-blue);
+  border-color: var(--ff-blue);
+  color: #fff;
+}
+
+.ff-step--done {
+  border-color: var(--ff-green);
+  color: var(--ff-green);
+}
+.ff-step--done .ff-step__num {
+  background: var(--ff-green);
+  border-color: var(--ff-green);
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .ff-step { padding: 6px 12px 6px 6px; font-size: 0.82rem; }
+  .ff-step__num { width: 22px; height: 22px; font-size: 0.78rem; }
+}
+
+/* -------------------------------------------------------------------- Nav */
+.ff-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  background: var(--ff-surface);
+  border-bottom: 1px solid var(--ff-border);
+  box-shadow: var(--ff-shadow);
+}
+.ff-nav__inner {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .ff-nav__inner { padding: 10px 18px; }
+}
+
+/* ------------------------------------------------------------------ Table */
+.ff-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--ff-surface);
+  border-radius: var(--ff-radius-sm);
+  overflow: hidden;
+  font-size: 0.92rem;
+}
+.ff-table th,
+.ff-table td {
+  padding: 11px 14px;
+  text-align: left;
+  border: 1px solid var(--ff-border);
+}
+.ff-table thead th {
+  background: var(--ff-blue-soft);
+  color: var(--ff-text);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ff-table tbody tr:nth-child(even) {
+  background: rgba(232, 245, 252, 0.35);
+}
+.ff-table tbody tr:hover {
+  background: var(--ff-blue-soft);
+}
+.ff-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* ---------------------------------------------------------------- Spinner */
+.ff-spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--ff-blue-soft);
+  border-top-color: var(--ff-blue);
+  border-radius: 50%;
+  animation: ff-spin 0.8s linear infinite;
+}
+.ff-spinner--sm { width: 20px; height: 20px; border-width: 3px; }
+.ff-spinner--lg { width: 60px; height: 60px; border-width: 5px; }
+
+@keyframes ff-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ff-spinner-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  width: 100%;
+}
+
+/* -------------------------------------------------------------------- Map */
+.ff-map {
+  height: 460px;
+  width: 100%;
+  border-radius: var(--ff-radius);
+  overflow: hidden;
+  border: 1px solid var(--ff-border);
+  box-shadow: var(--ff-shadow);
+}
+.ff-map .leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: var(--ff-blue-soft);
+}
+
+@media (max-width: 640px) {
+  .ff-map { height: 340px; }
+}
+
+/* --------------------------------------------------------------- Helpers */
+.ff-text-muted { color: var(--ff-text-muted); }
+.ff-text-center { text-align: center; }
+.ff-mt-0 { margin-top: 0; }
+.ff-mb-0 { margin-bottom: 0; }

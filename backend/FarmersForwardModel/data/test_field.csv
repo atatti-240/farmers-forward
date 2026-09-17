@@ -1,0 +1,4 @@
+sample_id,latitude,longitude,region,zone,ph,ec,nitrogen,phosphorus,potassium
+T01,29.5700,-95.7700,fort_bend,,6.6,0.9,45,30,200
+T02,29.5710,-95.7685,fort_bend,,8.0,4.5,14,11,130
+T03,29.5720,-95.7670,fort_bend,,5.6,1.1,25,18,85

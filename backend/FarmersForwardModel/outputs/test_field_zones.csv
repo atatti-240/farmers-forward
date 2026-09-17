@@ -1,0 +1,2 @@
+zone,n_samples,centroid_lat,centroid_lon,mean_health_score,health_category,min_health_score,dominant_problem,viable_crops,n_viable_crops,mean_ph,mean_ec,mean_nitrogen,mean_phosphorus,mean_potassium
+Z1-1,3,29.571,-95.7685,83.7,Excellent,60.3,ph_acidic,"Cotton, Sorghum, Wheat",3,6.73,2.17,28.0,19.67,138.33

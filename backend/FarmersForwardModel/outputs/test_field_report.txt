@@ -1,0 +1,127 @@
+==============================================================================
+                     FARMERSFIRST  --  SOIL HEALTH REPORT                     
+                        Field: Test Field (3 samples)                         
+==============================================================================
+
+Generated: 2026-07-27T16:39:41
+Samples: 3   |   Zones: 1
+
+------------------------------------------------------------------------------
+OVERALL SOIL HEALTH
+------------------------------------------------------------------------------
+  Field score : 84 / 100   (Excellent)
+  Range across field : 60 (worst zone) to 100 (best)
+  Most common problem across the field: High salinity (salt).
+
+------------------------------------------------------------------------------
+SOIL PROFILE  (field averages)
+------------------------------------------------------------------------------
+  pH        : 6.7
+  EC        : 2.17 dS/m (salinity)
+  Nitrogen  : 28 ppm
+  Phosphorus: 20 ppm
+  Potassium : 138 ppm
+
+------------------------------------------------------------------------------
+WHAT TO DO  (most important first)
+------------------------------------------------------------------------------
+
+  1. Reduce salinity (leach + drain)  [SEVERE]
+     Leach salts with good-quality water once drainage is adequate (apply ~6
+     in extra water to push salts below the root zone).
+     Rate  : Leaching fraction sized to soil; add drainage if water ponds.
+     Cost  : ~$20 to $60/acre
+     When  : Pre-season, when you can move water through the profile.
+     Note  : Test your IRRIGATION water too -- Brazos water in the Fort
+     Bend/Richmond reach runs saltier downstream, so over-irrigating with it
+     adds salt. Meanwhile grow salt-tolerant cotton or sorghum.
+     Affects: 1 of 1 zones
+
+  2. Lower pH / manage alkalinity  [MODERATE]
+     Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate).
+     On calcareous Blackland clay, fully lowering pH is slow and costly --
+     lean on tolerant crops + chelated micronutrients instead.
+     Rate  : 475-675 lb/acre elemental sulfur
+     Cost  : ~$143 to $261/acre (sulfur ~$0.30-0.55/lb)
+     When  : Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.
+     Note  : Test for free lime first. If the soil fizzes with acid it is
+     calcareous and sulfur demand is very high -- prefer cotton, sorghum and
+     other alkaline-tolerant crops.
+     Affects: 1 of 1 zones
+
+  3. Correct nitrogen deficiency  [MILD]
+     Apply nitrogen fertilizer (urea 46-0-0 or UAN). Split the application on
+     corn/leafy crops to limit leaching.
+     Rate  : 134-154 lb N/acre (~291 lb urea)
+     Cost  : ~$74 to $100/acre (N ~$0.55-0.75/lb)
+     When  : At/near planting; split-apply for corn (pre-plant + side-dress).
+     Note  : Rate sized to a generic ~40 ppm soil-N target; specify a crop for
+     a tailored rate. A legume cover crop can fix 40-100 lb N/acre
+     biologically and cut this bill over time.
+     Affects: 1 of 1 zones
+
+  4. Raise pH with agricultural lime  [MILD]
+     Apply agricultural lime (calcitic; use dolomitic if Mg is also low) and
+     incorporate 6 in deep.
+     Rate  : 1.8-2.3 tons/acre
+     Cost  : ~$45 to $72/acre ($25-40/ton material)
+     When  : 3-6 months before planting (fall for a spring crop) so it has time to react.
+     Note  : Re-test pH after one season; lime acts slowly. Sandy East-TX
+     soils need less than Blackland clay.
+     Affects: 1 of 1 zones
+
+  5. Correct phosphorus deficiency  [MILD]
+     Band phosphate (DAP 18-46-0 or triple superphosphate) near the seed row
+     for best early uptake.
+     Rate  : 57-72 lb P2O5/acre
+     Cost  : ~$34 to $51/acre (P2O5 ~$0.60-0.90/lb)
+     When  : At planting (banded/starter).
+     Note  : Banding beats broadcasting on high-pH soils where P gets tied up.
+     Affects: 1 of 1 zones
+
+  6. Correct potassium deficiency  [MILD]
+     Apply potash (muriate of potash 0-0-60). Split applications on sandy or
+     leaching-prone ground.
+     Rate  : 58-78 lb K2O/acre
+     Cost  : ~$26 to $41/acre (K2O ~$0.45-0.70/lb)
+     When  : Pre-plant or at planting.
+     Note  : K deficiency threshold is 100 ppm. Sandy ground holds less K than
+     clay, so the sandier the field the more frequent and smaller the doses
+     should be.
+     Affects: 1 of 1 zones
+
+------------------------------------------------------------------------------
+WHAT YOU CAN PLANT NOW  (given current conditions)
+------------------------------------------------------------------------------
+  Viable across the WHOLE field: Cotton, Sorghum, Wheat
+  Not viable anywhere yet: Corn, Soybeans, Tomatoes, Peppers, Blueberries,
+  Strawberries, Hemp
+  (After the fixes above, salt/pH-sensitive crops open up. Fix salinity and
+  nutrients first, then re-test.)
+
+------------------------------------------------------------------------------
+ZONE-BY-ZONE
+------------------------------------------------------------------------------
+  Zone      Score  Category   Main problem           Viable crops
+  Z1-1         84  Excellent  Acidic soil (low pH)   3
+
+------------------------------------------------------------------------------
+[EXPERIMENTAL] ROUGH COST / BENEFIT  --  NOT FINANCIAL ADVICE
+------------------------------------------------------------------------------
+  EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-
+  magnitude ballparks to help prioritize, using generic Texas input prices and
+  assumed yield responses. Real costs and returns vary widely with crop,
+  market, weather and your operation. Confirm with your county Extension agent
+  and your own numbers before spending money.
+
+  Est. total cost to implement fixes : ~$342 to $586/acre
+  Est. crop value protected per year : ~$180 to $1,089/acre/yr
+  Rough first-year net (ballpark)     : ~-$406 to $748/acre/yr
+
+==============================================================================
+Field map image: outputs/test_field_field_map.png
+This report uses FarmersFirst Texas soil thresholds (Fort Bend / Brazos
+region). It is general agronomic guidance, not a substitute for a certified
+agronomist or a full lab panel. FarmersFirst -- free soil health assessments
+for small-scale Texas farmers.
+==============================================================================

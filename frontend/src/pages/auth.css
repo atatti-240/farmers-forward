@@ -1,0 +1,210 @@
+/* Auth pages (Login + OTP) - branded with Farmers Forward tokens */
+
+.ff-auth {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: var(--pub-paper);
+  background-image: var(--pub-grain);
+}
+
+.ff-auth__card {
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  background: var(--ff-surface);
+  border: 1.5px solid var(--pub-ink-line);
+  border-radius: var(--ff-radius);
+  box-shadow: var(--ff-shadow-lg);
+  padding: 42px 36px 32px;
+  text-align: center;
+}
+
+.ff-auth__logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.ff-auth__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ff-text);
+  margin: 0 0 6px;
+}
+
+.ff-auth__subtitle {
+  font-size: 0.95rem;
+  color: var(--ff-text-muted);
+  margin: 0 0 26px;
+  line-height: 1.5;
+}
+
+.ff-auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: left;
+}
+
+.ff-auth__form .ff-field {
+  margin: 0;
+}
+
+.ff-auth__actions {
+  margin-top: 4px;
+}
+
+.ff-auth__actions .ff-btn {
+  width: 100%;
+}
+
+/* Inline error banner */
+.ff-auth__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fae8df;
+  border: 1px solid var(--ff-red);
+  color: var(--ff-red-dark);
+  border-radius: var(--ff-radius-sm);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.ff-auth__error::before {
+  content: "!";
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ff-red);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.ff-auth__error--notice {
+  border-color: var(--ff-blue);
+  color: var(--ff-blue-dark);
+}
+
+.ff-auth__error--notice::before {
+  background: var(--ff-blue);
+}
+
+.ff-auth__footer {
+  margin-top: 22px;
+  font-size: 0.85rem;
+  color: var(--ff-text-muted);
+}
+
+/* ---- OTP specific ---- */
+
+.ff-otp {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  justify-content: center;
+  gap: 10px;
+  margin: 8px 0 6px;
+}
+
+.ff-otp__box {
+  width: 100%;
+  min-width: 0;
+  font-family: var(--pub-serif);
+  height: 60px;
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ff-text);
+  background: var(--ff-surface);
+  border: 2px solid var(--ff-border);
+  border-radius: var(--ff-radius-sm);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.ff-otp__box::-webkit-outer-spin-button,
+.ff-otp__box::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.ff-otp__box:focus {
+  border-color: var(--ff-blue);
+  box-shadow: 0 0 0 3px rgba(74, 175, 224, 0.25);
+}
+
+.ff-otp__box:disabled {
+  background: var(--ff-blue-soft);
+  color: var(--ff-text-muted);
+  cursor: not-allowed;
+}
+
+.ff-otp__box--filled {
+  border-color: var(--ff-blue);
+}
+
+.ff-otp__box--error {
+  border-color: var(--ff-red);
+  animation: ff-otp-shake 0.35s ease;
+}
+
+@keyframes ff-otp-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+.ff-otp__timer {
+  font-size: 0.9rem;
+  color: var(--ff-text-muted);
+  margin: 14px 0 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ff-otp__timer strong {
+  color: var(--ff-blue-dark);
+  font-weight: 700;
+}
+
+.ff-otp__timer--warn strong {
+  color: var(--ff-red);
+}
+
+@media (max-width: 460px) {
+  .ff-auth__card {
+    padding: 28px 20px 24px;
+  }
+  .ff-otp {
+    gap: 7px;
+  }
+  .ff-otp__box {
+    height: 54px;
+    font-size: 1.4rem;
+  }
+}
+
+.ff-auth__card::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: calc(50% - 38px);
+  width: 76px;
+  height: 22px;
+  background: var(--pub-tape);
+  border-inline: 1px dashed var(--ff-border);
+  transform: rotate(-2.5deg);
+}
+.ff-auth__eyebrow { margin: 0 0 12px; }
+.ff-auth__footer { border-top: 1px dashed var(--ff-border); padding-top: 20px; }

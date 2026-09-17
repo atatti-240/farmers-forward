@@ -1,0 +1,52 @@
+mukey,drainage_class,erosion_k_factor,flood_frequency,soil_health_rating,erosion_t_factor,representative_cokey
+3103243,Somewhat poorly drained,0.37,None,,5,27042624
+3103244,Moderately well drained,0.49,None,,5,27042632
+3103274,Somewhat poorly drained,0.43,None,,5,27042606
+3103275,Moderately well drained,0.43,None,,5,27042607
+3103330,Moderately well drained,0.37,None,,3,27042642
+365923,Well drained,0.43,Rare,,5,27042544
+365924,Well drained,0.28,Rare,,5,27042572
+365925,Well drained,0.37,Rare,,5,27042491
+365926,Poorly drained,0.32,Rare,,5,27042661
+365927,Somewhat poorly drained,0.43,None,,5,27042540
+365928,Somewhat poorly drained,0.28,None,,5,27042495
+365929,Somewhat poorly drained,0.28,None,,5,27042498
+365930,Somewhat poorly drained,0.43,None,,5,27042568
+365931,Somewhat poorly drained,0.32,Frequent,,5,27042611
+365932,Somewhat poorly drained,0.43,None,,5,27042616
+365933,Somewhat poorly drained,0.49,None,,5,27042583
+365934,Somewhat poorly drained,0.43,None,,5,27042587
+365935,Somewhat poorly drained,0.49,None,,5,27042597
+365936,Well drained,0.28,None,,5,27042657
+365937,Moderately well drained,0.17,None,,4,27042667
+365938,Moderately well drained,0.43,None,,5,27042625
+365939,Moderately well drained,0.43,None,,5,27042633
+365940,Somewhat poorly drained,0.43,None,,5,27042636
+365941,Moderately well drained,0.2,Frequent,,5,27042656
+365942,Well drained,0.1,None,,5,27042557
+365943,Well drained,0.1,None,,5,27042549
+365944,Well drained,0.1,None,,5,27042511
+365945,Moderately well drained,0.2,None,,5,27042590
+365946,Moderately well drained,0.24,None,,5,27042521
+365947,Moderately well drained,0.24,None,,5,27042593
+365948,Moderately well drained,0.15,Rare,,5,27042531
+365949,Well drained,0.43,Rare,,5,27042500
+365950,Well drained,0.43,Rare,,5,27042553
+365951,Well drained,0.37,Occasional,,5,27042577
+365952,Moderately well drained,0.15,Rare,,5,27042502
+365953,Somewhat poorly drained,0.2,Frequent,,5,27042504
+365954,Well drained,0.24,Rare,,5,27042506
+365955,Well drained,0.49,Rare,,5,27042535
+365956,Well drained,0.37,Rare,,4,27042532
+365957,Moderately well drained,0.17,Rare,,5,27042564
+365958,Poorly drained,0.15,Frequent,,5,27042517
+365959,Somewhat poorly drained,0.17,Occasional,,5,27042508
+365960,Well drained,0.32,Rare,,5,27042509
+365961,Poorly drained,0.64,None,,5,27042600
+365962,Somewhat poorly drained,0.49,None,,5,27042648
+365963,Well drained,,None,,,27042512
+365964,Well drained,0.55,Rare,,5,27042523
+365965,,,,,,27042513
+365966,,,,,,27042514
+365967,,,,,,27042515
+365968,,,,,,27042516

@@ -1,0 +1,8 @@
+# FarmersFirst soil-health ML pipeline
+# Pinned to versions verified on Python 3.9. Newer versions generally work too.
+pandas>=1.5
+numpy>=1.23
+scikit-learn>=1.1
+xgboost>=1.7
+matplotlib>=3.5
+joblib>=1.2

@@ -1,0 +1,35 @@
+# =============================================================================
+# Farmers Forward - systemd service unit (gunicorn backend)
+# =============================================================================
+# Install:
+#   sudo cp farmersforward.service /etc/systemd/system/farmersforward.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now farmersforward.service
+# Inspect:
+#   sudo systemctl status farmersforward.service
+#   sudo journalctl -u farmersforward.service -f   # tail logs (dev OTP prints here)
+# =============================================================================
+
+[Unit]
+Description=Farmers Forward backend (gunicorn / Flask)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/farmersforward/backend
+EnvironmentFile=/var/www/farmersforward/.env
+ExecStart=/usr/bin/python3 -m gunicorn --workers 3 --bind 127.0.0.1:8000 wsgi:app
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=10
+
+# --- Hardening ---------------------------------------------------------------
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

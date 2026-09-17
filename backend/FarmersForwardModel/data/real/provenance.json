@@ -1,0 +1,480 @@
+{
+  "retrieved_at_utc": "2026-09-13T03:01:20.820882+00:00",
+  "sources": {
+    "ssurgo": "https://sdmdataaccess.sc.egov.usda.gov/Tabular/post.rest",
+    "kssl": "https://ncsslabdatamart.sc.egov.usda.gov/database_download.aspx"
+  },
+  "ssurgo_areasymbol": "TX157",
+  "ssurgo_sql": "SELECT mu.mukey, co.cokey, hz.chkey, hz.hzname,\nhz.ph1to1h2o_r AS ph, hz.ec_r AS ec, hz.om_r AS om_pct,\nhz.pbray1_r AS p_bray1, hz.cec7_r AS cec\nFROM legend AS l\nINNER JOIN mapunit AS mu ON mu.lkey = l.lkey\nLEFT JOIN component AS co ON co.mukey = mu.mukey\nLEFT JOIN chorizon AS hz ON hz.cokey = co.cokey\nWHERE l.areasymbol = 'TX157'\nORDER BY mu.mukey, co.cokey, hz.chkey",
+  "ssurgo_geo_sql": "SELECT p.mukey, p.mupolygongeo.STEnvelope().STAsText() AS envelope_wkt\nFROM mupolygon AS p INNER JOIN mapunit AS mu ON mu.mukey = p.mukey\nINNER JOIN legend AS l ON l.lkey = mu.lkey WHERE l.areasymbol = 'TX157'",
+  "ssurgo_polygon_bbox": {
+    "south": 29.2624318848292,
+    "north": 29.7884393952056,
+    "west": -96.0817781497163,
+    "east": -95.4265234022166
+  },
+  "ssurgo_polygon_count": 3575,
+  "kssl_sql": "SELECT s.site_key, p.pedon_key, p.user_pedon_id,\n       l.layer_key, l.labsampnum, l.hzn_desgn AS hzname, l.hzn_top, l.hzn_bot,\n       CAST(s.latitude_std_decimal_degrees AS REAL) AS latitude,\n       CAST(s.longitude_std_decimal_degrees AS REAL) AS longitude,\n       s.horizontal_datum_name AS original_horizontal_datum,\n       c.objectid, c.result_source_key, c.prep_code, c.ph_h2o, c.ph_h2o_method, c.electrical_conductivity_satx, c.electrical_cond_satx_method, c.organic_carbon_walkley_black, c.oc_walkley_black_method, c.estimated_organic_carbon, c.phosphorus_bray1, c.phosphorus_bray1_method, c.phosphorus_mehlich_3, c.phosphorus_mehlich_3_method, c.phosphorus_mehlich3_extractable, c.mehlich_3_extractable_method, c.phosphorus_olsen, c.phosphorus_olsen_method, c.k_nh4_ph_7, c.k_nh4_ph_7_method, c.potassium_mehlich3_extractable, c.nitrate_1m_kcl, c.nitrate_1m_kcl_method\nFROM lab_site AS s\nJOIN lab_pedon AS p ON p.site_key = s.site_key\nJOIN lab_layer AS l ON l.pedon_key = p.pedon_key\nLEFT JOIN lab_chemical_properties_vw AS c ON c.layer_key = l.layer_key\nWHERE CAST(s.latitude_std_decimal_degrees AS REAL) BETWEEN :south AND :north\n  AND CAST(s.longitude_std_decimal_degrees AS REAL) BETWEEN :west AND :east\nORDER BY p.pedon_key, l.layer_key, c.objectid\n",
+  "kssl_requested_bbox": {
+    "south": 29.3,
+    "north": 29.9,
+    "west": -96.3,
+    "east": -95.4
+  },
+  "kssl_sqlite_sha256": "916344a0896b6b8a6d5797d76b600b13f24ad5eccf838e4b1a12b71fb6e3aec7",
+  "kssl_field_definitions": [
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 58,
+      "column_name": "ph_h2o",
+      "column_description": "The pH, 1:1 soil-water suspension is the pH of a sample measured in distilled water at a 1:1 soil:solution ratio. If wider ratios increase the pH, salts are indicated."
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 59,
+      "column_name": "ph_h2o_method",
+      "column_description": "ph_h2o analysis method"
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 122,
+      "column_name": "phosphorus_bray1",
+      "column_description": "This is the phosphorus extractable by the Bray-1 method, reported as milligrams per kilogram on a <2 mm base. It is used as an index of plant-available phosphorus. Bray-1 extracts adsorbed P."
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 123,
+      "column_name": "phosphorus_bray1_method",
+      "column_description": "phosphorus_bray1 analysis method"
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 128,
+      "column_name": "phosphorus_mehlich_3",
+      "column_description": "The phosphorus extracted by the Mehlich III solution."
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 129,
+      "column_name": "phosphorus_mehlich_3_method",
+      "column_description": "phosphorus_mehlich_3 analysis method"
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 130,
+      "column_name": "phosphorus_olsen",
+      "column_description": "The Olsen extractable phosphorus is used as an indicator of available phosphorus in calcareous soil materials (pH >6)."
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 131,
+      "column_name": "phosphorus_olsen_method",
+      "column_description": "phosphorus_olsen analysis method"
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 186,
+      "column_name": "potassium_mehlich3_extractable",
+      "column_description": "The potassium extracted by the Mehlich III solution."
+    },
+    {
+      "table_name": "lab_preparation",
+      "field_sequence": 2,
+      "column_name": "prep_code",
+      "column_description": "A character string containing the Soil Survey Laboratory code used to identify the type of sample preparation."
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 3,
+      "column_name": "prep_code",
+      "column_description": "A character string containing the Soil Survey Laboratory code used to identify the type of sample preparation."
+    },
+    {
+      "table_name": "lab_major_tr_elements_oxides",
+      "field_sequence": 3,
+      "column_name": "prep_code",
+      "column_description": "A character string containing the Soil Survey Laboratory code used to identify the type of sample preparation."
+    },
+    {
+      "table_name": "lab_calculations_and_estimates",
+      "field_sequence": 3,
+      "column_name": "prep_code",
+      "column_description": "A character string containing the Soil Survey Laboratory code used to identify the type of sample preparation."
+    },
+    {
+      "table_name": "lab_physical_properties",
+      "field_sequence": 3,
+      "column_name": "prep_code",
+      "column_description": "A character string containing the Soil Survey Laboratory code used to identify the type of sample preparation."
+    },
+    {
+      "table_name": "lab_mineralogy_glass_count",
+      "field_sequence": 4,
+      "column_name": "prep_code",
+      "column_description": "A character string containing the Soil Survey Laboratory code used to identify the type of sample preparation."
+    },
+    {
+      "table_name": "lab_xray_and_thermal",
+      "field_sequence": 4,
+      "column_name": "prep_code",
+      "column_description": "A character string containing the Soil Survey Laboratory code used to identify the type of sample preparation."
+    },
+    {
+      "table_name": "lab_physical_properties",
+      "field_sequence": 2,
+      "column_name": "result_source_key",
+      "column_description": "Foreign key to the pedon or layer table depending on the result_type"
+    },
+    {
+      "table_name": "lab_major_tr_elements_oxides",
+      "field_sequence": 2,
+      "column_name": "result_source_key",
+      "column_description": "Foreign key to the pedon or layer table depending on the result_type"
+    },
+    {
+      "table_name": "lab_calculations_and_estimates",
+      "field_sequence": 2,
+      "column_name": "result_source_key",
+      "column_description": "Foreign key to the pedon or layer table depending on the result_type"
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 2,
+      "column_name": "result_source_key",
+      "column_description": "Foreign key to the pedon or layer table depending on the result_type"
+    },
+    {
+      "table_name": "lab_xray_and_thermal",
+      "field_sequence": 3,
+      "column_name": "result_source_key",
+      "column_description": "Foreign key to the pedon or layer table depending on the result_type"
+    },
+    {
+      "table_name": "lab_mineralogy_glass_count",
+      "field_sequence": 3,
+      "column_name": "result_source_key",
+      "column_description": "Foreign key to the pedon or layer table depending on the result_type"
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 110,
+      "column_name": "electrical_cond_satx_method",
+      "column_description": "electrical_cond_satx analysis method"
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 109,
+      "column_name": "electrical_conductivity_satx",
+      "column_description": "The electrical conductivity of the saturation extract is used to estimate the concentration of salts in a sample, and provides inferences on cation concentration in solution and osmotic pressure. It is reported as mmhos per centimeter."
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 198,
+      "column_name": "estimated_organic_carbon",
+      "column_description": "CMS analyte. Organic carbon is a measure of all organic forms of carbon in the soil, including organic carbon within minerals."
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 10,
+      "column_name": "k_nh4_ph_7",
+      "column_description": "NH4OAC extractable potassium is the fraction removed by pH 7.0 NH4OAC. It is assumed to represent the exchangeable K. It is reported as meq per 100 grams on a <2 mm base."
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 11,
+      "column_name": "k_nh4_ph_7_method",
+      "column_description": "k_nh4_ph_7 analysis method"
+    },
+    {
+      "table_name": "lab_site",
+      "field_sequence": 12,
+      "column_name": "latitude_std_decimal_degrees",
+      "column_description": "Standardized latitude value in decimal degrees, in geographic coordinate system, WGS84 datum. Values are either auto-populated from GPS, or computed from original latitude coordinates using standard conversion algorithms."
+    },
+    {
+      "table_name": "lab_site",
+      "field_sequence": 13,
+      "column_name": "longitude_std_decimal_degrees",
+      "column_description": "Standardized Longitude value in decimal degrees, in geographic coordinate system, WGS84 datum. Values are either auto-populated from GPS, or computed from original latitude coordinates using standard conversion algorithms."
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 170,
+      "column_name": "mehlich_3_extractable_method",
+      "column_description": "mehlich_3_extractable analysis method"
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 134,
+      "column_name": "nitrate_1m_kcl",
+      "column_description": "The nitrate nitrogen is the fraction in NO3 form. It is extracted by 1M KCl and represents the soluble NO3 that may be subject to leaching."
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 135,
+      "column_name": "nitrate_1m_kcl_method",
+      "column_description": "nitrate_1m_kcl analysis method"
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 29,
+      "column_name": "oc_walkley_black_method",
+      "column_description": "oc_walkley_black analysis method"
+    },
+    {
+      "table_name": "lab_chemical_properties",
+      "field_sequence": 28,
+      "column_name": "organic_carbon_walkley_black",
+      "column_description": "Organic carbon is a measure of all organic forms of carbon in the soil, including organic carbon within minerals."
+    }
+  ],
+  "coordinate_system": "WGS84; standardized KSSL coordinates, original datum retained separately",
+  "standardized_at_utc": "2026-09-13T15:27:35.862354+00:00",
+  "sha256": {
+    "ssurgo_fort_bend.csv": "f8356d4e32daf771bf2d02814fa491e4434f129c0aa4a1bf047834cdd084b2d6",
+    "kssl_fort_bend.csv": "cf9a359b7a5ef9fb0e055fd9faa6fcd087ba5f5bfa0e6d8775ae28717dbc6e0f",
+    "soilgrids_fort_bend.csv": "0281e012ea73c930275cdd96157d99fb3e9142cb829a2d84575b7bd79d7be43b",
+    "cdl_crop_by_mukey.csv": "1d80482c4c19839316166ade8f6ed1317f459bf85e5615778d4a20861c398189",
+    "wss_interpretive_fort_bend.csv": "87f66110641b215789c2b9dbe84b2cc7690924d2d4b21ac25462088b5cabc9b0",
+    "fort_bend_real_training.csv": "f1bf4950155087eb67a8e883fd0dba7f65bb876d662b6ccf1406225cd87a632f",
+    "ssurgo_mlra_region.csv": "2a46494d95d8f7b91e415b01db97697b67704281925a769ebea70381fd236f7b",
+    "kssl_gulf_region.csv": "ca13fb259e627d62826baf6eec8f4899f50d242e0c63cae41a4f9f78fe4b7c3a",
+    "soilgrids_gulf_region.csv": "5e78e8f18ec0eba16f1b76ab2108e706a6bfb218549716da71f60be9d0b953ce",
+    "expanded_real_training.csv": "fbbac45a52a213ad0e980f993cde166e4cc6d78a2cba7b956a1b04c3cbd031c0"
+  },
+  "nitrogen_derivation": {
+    "n_credit_ppm_per_om_pct": 15.0,
+    "oc_to_om_factor": 1.724,
+    "formula": "nitrogen_ppm = om_pct * n_credit_ppm_per_om_pct",
+    "coefficient_source": "user_specified",
+    "interpretation": "annual_mineralization_credit_proxy_not_measured_nitrate",
+    "oc_to_om_reference": "https://directives.nrcs.usda.gov/sites/default/files2/1719846855/Part%20618%20Subpart%20A%20%E2%80%93%20General%20Information.pdf",
+    "status": "applied"
+  },
+  "ssurgo_polygon_sql": "SELECT p.mukey, p.mupolygongeo.STAsText() AS polygon_wkt\nFROM mupolygon p INNER JOIN mapunit mu ON mu.mukey=p.mukey\nINNER JOIN legend l ON l.lkey=mu.lkey WHERE l.areasymbol='TX157'",
+  "spatial_sources": {
+    "soilgrids": {
+      "status": "succeeded",
+      "transport": "REST unit metadata + WCS bulk subsets",
+      "urls": [
+        "https://rest.isric.org/soilgrids/v2.0/properties/query",
+        "https://maps.isric.org/mapserv"
+      ],
+      "unit_measure": {
+        "bdod": {
+          "d_factor": 100,
+          "mapped_units": "cg/cm\u00b3",
+          "target_units": "kg/dm\u00b3",
+          "uncertainty_unit": ""
+        },
+        "cec": {
+          "d_factor": 10,
+          "mapped_units": "mmol(c)/kg",
+          "target_units": "cmol(c)/kg",
+          "uncertainty_unit": ""
+        },
+        "nitrogen": {
+          "d_factor": 100,
+          "mapped_units": "cg/kg",
+          "target_units": "g/kg",
+          "uncertainty_unit": ""
+        },
+        "phh2o": {
+          "d_factor": 10,
+          "mapped_units": "pH*10",
+          "target_units": "-",
+          "uncertainty_unit": ""
+        },
+        "soc": {
+          "d_factor": 10,
+          "mapped_units": "dg/kg",
+          "target_units": "g/kg",
+          "uncertainty_unit": ""
+        }
+      },
+      "native_crs": "+proj=igh +datum=WGS84 +units=m +no_defs",
+      "resolution_m": 250,
+      "grid_transform": [
+        250.0,
+        0.0,
+        -10775000.0,
+        0.0,
+        -250.0,
+        3328500.0
+      ],
+      "grid_shape": [
+        268,
+        359
+      ],
+      "nitrogen": "predicted_total_N_retained_separately_not_measured_nitrate",
+      "unavailable_properties": [
+        "ec",
+        "extractable_phosphorus",
+        "extractable_potassium"
+      ]
+    },
+    "cdl": {
+      "status": "succeeded",
+      "url": "https://pdi.scinet.usda.gov/image/rest/services/CDL_WM/ImageServer",
+      "year": 2025,
+      "county_boundary_url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1/query",
+      "county_geoid": "48157",
+      "resolution_m": 10,
+      "crs": "EPSG:5070",
+      "resampling": "nearest",
+      "signal_strength": "presence_only",
+      "crop_pixel_pct_denominator": "all_valid_pixels",
+      "clipped_raster_cache": "/tmp/farmers-forward-usda/cdl-2025-fort-bend-10m.tif",
+      "raster_catalog_item": {
+        "OBJECTID": 40,
+        "Name": "2025_10m_cdls",
+        "MinPS": 0,
+        "MaxPS": 50200,
+        "LowPS": 10,
+        "HighPS": 1280,
+        "Category": 1,
+        "Year": 2025
+      },
+      "legacy_endpoint_note": "CropScape TLS certificate expired; using current USDA CroplandCROS service"
+    },
+    "wss": {
+      "status": "succeeded",
+      "transport": "WSS underlying SSURGO tables via SDA",
+      "url": "https://sdmdataaccess.sc.egov.usda.gov/Tabular/post.rest",
+      "sql": "SELECT mu.mukey, co.cokey, co.comppct_r, co.drainagecl, co.tfact,\nh.chkey,h.hzdept_r,h.hzdepb_r,h.kwfact,mo.flodfreqcl\nFROM legend l JOIN mapunit mu ON mu.lkey=l.lkey\nLEFT JOIN component co ON co.mukey=mu.mukey\nLEFT JOIN chorizon h ON h.cokey=co.cokey\nLEFT JOIN comonth mo ON mo.cokey=co.cokey\nWHERE l.areasymbol='TX157'",
+      "soil_health_rating": "unavailable; no generic soil-health score in these tables"
+    },
+    "ssurgo_mlra": {
+      "status": "succeeded",
+      "url": "https://sdmdataaccess.sc.egov.usda.gov/Tabular/post.rest",
+      "sql": "SELECT l.areasymbol, mu.mukey, co.cokey, hz.chkey, hz.hzname,\nhz.ph1to1h2o_r AS ph, hz.ec_r AS ec, hz.om_r AS om_pct,\nhz.pbray1_r AS p_bray1, hz.cec7_r AS cec\nFROM legend AS l\nINNER JOIN laoverlap AS lo ON lo.lkey = l.lkey AND lo.areatypename = 'MLRA'\n    AND lo.areasymbol IN ('150A')\nINNER JOIN mapunit AS mu ON mu.lkey = l.lkey\nLEFT JOIN component AS co ON co.mukey = mu.mukey\nLEFT JOIN chorizon AS hz ON hz.cokey = co.cokey\nWHERE l.areasymbol <> 'US'\nORDER BY l.areasymbol, mu.mukey, co.cokey, hz.chkey",
+      "mlra_symbols": [
+        "150A"
+      ],
+      "survey_areas": 40
+    },
+    "kssl_gulf": {
+      "status": "succeeded",
+      "url": "https://ncsslabdatamart.sc.egov.usda.gov/database_download.aspx",
+      "requested_bbox": {
+        "south": 28.0,
+        "north": 33.0,
+        "west": -98.0,
+        "east": -82.0
+      },
+      "tiering": "survey-area outline lookup; Fort Bend and MLRA peers keep their tier"
+    },
+    "soilgrids_gulf": {
+      "status": "succeeded",
+      "transport": "WCS bulk subsets sampled at lab pedon cells",
+      "urls": [
+        "https://maps.isric.org/mapserv"
+      ],
+      "unit_measure": {
+        "bdod": {
+          "d_factor": 100,
+          "mapped_units": "cg/cm\u00b3",
+          "target_units": "kg/dm\u00b3",
+          "uncertainty_unit": ""
+        },
+        "cec": {
+          "d_factor": 10,
+          "mapped_units": "mmol(c)/kg",
+          "target_units": "cmol(c)/kg",
+          "uncertainty_unit": ""
+        },
+        "nitrogen": {
+          "d_factor": 100,
+          "mapped_units": "cg/kg",
+          "target_units": "g/kg",
+          "uncertainty_unit": ""
+        },
+        "phh2o": {
+          "d_factor": 10,
+          "mapped_units": "pH*10",
+          "target_units": "-",
+          "uncertainty_unit": ""
+        },
+        "soc": {
+          "d_factor": 10,
+          "mapped_units": "dg/kg",
+          "target_units": "g/kg",
+          "uncertainty_unit": ""
+        }
+      },
+      "native_crs": "+proj=igh +datum=WGS84 +units=m +no_defs",
+      "resolution_m": 250,
+      "requested_bbox": {
+        "south": 28.0,
+        "north": 33.0,
+        "west": -98.0,
+        "east": -82.0
+      },
+      "window_shape": [
+        2228,
+        6331
+      ],
+      "pedon_cells": 2376,
+      "sampling": "cells containing a KSSL pedon only; standalone grid cells omitted",
+      "reason": "SoilGrids has no EC/P/K layer, so a standalone cell cannot complete a five-input row",
+      "nitrogen": "predicted_total_N_retained_separately_not_measured_nitrate"
+    }
+  },
+  "mlra": {
+    "fort_bend_areasymbol": "TX157",
+    "mlra_symbols": [
+      "150A"
+    ],
+    "mlra_names": {
+      "150A": "Gulf Coast Prairies"
+    },
+    "survey_areas": [
+      "LA001",
+      "LA003",
+      "LA019",
+      "LA023",
+      "LA037",
+      "LA039",
+      "LA053",
+      "LA055",
+      "LA073",
+      "LA079",
+      "LA097",
+      "LA113",
+      "LA125",
+      "TX025",
+      "TX039",
+      "TX057",
+      "TX071",
+      "TX089",
+      "TX123",
+      "TX157",
+      "TX167",
+      "TX175",
+      "TX185",
+      "TX199",
+      "TX201",
+      "TX239",
+      "TX249",
+      "TX285",
+      "TX291",
+      "TX321",
+      "TX339",
+      "TX355",
+      "TX391",
+      "TX469",
+      "TX477",
+      "TX481",
+      "TX600",
+      "TX613",
+      "TX620",
+      "TX623"
+    ],
+    "survey_area_count": 40,
+    "derivation": "legend JOIN laoverlap WHERE areatypename='MLRA'",
+    "excluded": {
+      "areasymbol": "US",
+      "reason": "STATSGO2 national legend, not a soil survey area"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+:root {
+  --ff-blue:        #4AAFE0;   /* primary */
+  --ff-blue-dark:   #2f8fc0;   /* hover/active */
+  --ff-blue-soft:   #e8f5fc;   /* tints, backgrounds */
+  --ff-red:         #E8302A;   /* accent / danger / "poor" */
+  --ff-red-dark:    #c72620;
+  --ff-bg:          #F7F9FC;   /* page background */
+  --ff-surface:     #FFFFFF;   /* cards */
+  --ff-text:        #1A1A2E;   /* body text */
+  --ff-text-muted:  #5b6472;
+  --ff-border:      #e2e8f0;
+  --ff-green:       #2E9E5B;   /* health good */
+  --ff-amber:       #F5A623;   /* health medium */
+  --ff-radius:      12px;
+  --ff-radius-sm:   8px;
+  --ff-shadow:      0 2px 14px rgba(26,26,46,0.08);
+  --ff-shadow-lg:   0 8px 30px rgba(26,26,46,0.14);
+  --ff-font:        'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}

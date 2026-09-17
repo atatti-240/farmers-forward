@@ -1,0 +1,59 @@
+{
+  "trained_at": "2026-07-27T16:39:13",
+  "feature_columns": [
+    "ph",
+    "ec",
+    "nitrogen",
+    "phosphorus",
+    "potassium"
+  ],
+  "crop_names": [
+    "Corn",
+    "Cotton",
+    "Sorghum",
+    "Soybeans",
+    "Wheat",
+    "Tomatoes",
+    "Peppers",
+    "Blueberries",
+    "Strawberries",
+    "Hemp"
+  ],
+  "metadata": {
+    "n_samples": 6000,
+    "n_train": 4800,
+    "n_test": 1200,
+    "score_metrics": {
+      "r2": 0.9967061442693507,
+      "mae": 0.3410891741434734
+    },
+    "category_metrics": {
+      "accuracy": 0.9675,
+      "classes": [
+        "Excellent",
+        "Fair",
+        "Good"
+      ]
+    },
+    "crop_metrics": {
+      "mean_per_crop_accuracy": 0.9993333333333332,
+      "micro_f1": 0.9962756052141527,
+      "exact_match_ratio": 0.995,
+      "per_crop_accuracy": {
+        "Corn": 0.9983333333333333,
+        "Cotton": 1.0,
+        "Sorghum": 1.0,
+        "Soybeans": 0.9991666666666666,
+        "Wheat": 1.0,
+        "Tomatoes": 0.9991666666666666,
+        "Peppers": 0.9991666666666666,
+        "Blueberries": 1.0,
+        "Strawberries": 0.9991666666666666,
+        "Hemp": 0.9983333333333333
+      }
+    },
+    "trained_at": "2026-07-27T16:39:13",
+    "n_synthetic_samples": 6000,
+    "n_real_farm_samples": 0
+  }
+}

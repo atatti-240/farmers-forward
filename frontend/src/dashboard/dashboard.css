@@ -1,0 +1,800 @@
+/* ==========================================================================
+   Farmers Forward - dashboard.css (BUILD_CONTRACT §5)
+   Layout + component styling for the private 4-step dashboard. Relies on the
+   brand tokens (theme.css) and shared utilities (global.css).
+   ========================================================================== */
+
+/* ------------------------------------------------------------------ Shell */
+.ff-dash {
+  min-height: 100vh;
+  background: var(--ff-bg);
+  background-image: var(--pub-grain);
+}
+
+.ff-dash__logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ff-dash__stepbar {
+  background: var(--ff-surface);
+  border-bottom: 1px solid var(--ff-border);
+}
+.ff-dash__stepbar-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  overflow-x: auto;
+}
+.ff-dash__stepbar .ff-stepper {
+  flex-wrap: nowrap;
+  min-width: max-content;
+}
+.ff-step[data-clickable='true'] {
+  cursor: pointer;
+}
+.ff-step[data-clickable='false'] {
+  cursor: default;
+}
+.ff-step--locked {
+  opacity: 0.55;
+}
+
+.ff-dash__main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 42px 24px 72px;
+}
+
+.ff-step-head {
+  margin-bottom: 30px;
+}
+.ff-step-head h1 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  margin: 0 0 6px;
+}
+.ff-step-head p {
+  margin: 0;
+  color: var(--ff-text-muted);
+  max-width: 70ch;
+}
+
+/* ----------------------------------------------------------- Split layout */
+.ff-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 28px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .ff-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ff-side {
+  background: var(--ff-surface);
+  border: 1.5px solid var(--pub-ink-line);
+  border-radius: var(--ff-radius);
+  box-shadow: var(--ff-shadow);
+  padding: 24px;
+  position: sticky;
+  top: 110px;
+}
+@media (max-width: 900px) {
+  .ff-side {
+    position: static;
+  }
+}
+.ff-side__title {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.ff-side__section + .ff-side__section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--ff-border);
+}
+
+/* --------------------------------------------------------------- Toolbars */
+.ff-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.ff-toolbar__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ff-text-muted);
+}
+
+.ff-inline {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ff-inline--between {
+  justify-content: space-between;
+}
+
+/* Segmented control (auto / manual) */
+.ff-seg {
+  display: inline-flex;
+  background: var(--ff-bg);
+  border: 1px solid var(--ff-border);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 3px;
+}
+.ff-seg__btn {
+  border: none;
+  background: transparent;
+  color: var(--ff-text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.ff-seg__btn--active {
+  background: var(--pub-ink);
+  color: var(--pub-card);
+}
+
+/* Small number field (rows / cols) */
+.ff-num {
+  width: 74px;
+  padding: 8px 10px;
+  text-align: center;
+}
+.ff-num-group {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.ff-num-group .ff-field {
+  margin-bottom: 0;
+}
+
+/* Checkbox row (tweak mode) */
+.ff-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.ff-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--ff-blue);
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------ Point list */
+.ff-point-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 340px;
+  overflow-y: auto;
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius-sm);
+}
+.ff-point-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: none;
+  border-bottom: 1px solid var(--ff-border);
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ff-text);
+}
+.ff-point-item:last-child {
+  border-bottom: none;
+}
+.ff-point-item:hover {
+  background: var(--ff-blue-soft);
+}
+.ff-point-item--active {
+  background: var(--ff-blue-soft);
+  box-shadow: inset 3px 0 0 var(--ff-blue);
+}
+.ff-point-item__dot {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--ff-border);
+}
+.ff-point-item__label {
+  font-weight: 700;
+  min-width: 34px;
+}
+.ff-point-item__coords {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  color: var(--ff-text-muted);
+  margin-left: auto;
+  white-space: nowrap;
+}
+.ff-point-item__remove {
+  border: none;
+  background: transparent;
+  color: var(--ff-text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.ff-point-item__remove:hover {
+  color: var(--ff-red);
+  background: rgba(232, 48, 42, 0.1);
+}
+
+.ff-coords {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* --------------------------------------------------------- Data entry pad */
+.ff-entry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.ff-entry-grid .ff-field {
+  margin-bottom: 0;
+}
+.ff-entry-grid .ff-field--full {
+  grid-column: 1 / -1;
+}
+.ff-readonly {
+  background: var(--ff-blue-soft);
+  border-radius: var(--ff-radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.ff-readonly__label {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ff-blue-dark);
+}
+.ff-readonly__coords {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  color: var(--ff-text-muted);
+}
+
+.ff-progress-wrap {
+  margin: 6px 0 18px;
+}
+.ff-progress-wrap__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* --------------------------------------------------------- Map dot labels */
+/* No `position` here: Leaflet's .leaflet-marker-icon must stay absolute, or
+   each pin stacks in normal flow below the previous one and drifts off its
+   coordinates. The absolute label still anchors to the icon. */
+.ff-pt-divicon {
+  background: transparent;
+  border: none;
+}
+.ff-pt-dot {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+}
+.ff-pt-label {
+  position: absolute;
+  left: 17px;
+  top: -3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+  white-space: nowrap;
+}
+
+.leaflet-tooltip.ff-label-tip {
+  background: rgba(26, 26, 46, 0.82);
+  color: #fff;
+  border: none;
+  box-shadow: none;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 6px;
+}
+.leaflet-tooltip.ff-label-tip::before {
+  display: none;
+}
+
+/* ------------------------------------------------------------ Empty state */
+.ff-empty {
+  text-align: center;
+  color: var(--ff-text-muted);
+  padding: 28px 12px;
+  border: 1px dashed var(--ff-border);
+  border-radius: var(--ff-radius-sm);
+  font-size: 0.9rem;
+}
+
+.ff-hint {
+  font-size: 0.82rem;
+  color: var(--ff-text-muted);
+  margin: 8px 0 0;
+}
+
+.ff-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.ff-actions--end {
+  justify-content: flex-end;
+}
+
+/* ---------------------------------------------------------- Submit overlay */
+.ff-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(48, 51, 46, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.ff-overlay__box {
+  background: var(--ff-surface);
+  background-image: var(--pub-grain);
+  border: 1.5px solid var(--pub-ink-line);
+  border-radius: var(--ff-radius);
+  box-shadow: var(--ff-shadow-lg);
+  padding: 34px 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  max-width: 340px;
+}
+.ff-overlay__box p {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------- Step 4 results */
+.ff-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.ff-summary__score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 16px 22px;
+  border-radius: var(--ff-radius);
+  color: #fff;
+}
+.ff-summary__score .num {
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.ff-summary__score .cap {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.95;
+}
+.ff-summary__meta {
+  display: grid;
+  gap: 4px;
+}
+.ff-summary__meta dt {
+  font-size: 0.78rem;
+  color: var(--ff-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.ff-summary__meta dd {
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.ff-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 28px;
+  margin-bottom: 28px;
+}
+.ff-result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ff-result-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ff-result-card__label {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+.ff-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--ff-radius-sm);
+  color: #fff;
+}
+.ff-score__num {
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.ff-score__cat {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ff-result-sub {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ff-text-muted);
+  margin: 0 0 8px;
+}
+
+.ff-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ff-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #e7efe3;
+  border: 1px solid var(--ff-border);
+  color: var(--ff-green);
+}
+.ff-chip--muted {
+  background: var(--ff-bg);
+  color: var(--ff-text-muted);
+}
+
+.ff-recs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ff-rec {
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius-sm);
+  padding: 12px 14px;
+  background: var(--ff-bg);
+}
+.ff-rec__title {
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.ff-rec__action {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+}
+.ff-rec__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.8rem;
+  color: var(--ff-text-muted);
+}
+.ff-rec__meta b {
+  color: var(--ff-text);
+  font-weight: 700;
+}
+
+.ff-inputs-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.82rem;
+  color: var(--ff-text-muted);
+}
+.ff-inputs-line b {
+  color: var(--ff-text);
+}
+
+.ff-result-card__foot {
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+/* The field notebook uses the same handwritten details as the public site. */
+.ff-dash__brand { display: flex; align-items: center; gap: 20px; min-width: 0; }
+.ff-dash__brand a { flex-shrink: 0; }
+.ff-dash__brand-note {
+  border-left: 1px solid var(--ff-border);
+  padding-left: 20px;
+  font-family: var(--pub-hand);
+  font-size: 1.45rem;
+  color: var(--pub-ink-muted);
+}
+.ff-dash__stepbar { background: var(--pub-paper-deep); background-image: var(--pub-grain); }
+.ff-dash .ff-stepper { gap: 12px; }
+.ff-dash .ff-step {
+  padding: 9px 18px 9px 10px;
+  border-radius: 6px 10px 7px 11px / 9px 6px 11px 7px;
+  font-family: var(--pub-serif);
+  font-weight: 500;
+  background: transparent;
+}
+.ff-dash .ff-step__num {
+  width: 30px;
+  height: 30px;
+  font-family: var(--pub-hand);
+  font-size: 1.25rem;
+  border: 1.5px solid currentColor;
+  border-radius: 49% 51% 52% 48% / 47% 53% 46% 54%;
+  background: var(--pub-card);
+}
+.ff-dash .ff-step--active {
+  background: var(--pub-card);
+  border-color: var(--pub-ink);
+  color: var(--pub-ink);
+  box-shadow: 3px 3px 0 rgba(48, 51, 46, 0.2);
+}
+.ff-dash .ff-step--active .ff-step__num {
+  color: var(--pub-card);
+  background: var(--pub-red);
+  border-color: var(--pub-ink);
+}
+.ff-dash .ff-step--done { color: var(--pub-green); border-color: var(--pub-green); }
+.ff-dash .ff-step--done .ff-step__num { color: var(--pub-green); background: #e7efe3; }
+.ff-dash .ff-step[data-clickable='true']:hover { background: var(--pub-card); border-color: var(--pub-ink); }
+.ff-step-head::after {
+  content: '';
+  display: block;
+  width: 100px;
+  height: 5px;
+  margin-top: 18px;
+  background: var(--pub-highlight);
+  border-radius: 40% 30% 50% 20%;
+  transform: rotate(-1deg);
+}
+.ff-step-head h1 { overflow-wrap: anywhere; }
+.ff-side { min-width: 0; }
+.ff-side__title { font-size: 1.2rem; }
+.ff-side__section + .ff-side__section { margin-top: 24px; padding-top: 24px; }
+.ff-side .ff-hint { line-height: 1.65; }
+.ff-hint.ff-mt-0 { margin-bottom: 14px; }
+.ff-seg { border-color: var(--pub-ink-line); border-radius: 8px; background: var(--pub-paper-deep); }
+.ff-seg__btn { border-radius: 5px; font-family: var(--pub-serif); }
+.ff-seg__btn:not(.ff-seg__btn--active):hover { background: var(--pub-card); color: var(--pub-ink); }
+.ff-check input { width: 18px; height: 18px; accent-color: var(--pub-green); }
+.ff-point-item { min-height: 48px; }
+.ff-point-item--active { box-shadow: inset 3px 0 0 var(--pub-green); }
+.ff-point-item__coords { font-size: 0.72rem; }
+.ff-point-item__remove { min-width: 28px; min-height: 32px; }
+.ff-point-item__remove:hover { background: #fae8df; }
+.ff-readonly { border: 1px solid var(--ff-border); background: var(--pub-paper-deep); }
+.ff-readonly__label { font-family: var(--pub-hand); font-size: 1.8rem; color: var(--pub-ink); }
+.ff-entry-grid { gap: 18px 14px; }
+.ff-entry-grid .ff-label { font-size: 0.88rem; }
+.ff-empty { background: var(--pub-paper); border-color: var(--pub-ink-line); line-height: 1.65; }
+.ff-actions { margin-top: 30px; padding-top: 24px; border-top: 1px dashed var(--ff-border); }
+.ff-overlay__box p { font-family: var(--pub-serif); font-size: 1.15rem; line-height: 1.6; }
+.ff-result-card { padding: 26px; }
+.ff-result-card__label { font-family: var(--pub-hand); font-size: 2rem; }
+.ff-summary__score, .ff-score {
+  /* Preserve the score color supplied by the analysis as a border accent. */
+  background: var(--pub-card);
+  color: var(--pub-ink);
+  border: 3px solid var(--score-color);
+  box-shadow: 3px 3px 0 rgba(48, 51, 46, 0.12);
+  font-family: var(--pub-serif);
+}
+.ff-summary__score .num { font-weight: 600; }
+.ff-summary__score .cap { margin-top: 8px; }
+.ff-summary__meta { margin: 0; }
+.ff-summary__meta dt, .ff-result-sub {
+  font-family: var(--pub-serif);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.95rem;
+}
+.ff-result-sub { color: var(--pub-ink); }
+.ff-score { flex-wrap: wrap; justify-content: center; }
+.ff-score__cat { font-family: var(--pub-body); }
+.ff-inputs-line { padding-block: 12px; border-block: 1px dashed var(--ff-border); }
+.ff-rec { border-left: 3px solid var(--pub-green); }
+.ff-rec__title { font-family: var(--pub-serif); }
+.ff-result-card__foot { padding-top: 12px; }
+.ff-dash__footer { text-align: center; padding: 24px; border-top: 1px dashed var(--ff-border); color: var(--pub-ink-muted); font-family: var(--pub-hand); font-size: 1.3rem; }
+
+@media (max-width: 640px) {
+  .ff-dash__brand-note { display: none; }
+  .ff-dash__stepbar-inner { padding: 16px 18px; }
+  .ff-dash__stepbar .ff-stepper { display: grid; grid-template-columns: 1fr 1fr; min-width: 0; gap: 10px; }
+  .ff-dash .ff-step { padding: 8px; font-size: 0.85rem; gap: 8px; }
+  .ff-dash__main { padding: 30px 18px 48px; }
+  .ff-side, .ff-result-card { padding: 20px; }
+  .ff-split { gap: 24px; }
+  .ff-actions { align-items: stretch; }
+  .ff-actions > .ff-btn { flex: 1 1 140px; }
+  .ff-actions > .ff-spacer { display: none; }
+  .ff-summary { gap: 20px; }
+  .ff-overlay__box { padding: 28px 24px; }
+}
+@media (max-width: 360px) {
+  .ff-entry-grid { grid-template-columns: 1fr; }
+  .ff-point-item { flex-wrap: wrap; }
+}
+
+/* Editable crop combobox, using the same paper inputs and ink outlines. */
+.ff-crop-field { margin-bottom: 22px; }
+.ff-crop-picker { position: relative; }
+.ff-crop-picker__input { padding-right: 36px; }
+.ff-crop-picker__arrow { position: absolute; right: 14px; top: 10px; pointer-events: none; color: var(--pub-ink-muted); }
+.ff-crop-picker__list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 5px);
+  inset-inline: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+  background: var(--pub-card);
+  border: 1.5px solid var(--pub-ink-line);
+  border-radius: var(--ff-radius-sm);
+  box-shadow: var(--ff-shadow);
+}
+.ff-crop-picker__option {
+  padding: 10px 12px;
+  min-height: 44px;
+  border-radius: 4px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.ff-crop-picker__option:hover,
+.ff-crop-picker__option--active { background: var(--pub-paper-deep); color: var(--pub-ink); }
+.ff-table__crop { min-width: 130px; max-width: 230px; overflow-wrap: anywhere; }
+.ff-crop-context { padding: 14px; background: var(--pub-paper-deep); border: 1px solid var(--ff-border); border-radius: 6px; overflow-wrap: anywhere; }
+.ff-crop-context__name { font-family: var(--pub-serif); font-weight: 600; margin-bottom: 6px; }
+.ff-crop-context p:last-child { margin-bottom: 0; }
+.ff-crop-context ul { margin-top: 8px; margin-bottom: 0; font-size: 0.9rem; }
+.ff-rec__notes { margin: 8px 0 0; line-height: 1.6; }
+
+/* ------------------------------------------------------------ Farm Finder */
+/* Sits above the field map so it never covers Leaflet's zoom controls. */
+.ff-map-col { min-width: 0; }
+.ff-finder { margin-bottom: 18px; }
+.ff-finder__form .ff-label { display: block; margin-bottom: 6px; }
+.ff-finder__row { display: flex; gap: 10px; align-items: stretch; }
+.ff-finder__input { flex: 1 1 auto; }
+.ff-finder__row .ff-btn { flex: 0 0 auto; min-width: 96px; }
+.ff-finder__msg { margin: 8px 0 0; line-height: 1.5; overflow-wrap: anywhere; }
+.ff-finder__msg a { color: var(--pub-blue-deep); }
+.ff-finder__status { margin: 8px 0 0; font-size: 0.85rem; color: var(--pub-green); overflow-wrap: anywhere; }
+.ff-finder__status:empty { margin: 0; }
+.ff-finder__pins { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; }
+.ff-finder__list { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; min-width: 0; }
+.ff-finder__chip {
+  display: flex;
+  align-items: stretch;
+  max-width: 100%;
+  background: var(--pub-card);
+  border: 1px solid var(--pub-ink-line);
+  border-radius: 6px;
+  box-shadow: 2px 2px 0 rgba(48, 51, 46, 0.15);
+}
+.ff-finder__chip button {
+  font: inherit;
+  color: var(--pub-ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  min-height: 40px;
+}
+.ff-finder__chip-go {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 6px 4px 10px;
+  font-family: var(--pub-serif) !important;
+  font-size: 0.88rem !important;
+  text-align: left;
+  overflow-wrap: anywhere;
+  border-radius: 5px 0 0 5px;
+}
+.ff-finder__chip-remove {
+  min-width: 36px;
+  font-size: 1.2rem !important;
+  line-height: 1;
+  color: var(--pub-ink-muted) !important;
+  border-left: 1px dashed var(--ff-border) !important;
+  border-radius: 0 5px 5px 0;
+}
+.ff-finder__chip-go:hover { background: var(--pub-paper-deep); }
+.ff-finder__chip-remove:hover { background: #fae8df; color: var(--pub-red-deep) !important; }
+.ff-finder__chip button:focus-visible { outline: 2px solid var(--pub-blue-deep); outline-offset: -2px; }
+.ff-finder__chip-dot {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--pub-red);
+  border: 1px solid var(--pub-ink);
+}
+
+/* Map pin: a red paper-and-ink marker, anchored at its tip. No `position`
+   here either (see .ff-pt-divicon). */
+.ff-finder-pin { background: transparent; border: none; }
+.ff-finder-pin svg { display: block; overflow: visible; filter: drop-shadow(1px 2px 0 rgba(48, 51, 46, 0.3)); }
+.ff-finder-pin__body { fill: var(--pub-red); stroke: var(--pub-ink); stroke-width: 1.5; }
+.ff-finder-pin__hole { fill: var(--pub-card); stroke: var(--pub-ink); stroke-width: 1; }
+.ff-finder-pin:focus-visible { outline: 2px solid var(--pub-blue-deep); outline-offset: 2px; border-radius: 4px; }
+.leaflet-tooltip.ff-finder-tip { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.leaflet-tooltip.ff-finder-tip::before { display: none; }
+.ff-finder-popup .leaflet-popup-content { margin: 14px 16px; font-family: var(--pub-body); min-width: 180px; }
+.ff-finder-popup__title { font-family: var(--pub-serif); font-weight: 600; font-size: 1rem; margin-right: 12px; overflow-wrap: anywhere; }
+.ff-finder-popup .leaflet-popup-content p { margin: 6px 0 0; }
+.ff-finder-popup__name { font-size: 0.85rem; color: var(--pub-ink-muted); line-height: 1.45; overflow-wrap: anywhere; }
+.ff-finder-popup__coords { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; color: var(--pub-ink-muted); }
+.ff-finder-popup__remove { margin-top: 12px; width: 100%; }
+
+@media (max-width: 480px) {
+  .leaflet-tooltip.ff-finder-tip { max-width: 130px; }
+  .ff-finder__row { flex-wrap: wrap; }
+  .ff-finder__row .ff-btn { flex: 1 1 100%; }
+}

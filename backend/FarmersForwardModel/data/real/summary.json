@@ -1,0 +1,510 @@
+{
+  "kssl": {
+    "rows": 311,
+    "complete_five_inputs": 2,
+    "partial": 309,
+    "training_eligible": 2,
+    "missing_by_input": {
+      "ph": 7,
+      "ec": 167,
+      "nitrogen": 11,
+      "phosphorus": 309,
+      "potassium": 7
+    },
+    "missing_n_or_k": 11,
+    "n_derived": 300,
+    "point_bbox": {
+      "south": 29.349697,
+      "north": 29.892584,
+      "west": -96.294777,
+      "east": -95.445389
+    }
+  },
+  "soilgrids": {
+    "rows": 186062,
+    "complete_five_inputs": 0,
+    "partial": 186062,
+    "training_eligible": 0,
+    "missing_by_input": {
+      "ph": 39548,
+      "ec": 186062,
+      "nitrogen": 39548,
+      "phosphorus": 186062,
+      "potassium": 186062
+    },
+    "missing_n_or_k": 186062,
+    "n_derived": 146514,
+    "point_bbox": {
+      "south": 29.30192167,
+      "north": 29.89930134,
+      "west": -96.29999724,
+      "east": -95.40000196
+    }
+  },
+  "ssurgo": {
+    "rows": 333,
+    "complete_five_inputs": 0,
+    "partial": 333,
+    "training_eligible": 0,
+    "missing_by_input": {
+      "ph": 122,
+      "ec": 122,
+      "nitrogen": 122,
+      "phosphorus": 333,
+      "potassium": 333
+    },
+    "missing_n_or_k": 333,
+    "n_derived": 211,
+    "point_bbox": null
+  },
+  "total": {
+    "rows": 186706,
+    "complete_five_inputs": 2,
+    "partial": 186704,
+    "training_eligible": 2,
+    "missing_by_input": {
+      "ph": 39677,
+      "ec": 186351,
+      "nitrogen": 39681,
+      "phosphorus": 186704,
+      "potassium": 186402
+    },
+    "missing_n_or_k": 186406,
+    "n_derived": 147025,
+    "point_bbox": {
+      "south": 29.30192167,
+      "north": 29.89930134,
+      "west": -96.29999724,
+      "east": -95.40000196
+    }
+  },
+  "source_row_counts": {
+    "ssurgo": 333,
+    "kssl": 311,
+    "soilgrids": 186062,
+    "cdl": 51,
+    "wss": 51
+  },
+  "nitrogen_source_breakdown": {
+    "measured": 0,
+    "derived": 147025,
+    "null": 39681
+  },
+  "nitrogen_methods": {
+    "om_derived": 147025,
+    "null": 39681
+  },
+  "nitrogen_measured_coverage": {
+    "kssl_measured_nitrate_rows": 0,
+    "kssl_layers_queried": 311,
+    "kssl_note": "nitrate_1m_kcl is unpopulated for every layer in this bounding box",
+    "soilgrids_total_nitrogen_rows": 146531,
+    "soilgrids_total_nitrogen_median_ppm": 2620.0,
+    "soilgrids_excluded_because": "SoilGrids predicts total N, which is mostly organic and not plant available. The model feature is NO3-N in ppm, deficient below 20 and clipped at 500, so substituting total N would pin every grid row at the clip ceiling.",
+    "derived_by_source": {
+      "kssl": 300,
+      "soilgrids": 146514,
+      "ssurgo": 211
+    }
+  },
+  "phosphorus_potassium_coverage": {
+    "phosphorus": {
+      "kssl": 2,
+      "soilgrids": 0,
+      "ssurgo": 0
+    },
+    "potassium": {
+      "kssl": 304,
+      "soilgrids": 0,
+      "ssurgo": 0
+    }
+  },
+  "spatial_sources": {
+    "soilgrids": {
+      "status": "succeeded",
+      "transport": "REST unit metadata + WCS bulk subsets",
+      "urls": [
+        "https://rest.isric.org/soilgrids/v2.0/properties/query",
+        "https://maps.isric.org/mapserv"
+      ],
+      "unit_measure": {
+        "bdod": {
+          "d_factor": 100,
+          "mapped_units": "cg/cm\u00b3",
+          "target_units": "kg/dm\u00b3",
+          "uncertainty_unit": ""
+        },
+        "cec": {
+          "d_factor": 10,
+          "mapped_units": "mmol(c)/kg",
+          "target_units": "cmol(c)/kg",
+          "uncertainty_unit": ""
+        },
+        "nitrogen": {
+          "d_factor": 100,
+          "mapped_units": "cg/kg",
+          "target_units": "g/kg",
+          "uncertainty_unit": ""
+        },
+        "phh2o": {
+          "d_factor": 10,
+          "mapped_units": "pH*10",
+          "target_units": "-",
+          "uncertainty_unit": ""
+        },
+        "soc": {
+          "d_factor": 10,
+          "mapped_units": "dg/kg",
+          "target_units": "g/kg",
+          "uncertainty_unit": ""
+        }
+      },
+      "native_crs": "+proj=igh +datum=WGS84 +units=m +no_defs",
+      "resolution_m": 250,
+      "grid_transform": [
+        250.0,
+        0.0,
+        -10775000.0,
+        0.0,
+        -250.0,
+        3328500.0
+      ],
+      "grid_shape": [
+        268,
+        359
+      ],
+      "nitrogen": "predicted_total_N_retained_separately_not_measured_nitrate",
+      "unavailable_properties": [
+        "ec",
+        "extractable_phosphorus",
+        "extractable_potassium"
+      ]
+    },
+    "cdl": {
+      "status": "succeeded",
+      "url": "https://pdi.scinet.usda.gov/image/rest/services/CDL_WM/ImageServer",
+      "year": 2025,
+      "county_boundary_url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1/query",
+      "county_geoid": "48157",
+      "resolution_m": 10,
+      "crs": "EPSG:5070",
+      "resampling": "nearest",
+      "signal_strength": "presence_only",
+      "crop_pixel_pct_denominator": "all_valid_pixels",
+      "clipped_raster_cache": "/tmp/farmers-forward-usda/cdl-2025-fort-bend-10m.tif",
+      "raster_catalog_item": {
+        "OBJECTID": 40,
+        "Name": "2025_10m_cdls",
+        "MinPS": 0,
+        "MaxPS": 50200,
+        "LowPS": 10,
+        "HighPS": 1280,
+        "Category": 1,
+        "Year": 2025
+      },
+      "legacy_endpoint_note": "CropScape TLS certificate expired; using current USDA CroplandCROS service"
+    },
+    "wss": {
+      "status": "succeeded",
+      "transport": "WSS underlying SSURGO tables via SDA",
+      "url": "https://sdmdataaccess.sc.egov.usda.gov/Tabular/post.rest",
+      "sql": "SELECT mu.mukey, co.cokey, co.comppct_r, co.drainagecl, co.tfact,\nh.chkey,h.hzdept_r,h.hzdepb_r,h.kwfact,mo.flodfreqcl\nFROM legend l JOIN mapunit mu ON mu.lkey=l.lkey\nLEFT JOIN component co ON co.mukey=mu.mukey\nLEFT JOIN chorizon h ON h.cokey=co.cokey\nLEFT JOIN comonth mo ON mo.cokey=co.cokey\nWHERE l.areasymbol='TX157'",
+      "soil_health_rating": "unavailable; no generic soil-health score in these tables"
+    },
+    "ssurgo_mlra": {
+      "status": "succeeded",
+      "url": "https://sdmdataaccess.sc.egov.usda.gov/Tabular/post.rest",
+      "sql": "SELECT l.areasymbol, mu.mukey, co.cokey, hz.chkey, hz.hzname,\nhz.ph1to1h2o_r AS ph, hz.ec_r AS ec, hz.om_r AS om_pct,\nhz.pbray1_r AS p_bray1, hz.cec7_r AS cec\nFROM legend AS l\nINNER JOIN laoverlap AS lo ON lo.lkey = l.lkey AND lo.areatypename = 'MLRA'\n    AND lo.areasymbol IN ('150A')\nINNER JOIN mapunit AS mu ON mu.lkey = l.lkey\nLEFT JOIN component AS co ON co.mukey = mu.mukey\nLEFT JOIN chorizon AS hz ON hz.cokey = co.cokey\nWHERE l.areasymbol <> 'US'\nORDER BY l.areasymbol, mu.mukey, co.cokey, hz.chkey",
+      "mlra_symbols": [
+        "150A"
+      ],
+      "survey_areas": 40
+    },
+    "kssl_gulf": {
+      "status": "succeeded",
+      "url": "https://ncsslabdatamart.sc.egov.usda.gov/database_download.aspx",
+      "requested_bbox": {
+        "south": 28.0,
+        "north": 33.0,
+        "west": -98.0,
+        "east": -82.0
+      },
+      "tiering": "survey-area outline lookup; Fort Bend and MLRA peers keep their tier"
+    },
+    "soilgrids_gulf": {
+      "status": "succeeded",
+      "transport": "WCS bulk subsets sampled at lab pedon cells",
+      "urls": [
+        "https://maps.isric.org/mapserv"
+      ],
+      "unit_measure": {
+        "bdod": {
+          "d_factor": 100,
+          "mapped_units": "cg/cm\u00b3",
+          "target_units": "kg/dm\u00b3",
+          "uncertainty_unit": ""
+        },
+        "cec": {
+          "d_factor": 10,
+          "mapped_units": "mmol(c)/kg",
+          "target_units": "cmol(c)/kg",
+          "uncertainty_unit": ""
+        },
+        "nitrogen": {
+          "d_factor": 100,
+          "mapped_units": "cg/kg",
+          "target_units": "g/kg",
+          "uncertainty_unit": ""
+        },
+        "phh2o": {
+          "d_factor": 10,
+          "mapped_units": "pH*10",
+          "target_units": "-",
+          "uncertainty_unit": ""
+        },
+        "soc": {
+          "d_factor": 10,
+          "mapped_units": "dg/kg",
+          "target_units": "g/kg",
+          "uncertainty_unit": ""
+        }
+      },
+      "native_crs": "+proj=igh +datum=WGS84 +units=m +no_defs",
+      "resolution_m": 250,
+      "requested_bbox": {
+        "south": 28.0,
+        "north": 33.0,
+        "west": -98.0,
+        "east": -82.0
+      },
+      "window_shape": [
+        2228,
+        6331
+      ],
+      "pedon_cells": 2376,
+      "sampling": "cells containing a KSSL pedon only; standalone grid cells omitted",
+      "reason": "SoilGrids has no EC/P/K layer, so a standalone cell cannot complete a five-input row",
+      "nitrogen": "predicted_total_N_retained_separately_not_measured_nitrate"
+    }
+  },
+  "cdl_presence_rows": 73215,
+  "sample_weight_counts": {
+    "1.0": 113676,
+    "0.5": 73030
+  },
+  "ssurgo_map_units": 51,
+  "ssurgo_horizons": 216,
+  "kssl_pedons": 41,
+  "kssl_layers": 311,
+  "ssurgo_polygon_bbox": {
+    "south": 29.2624318848292,
+    "north": 29.7884393952056,
+    "west": -96.0817781497163,
+    "east": -95.4265234022166
+  },
+  "nitrogen_derivation": {
+    "n_credit_ppm_per_om_pct": 15.0,
+    "oc_to_om_factor": 1.724,
+    "formula": "nitrogen_ppm = om_pct * n_credit_ppm_per_om_pct",
+    "coefficient_source": "user_specified",
+    "interpretation": "annual_mineralization_credit_proxy_not_measured_nitrate",
+    "oc_to_om_reference": "https://directives.nrcs.usda.gov/sites/default/files2/1719846855/Part%20618%20Subpart%20A%20%E2%80%93%20General%20Information.pdf",
+    "status": "applied"
+  },
+  "expanded": {
+    "mlra": {
+      "fort_bend_areasymbol": "TX157",
+      "mlra_symbols": [
+        "150A"
+      ],
+      "mlra_names": {
+        "150A": "Gulf Coast Prairies"
+      },
+      "survey_areas": [
+        "LA001",
+        "LA003",
+        "LA019",
+        "LA023",
+        "LA037",
+        "LA039",
+        "LA053",
+        "LA055",
+        "LA073",
+        "LA079",
+        "LA097",
+        "LA113",
+        "LA125",
+        "TX025",
+        "TX039",
+        "TX057",
+        "TX071",
+        "TX089",
+        "TX123",
+        "TX157",
+        "TX167",
+        "TX175",
+        "TX185",
+        "TX199",
+        "TX201",
+        "TX239",
+        "TX249",
+        "TX285",
+        "TX291",
+        "TX321",
+        "TX339",
+        "TX355",
+        "TX391",
+        "TX469",
+        "TX477",
+        "TX481",
+        "TX600",
+        "TX613",
+        "TX620",
+        "TX623"
+      ],
+      "survey_area_count": 40,
+      "derivation": "legend JOIN laoverlap WHERE areatypename='MLRA'",
+      "excluded": {
+        "areasymbol": "US",
+        "reason": "STATSGO2 national legend, not a soil survey area"
+      }
+    },
+    "region_weights": {
+      "fort_bend": 1.0,
+      "same_mlra": 0.7,
+      "gulf_coast_regional": 0.4
+    },
+    "weight_formula": "final_weight = region_weight * evidence_weight",
+    "by_tier": {
+      "fort_bend": {
+        "rows": 186577,
+        "complete_five_inputs": 2,
+        "partial": 186575,
+        "training_eligible": 2,
+        "missing_by_input": {
+          "ph": 39670,
+          "ec": 186260,
+          "nitrogen": 39673,
+          "phosphorus": 186575,
+          "potassium": 186395
+        },
+        "missing_n_or_k": 186398,
+        "n_derived": 146904,
+        "point_bbox": {
+          "south": 29.30192167,
+          "north": 29.89930134,
+          "west": -96.29999724,
+          "east": -95.40000196
+        },
+        "region_weight": 1.0,
+        "by_source": {
+          "soilgrids": 186062,
+          "ssurgo": 333,
+          "kssl": 182
+        }
+      },
+      "gulf_coast_regional": {
+        "rows": 19208,
+        "complete_five_inputs": 191,
+        "partial": 19017,
+        "training_eligible": 191,
+        "missing_by_input": {
+          "ph": 2221,
+          "ec": 17819,
+          "nitrogen": 3521,
+          "phosphorus": 18113,
+          "potassium": 6631
+        },
+        "missing_n_or_k": 8145,
+        "n_derived": 15687,
+        "point_bbox": {
+          "south": 28.021719,
+          "north": 32.999603,
+          "west": -97.9842,
+          "east": -82.00206828
+        },
+        "region_weight": 0.4,
+        "by_source": {
+          "kssl": 15084,
+          "soilgrids": 4124
+        }
+      },
+      "same_mlra": {
+        "rows": 18529,
+        "complete_five_inputs": 114,
+        "partial": 18415,
+        "training_eligible": 114,
+        "missing_by_input": {
+          "ph": 5023,
+          "ec": 7495,
+          "nitrogen": 5030,
+          "phosphorus": 18120,
+          "potassium": 15652
+        },
+        "missing_n_or_k": 15712,
+        "n_derived": 13499,
+        "point_bbox": {
+          "south": 28.04652606,
+          "north": 32.65712926,
+          "west": -97.778633,
+          "east": -90.85836
+        },
+        "region_weight": 0.7,
+        "by_source": {
+          "ssurgo": 14808,
+          "kssl": 3093,
+          "soilgrids": 628
+        }
+      }
+    },
+    "total": {
+      "rows": 224314,
+      "complete_five_inputs": 307,
+      "partial": 224007,
+      "training_eligible": 307,
+      "missing_by_input": {
+        "ph": 46914,
+        "ec": 211574,
+        "nitrogen": 48224,
+        "phosphorus": 222808,
+        "potassium": 208678
+      },
+      "missing_n_or_k": 210255,
+      "n_derived": 176090,
+      "point_bbox": {
+        "south": 28.021719,
+        "north": 32.999603,
+        "west": -97.9842,
+        "east": -82.00206828
+      }
+    },
+    "final_weight_counts": {
+      "1.0": 113547,
+      "0.5": 73030,
+      "0.4": 19208,
+      "0.7": 18529
+    },
+    "evidence_weight_counts": {
+      "1.0": 151284,
+      "0.5": 73030
+    },
+    "nitrogen_source_breakdown": {
+      "measured": 0,
+      "derived": 176090,
+      "null": 48224
+    },
+    "phosphorus_potassium_coverage": {
+      "phosphorus": {
+        "fort_bend": 2,
+        "gulf_coast_regional": 1095,
+        "same_mlra": 409
+      },
+      "potassium": {
+        "fort_bend": 182,
+        "gulf_coast_regional": 12577,
+        "same_mlra": 2877
+      }
+    },
+    "cdl_context_note": "CDL and WSS context exist for Fort Bend map units only; rows outside them carry null crop and interpretive columns"
+  }
+}

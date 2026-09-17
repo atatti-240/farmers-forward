@@ -1,0 +1,16 @@
+# Farmers Forward - all dependencies
+flask>=3.0
+flask-cors>=4.0
+bcrypt>=4.0
+reportlab>=4.0
+python-dotenv>=1.0
+# Postgres driver. Only used when DATABASE_URL is set; the SQLite fallback
+# needs nothing extra. The -binary wheel avoids needing libpq/compilers on Render.
+psycopg2-binary>=2.9
+gunicorn>=21.0
+pandas>=1.5
+numpy>=1.23
+scikit-learn>=1.1
+xgboost>=1.7
+matplotlib>=3.5
+joblib>=1.2

@@ -1,0 +1,31 @@
+# --- Node / frontend ---------------------------------------------------------
+node_modules/
+dist-ssr/
+*.local
+# NOTE: frontend/dist IS committed on purpose -- the Flask backend serves the
+# built SPA from it on Render (single web service, no npm build step there).
+
+# --- Python / backend --------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# --- Environment & secrets ---------------------------------------------------
+.env
+
+# --- Databases ---------------------------------------------------------------
+*.db
+
+# --- Generated reports -------------------------------------------------------
+outputs/*.pdf
+
+# --- Trained model bundles are tracked (keep them in version control) --------
+!models/*.joblib
+
+# --- OS / editor -------------------------------------------------------------
+.DS_Store
+*.log
+.vscode/
+.idea/

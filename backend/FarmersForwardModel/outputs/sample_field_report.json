@@ -1,0 +1,3319 @@
+{
+  "meta": {
+    "tool": "FarmersFirst Soil Health Pipeline",
+    "version": "0.1.0",
+    "generated_at": "2026-07-27T16:40:08",
+    "field_name": "Sample Field",
+    "disclaimer": "Recommendations are general agronomic guidance based on Texas thresholds, not a substitute for a certified agronomist or lab. Verify before large purchases."
+  },
+  "field_summary": {
+    "mean_health_score": 82.6,
+    "health_category": "Excellent",
+    "min_health_score": 48.9,
+    "max_health_score": 100.0,
+    "dominant_problem_code": "salinity",
+    "dominant_problem_label": "High salinity (salt)",
+    "n_samples_with_problems": 12
+  },
+  "soil_profile": {
+    "ph": 7.35,
+    "ec": 2.99,
+    "nitrogen": 22.0,
+    "phosphorus": 27.06,
+    "potassium": 151.44
+  },
+  "field_recommendations": [
+    {
+      "title": "Reduce salinity (leach + drain)",
+      "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+      "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+      "cost_estimate": "~$20 to $60/acre",
+      "cost_per_acre_low": 20.0,
+      "cost_per_acre_high": 60.0,
+      "timing": "Pre-season, when you can move water through the profile.",
+      "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+      "problem_code": "salinity",
+      "fix_code": "salinity",
+      "severity": "severe",
+      "priority_weight": 23.5,
+      "addresses": "Salinity is high (EC 6.0 dS/m); salt stress reduces water uptake and yield.",
+      "affected_samples": 11,
+      "affected_zones": 4
+    },
+    {
+      "title": "Lower pH / manage alkalinity",
+      "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+      "rate": "562-762 lb/acre elemental sulfur",
+      "cost_estimate": "~$169 to $309/acre (sulfur ~$0.30-0.55/lb)",
+      "cost_per_acre_low": 168.74999999999997,
+      "cost_per_acre_high": 309.37499999999994,
+      "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+      "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+      "problem_code": "ph_alkaline",
+      "fix_code": "ph_alkaline",
+      "severity": "moderate",
+      "priority_weight": 14.0,
+      "addresses": "Soil is too alkaline (pH 8.1); iron, phosphorus and zinc become less available.",
+      "affected_samples": 11,
+      "affected_zones": 4
+    },
+    {
+      "title": "Correct nitrogen deficiency",
+      "action": "Apply nitrogen fertilizer (urea 46-0-0 or UAN). Split the application on corn/leafy crops to limit leaching.",
+      "rate": "142-162 lb N/acre (~309 lb urea)",
+      "cost_estimate": "~$78 to $106/acre (N ~$0.55-0.75/lb)",
+      "cost_per_acre_low": 78.10000000000001,
+      "cost_per_acre_high": 106.5,
+      "timing": "At/near planting; split-apply for corn (pre-plant + side-dress).",
+      "notes": "Rate sized to a generic ~40 ppm soil-N target; specify a crop for a tailored rate. A legume cover crop can fix 40-100 lb N/acre biologically and cut this bill over time.",
+      "problem_code": "nitrogen_deficient",
+      "fix_code": "nitrogen_deficient",
+      "severity": "moderate",
+      "priority_weight": 8.4,
+      "addresses": "Nitrogen is deficient (12 ppm); expect pale, stunted growth.",
+      "affected_samples": 7,
+      "affected_zones": 2
+    },
+    {
+      "title": "Correct phosphorus deficiency",
+      "action": "Band phosphate (DAP 18-46-0 or triple superphosphate) near the seed row for best early uptake.",
+      "rate": "63-78 lb P2O5/acre",
+      "cost_estimate": "~$38 to $57/acre (P2O5 ~$0.60-0.90/lb)",
+      "cost_per_acre_low": 37.8,
+      "cost_per_acre_high": 56.7,
+      "timing": "At planting (banded/starter).",
+      "notes": "Banding beats broadcasting on high-pH soils where P gets tied up.",
+      "problem_code": "phosphorus_deficient",
+      "fix_code": "phosphorus_deficient",
+      "severity": "mild",
+      "priority_weight": 5.2,
+      "addresses": "Phosphorus is deficient (9 ppm); poor root and early growth.",
+      "affected_samples": 6,
+      "affected_zones": 2
+    },
+    {
+      "title": "Stop over-applying phosphorus",
+      "action": "Halt all P fertilizer and manure. Protect water: buffer strips, cover crops, and erosion control to stop P-laden runoff.",
+      "rate": "0 lb P2O5/acre until soil test P drops below 150 ppm.",
+      "cost_estimate": "$0 (a saving) + buffer/cover-crop cost",
+      "cost_per_acre_low": 0.0,
+      "cost_per_acre_high": 0.0,
+      "timing": "Immediately, and ongoing.",
+      "notes": "High P is a runoff / water-quality liability, not a yield gain. Draw it down through crop removal over several seasons.",
+      "problem_code": "phosphorus_excess",
+      "fix_code": "phosphorus_excess",
+      "severity": "mild",
+      "priority_weight": 3.9,
+      "addresses": "Phosphorus is very high (165 ppm); runoff and water-quality risk, wasted inputs.",
+      "affected_samples": 1,
+      "affected_zones": 1
+    }
+  ],
+  "crop_suitability": {
+    "viable_everywhere": [],
+    "viable_in_some_zones": [
+      {
+        "crop": "Cotton",
+        "n_zones": 2
+      },
+      {
+        "crop": "Sorghum",
+        "n_zones": 2
+      },
+      {
+        "crop": "Soybeans",
+        "n_zones": 1
+      },
+      {
+        "crop": "Wheat",
+        "n_zones": 2
+      }
+    ],
+    "not_viable_anywhere": [
+      "Corn",
+      "Tomatoes",
+      "Peppers",
+      "Blueberries",
+      "Strawberries",
+      "Hemp"
+    ]
+  },
+  "cost_benefit_experimental": {
+    "experimental": true,
+    "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+    "reference_revenue_per_acre": "~$500 to $1,100/acre",
+    "items": [
+      {
+        "fix": "Reduce salinity (leach + drain)",
+        "severity": "severe",
+        "est_cost_per_acre": "~$20 to $60/acre",
+        "est_value_protected_per_acre": "~$100 to $495/acre/yr",
+        "note": "Benefit = assumed 20-45% of a $500-1,100/acre reference crop protected by fixing a severe problem."
+      },
+      {
+        "fix": "Lower pH / manage alkalinity",
+        "severity": "moderate",
+        "est_cost_per_acre": "~$169 to $309/acre",
+        "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+        "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+      },
+      {
+        "fix": "Correct nitrogen deficiency",
+        "severity": "moderate",
+        "est_cost_per_acre": "~$78 to $106/acre",
+        "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+        "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+      },
+      {
+        "fix": "Correct phosphorus deficiency",
+        "severity": "mild",
+        "est_cost_per_acre": "~$38 to $57/acre",
+        "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+        "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+      },
+      {
+        "fix": "Stop over-applying phosphorus",
+        "severity": "mild",
+        "est_cost_per_acre": "~$0 to $0/acre",
+        "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+        "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+      }
+    ],
+    "total_est_cost_per_acre": "~$305 to $533/acre",
+    "total_est_value_protected_per_acre": "~$200 to $1,155/acre/yr",
+    "rough_first_year_net_per_acre": "~-$333 to $850/acre/yr"
+  },
+  "zones": [
+    {
+      "zone": "Z2-2",
+      "n_samples": 4,
+      "centroid_lat": 29.58375,
+      "centroid_lon": -95.75825,
+      "mean_health_score": 66.1,
+      "health_category": "Good",
+      "min_health_score": 48.9,
+      "dominant_problem": "salinity",
+      "viable_crops": "none",
+      "n_viable_crops": 0,
+      "mean_ph": 7.75,
+      "mean_ec": 4.47,
+      "mean_nitrogen": 15.25,
+      "mean_phosphorus": 12.0,
+      "mean_potassium": 132.0
+    },
+    {
+      "zone": "Z1-2",
+      "n_samples": 4,
+      "centroid_lat": 29.58075,
+      "centroid_lon": -95.75825,
+      "mean_health_score": 69.1,
+      "health_category": "Good",
+      "min_health_score": 55.2,
+      "dominant_problem": "salinity",
+      "viable_crops": "none",
+      "n_viable_crops": 0,
+      "mean_ph": 7.75,
+      "mean_ec": 4.28,
+      "mean_nitrogen": 18.75,
+      "mean_phosphorus": 50.25,
+      "mean_potassium": 138.75
+    },
+    {
+      "zone": "Z1-1",
+      "n_samples": 4,
+      "centroid_lat": 29.58075,
+      "centroid_lon": -95.76125,
+      "mean_health_score": 96.5,
+      "health_category": "Excellent",
+      "min_health_score": 91.5,
+      "dominant_problem": "salinity",
+      "viable_crops": "Cotton, Sorghum, Wheat",
+      "n_viable_crops": 3,
+      "mean_ph": 7.05,
+      "mean_ec": 1.62,
+      "mean_nitrogen": 25.5,
+      "mean_phosphorus": 21.5,
+      "mean_potassium": 162.5
+    },
+    {
+      "zone": "Z2-1",
+      "n_samples": 4,
+      "centroid_lat": 29.58375,
+      "centroid_lon": -95.76125,
+      "mean_health_score": 98.8,
+      "health_category": "Excellent",
+      "min_health_score": 96.2,
+      "dominant_problem": "ph_alkaline",
+      "viable_crops": "Cotton, Sorghum, Soybeans, Wheat",
+      "n_viable_crops": 4,
+      "mean_ph": 6.85,
+      "mean_ec": 1.57,
+      "mean_nitrogen": 28.5,
+      "mean_phosphorus": 24.5,
+      "mean_potassium": 172.5
+    }
+  ],
+  "samples": [
+    {
+      "sample_id": "S01",
+      "latitude": 29.58,
+      "longitude": -95.762,
+      "zone": "Z1-1",
+      "measurements": {
+        "ph": 6.8,
+        "ec": 1.1,
+        "nitrogen": 26.0,
+        "phosphorus": 22.0,
+        "potassium": 165.0
+      },
+      "health_score": 100.0,
+      "health_category": "Excellent",
+      "ml_health_score": 100.0,
+      "ml_category_classifier": "Excellent",
+      "rule_health_score": 100.0,
+      "primary_problem": {
+        "code": "none",
+        "label": "No major problem detected",
+        "severity": "none",
+        "message": "No threshold violations detected -- soil is in good shape."
+      },
+      "problems": [],
+      "recommendations": [],
+      "crop_suitability": {
+        "viable_now": [
+          "Cotton",
+          "Sorghum",
+          "Soybeans",
+          "Wheat",
+          "Peppers"
+        ],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "N 26 below 30 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "N 26 below 30 ppm",
+              "P 22 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 6.8 above 5.5 (too alkaline)",
+              "EC 1.1 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 6.8 above 6.5 (too alkaline)",
+              "EC 1.1 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "N 26 below 30 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [
+        "Cotton",
+        "Sorghum",
+        "Soybeans",
+        "Wheat",
+        "Peppers"
+      ],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.885,
+        "Sorghum": 0.977,
+        "Soybeans": 0.988,
+        "Wheat": 0.926,
+        "Tomatoes": 0.0,
+        "Peppers": 0.694,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [],
+        "total_est_cost_per_acre": "~$0 to $0/acre",
+        "total_est_value_protected_per_acre": "~$0 to $0/acre/yr",
+        "rough_first_year_net_per_acre": "~$0 to $0/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S02",
+      "latitude": 29.58,
+      "longitude": -95.7605,
+      "zone": "Z1-1",
+      "measurements": {
+        "ph": 7.2,
+        "ec": 2.1,
+        "nitrogen": 22.0,
+        "phosphorus": 18.0,
+        "potassium": 150.0
+      },
+      "health_score": 94.4,
+      "health_category": "Excellent",
+      "ml_health_score": 94.4,
+      "ml_category_classifier": "Excellent",
+      "rule_health_score": 94.4,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "mild",
+        "message": "Salinity is high (EC 2.1 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 2.1,
+          "penalty": 3.6,
+          "severity": "mild",
+          "message": "Salinity is high (EC 2.1 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 7.2,
+          "penalty": 2.0,
+          "severity": "mild",
+          "message": "Soil is too alkaline (pH 7.2); iron, phosphorus and zinc become less available."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "mild",
+          "priority_weight": 3.6,
+          "addresses": "Salinity is high (EC 2.1 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "300-500 lb/acre elemental sulfur",
+          "cost_estimate": "~$90 to $165/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 90.0,
+          "cost_per_acre_high": 165.0,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "mild",
+          "priority_weight": 2.0,
+          "addresses": "Soil is too alkaline (pH 7.2); iron, phosphorus and zinc become less available."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [
+          "Sorghum"
+        ],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 7.2 above 7.0 (too alkaline)",
+              "EC 2.1 above 1.7 dS/m (too salty)",
+              "N 22 below 30 ppm",
+              "P 18 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Cotton",
+            "limiting_factors": [
+              "N 22 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 7.2 above 7.0 (too alkaline)",
+              "P 18 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "limiting_factors": [
+              "N 22 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 7.2 above 7.0 (too alkaline)",
+              "N 22 below 30 ppm",
+              "P 18 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 7.2 above 7.0 (too alkaline)",
+              "EC 2.1 above 1.5 dS/m (too salty)",
+              "N 22 below 25 ppm",
+              "P 18 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 7.2 above 5.5 (too alkaline)",
+              "EC 2.1 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 7.2 above 6.5 (too alkaline)",
+              "EC 2.1 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 7.2 above 7.0 (too alkaline)",
+              "N 22 below 30 ppm",
+              "P 18 below 20 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [
+        "Sorghum"
+      ],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.0,
+        "Sorghum": 0.983,
+        "Soybeans": 0.0,
+        "Wheat": 0.0,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "mild",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          },
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "mild",
+            "est_cost_per_acre": "~$90 to $165/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$110 to $225/acre",
+        "total_est_value_protected_per_acre": "~$20 to $176/acre/yr",
+        "rough_first_year_net_per_acre": "~-$205 to $66/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S03",
+      "latitude": 29.58,
+      "longitude": -95.759,
+      "zone": "Z1-2",
+      "measurements": {
+        "ph": 7.6,
+        "ec": 3.6,
+        "nitrogen": 18.0,
+        "phosphorus": 14.0,
+        "potassium": 140.0
+      },
+      "health_score": 74.1,
+      "health_category": "Good",
+      "ml_health_score": 74.1,
+      "ml_category_classifier": "Good",
+      "rule_health_score": 75.3,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "moderate",
+        "message": "Salinity is high (EC 3.6 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 3.6,
+          "penalty": 12.6,
+          "severity": "moderate",
+          "message": "Salinity is high (EC 3.6 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 7.6,
+          "penalty": 6.0,
+          "severity": "mild",
+          "message": "Soil is too alkaline (pH 7.6); iron, phosphorus and zinc become less available."
+        },
+        {
+          "code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "metric": "nitrogen",
+          "value": 18.0,
+          "penalty": 3.6,
+          "severity": "mild",
+          "message": "Nitrogen is deficient (18 ppm); expect pale, stunted growth."
+        },
+        {
+          "code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "metric": "phosphorus",
+          "value": 14.0,
+          "penalty": 2.53,
+          "severity": "mild",
+          "message": "Phosphorus is deficient (14 ppm); poor root and early growth."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "moderate",
+          "priority_weight": 12.6,
+          "addresses": "Salinity is high (EC 3.6 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "300-500 lb/acre elemental sulfur",
+          "cost_estimate": "~$90 to $165/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 90.0,
+          "cost_per_acre_high": 165.0,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "mild",
+          "priority_weight": 6.0,
+          "addresses": "Soil is too alkaline (pH 7.6); iron, phosphorus and zinc become less available."
+        },
+        {
+          "title": "Correct nitrogen deficiency",
+          "action": "Apply nitrogen fertilizer (urea 46-0-0 or UAN). Split the application on corn/leafy crops to limit leaching.",
+          "rate": "118-138 lb N/acre (~257 lb urea)",
+          "cost_estimate": "~$65 to $88/acre (N ~$0.55-0.75/lb)",
+          "cost_per_acre_low": 64.9,
+          "cost_per_acre_high": 88.5,
+          "timing": "At/near planting; split-apply for corn (pre-plant + side-dress).",
+          "notes": "Rate sized to a generic ~40 ppm soil-N target; specify a crop for a tailored rate. A legume cover crop can fix 40-100 lb N/acre biologically and cut this bill over time.",
+          "problem_code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "severity": "mild",
+          "priority_weight": 3.6,
+          "addresses": "Nitrogen is deficient (18 ppm); expect pale, stunted growth."
+        },
+        {
+          "title": "Correct phosphorus deficiency",
+          "action": "Band phosphate (DAP 18-46-0 or triple superphosphate) near the seed row for best early uptake.",
+          "rate": "48-63 lb P2O5/acre",
+          "cost_estimate": "~$29 to $43/acre (P2O5 ~$0.60-0.90/lb)",
+          "cost_per_acre_low": 28.799999999999997,
+          "cost_per_acre_high": 43.2,
+          "timing": "At planting (banded/starter).",
+          "notes": "Banding beats broadcasting on high-pH soils where P gets tied up.",
+          "problem_code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "severity": "mild",
+          "priority_weight": 2.53,
+          "addresses": "Phosphorus is deficient (14 ppm); poor root and early growth."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 7.6 above 7.0 (too alkaline)",
+              "EC 3.6 above 1.7 dS/m (too salty)",
+              "N 18 below 30 ppm",
+              "P 14 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Cotton",
+            "limiting_factors": [
+              "N 18 below 25 ppm",
+              "P 14 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Sorghum",
+            "limiting_factors": [
+              "pH 7.6 above 7.5 (too alkaline)",
+              "N 18 below 20 ppm",
+              "P 14 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 7.6 above 7.0 (too alkaline)",
+              "N 18 below 20 ppm",
+              "P 14 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "limiting_factors": [
+              "pH 7.6 above 7.5 (too alkaline)",
+              "N 18 below 25 ppm",
+              "P 14 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 7.6 above 7.0 (too alkaline)",
+              "EC 3.6 above 2.5 dS/m (too salty)",
+              "N 18 below 30 ppm",
+              "P 14 below 25 ppm",
+              "K 140 below 150 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 7.6 above 7.0 (too alkaline)",
+              "EC 3.6 above 1.5 dS/m (too salty)",
+              "N 18 below 25 ppm",
+              "P 14 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 7.6 above 5.5 (too alkaline)",
+              "EC 3.6 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 7.6 above 6.5 (too alkaline)",
+              "EC 3.6 above 1.0 dS/m (too salty)",
+              "N 18 below 20 ppm",
+              "P 14 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 7.6 above 7.0 (too alkaline)",
+              "EC 3.6 above 3.0 dS/m (too salty)",
+              "N 18 below 30 ppm",
+              "P 14 below 20 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.0,
+        "Sorghum": 0.0,
+        "Soybeans": 0.0,
+        "Wheat": 0.0,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "mild",
+            "est_cost_per_acre": "~$90 to $165/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          },
+          {
+            "fix": "Correct nitrogen deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$65 to $88/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          },
+          {
+            "fix": "Correct phosphorus deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$29 to $43/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$204 to $357/acre",
+        "total_est_value_protected_per_acre": "~$70 to $506/acre/yr",
+        "rough_first_year_net_per_acre": "~-$287 to $302/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S04",
+      "latitude": 29.58,
+      "longitude": -95.7575,
+      "zone": "Z1-2",
+      "measurements": {
+        "ph": 7.9,
+        "ec": 4.8,
+        "nitrogen": 15.0,
+        "phosphorus": 12.0,
+        "potassium": 130.0
+      },
+      "health_score": 61.9,
+      "health_category": "Good",
+      "ml_health_score": 61.9,
+      "ml_category_classifier": "Good",
+      "rule_health_score": 62.0,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "severe",
+        "message": "Salinity is high (EC 4.8 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 4.8,
+          "penalty": 18.4,
+          "severity": "severe",
+          "message": "Salinity is high (EC 4.8 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 7.9,
+          "penalty": 10.0,
+          "severity": "moderate",
+          "message": "Soil is too alkaline (pH 7.9); iron, phosphorus and zinc become less available."
+        },
+        {
+          "code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "metric": "nitrogen",
+          "value": 15.0,
+          "penalty": 6.0,
+          "severity": "mild",
+          "message": "Nitrogen is deficient (15 ppm); expect pale, stunted growth."
+        },
+        {
+          "code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "metric": "phosphorus",
+          "value": 12.0,
+          "penalty": 3.6,
+          "severity": "mild",
+          "message": "Phosphorus is deficient (12 ppm); poor root and early growth."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "severe",
+          "priority_weight": 18.4,
+          "addresses": "Salinity is high (EC 4.8 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "388-588 lb/acre elemental sulfur",
+          "cost_estimate": "~$116 to $213/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 116.25000000000013,
+          "cost_per_acre_high": 213.12500000000026,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "moderate",
+          "priority_weight": 10.0,
+          "addresses": "Soil is too alkaline (pH 7.9); iron, phosphorus and zinc become less available."
+        },
+        {
+          "title": "Correct nitrogen deficiency",
+          "action": "Apply nitrogen fertilizer (urea 46-0-0 or UAN). Split the application on corn/leafy crops to limit leaching.",
+          "rate": "130-150 lb N/acre (~283 lb urea)",
+          "cost_estimate": "~$72 to $98/acre (N ~$0.55-0.75/lb)",
+          "cost_per_acre_low": 71.5,
+          "cost_per_acre_high": 97.5,
+          "timing": "At/near planting; split-apply for corn (pre-plant + side-dress).",
+          "notes": "Rate sized to a generic ~40 ppm soil-N target; specify a crop for a tailored rate. A legume cover crop can fix 40-100 lb N/acre biologically and cut this bill over time.",
+          "problem_code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "severity": "mild",
+          "priority_weight": 6.0,
+          "addresses": "Nitrogen is deficient (15 ppm); expect pale, stunted growth."
+        },
+        {
+          "title": "Correct phosphorus deficiency",
+          "action": "Band phosphate (DAP 18-46-0 or triple superphosphate) near the seed row for best early uptake.",
+          "rate": "54-69 lb P2O5/acre",
+          "cost_estimate": "~$32 to $49/acre (P2O5 ~$0.60-0.90/lb)",
+          "cost_per_acre_low": 32.4,
+          "cost_per_acre_high": 48.6,
+          "timing": "At planting (banded/starter).",
+          "notes": "Banding beats broadcasting on high-pH soils where P gets tied up.",
+          "problem_code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "severity": "mild",
+          "priority_weight": 3.6,
+          "addresses": "Phosphorus is deficient (12 ppm); poor root and early growth."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 7.9 above 7.0 (too alkaline)",
+              "EC 4.8 above 1.7 dS/m (too salty)",
+              "N 15 below 30 ppm",
+              "P 12 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Cotton",
+            "limiting_factors": [
+              "N 15 below 25 ppm",
+              "P 12 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Sorghum",
+            "limiting_factors": [
+              "pH 7.9 above 7.5 (too alkaline)",
+              "N 15 below 20 ppm",
+              "P 12 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 7.9 above 7.0 (too alkaline)",
+              "N 15 below 20 ppm",
+              "P 12 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "limiting_factors": [
+              "pH 7.9 above 7.5 (too alkaline)",
+              "N 15 below 25 ppm",
+              "P 12 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 7.9 above 7.0 (too alkaline)",
+              "EC 4.8 above 2.5 dS/m (too salty)",
+              "N 15 below 30 ppm",
+              "P 12 below 25 ppm",
+              "K 130 below 150 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 7.9 above 7.0 (too alkaline)",
+              "EC 4.8 above 1.5 dS/m (too salty)",
+              "N 15 below 25 ppm",
+              "P 12 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 7.9 above 5.5 (too alkaline)",
+              "EC 4.8 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 7.9 above 6.5 (too alkaline)",
+              "EC 4.8 above 1.0 dS/m (too salty)",
+              "N 15 below 20 ppm",
+              "P 12 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 7.9 above 7.0 (too alkaline)",
+              "EC 4.8 above 3.0 dS/m (too salty)",
+              "N 15 below 30 ppm",
+              "P 12 below 20 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.0,
+        "Sorghum": 0.0,
+        "Soybeans": 0.0,
+        "Wheat": 0.0,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "severe",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$100 to $495/acre/yr",
+            "note": "Benefit = assumed 20-45% of a $500-1,100/acre reference crop protected by fixing a severe problem."
+          },
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$116 to $213/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Correct nitrogen deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$72 to $98/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          },
+          {
+            "fix": "Correct phosphorus deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$32 to $49/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$240 to $419/acre",
+        "total_est_value_protected_per_acre": "~$160 to $913/acre/yr",
+        "rough_first_year_net_per_acre": "~-$259 to $673/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S05",
+      "latitude": 29.5815,
+      "longitude": -95.762,
+      "zone": "Z1-1",
+      "measurements": {
+        "ph": 6.9,
+        "ec": 0.9,
+        "nitrogen": 30.0,
+        "phosphorus": 26.0,
+        "potassium": 180.0
+      },
+      "health_score": 100.0,
+      "health_category": "Excellent",
+      "ml_health_score": 100.0,
+      "ml_category_classifier": "Excellent",
+      "rule_health_score": 100.0,
+      "primary_problem": {
+        "code": "none",
+        "label": "No major problem detected",
+        "severity": "none",
+        "message": "No threshold violations detected -- soil is in good shape."
+      },
+      "problems": [],
+      "recommendations": [],
+      "crop_suitability": {
+        "viable_now": [
+          "Corn",
+          "Cotton",
+          "Sorghum",
+          "Soybeans",
+          "Wheat",
+          "Tomatoes",
+          "Peppers",
+          "Hemp"
+        ],
+        "not_viable": [
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 6.9 above 5.5 (too alkaline)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 6.9 above 6.5 (too alkaline)"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [
+        "Cotton",
+        "Sorghum",
+        "Soybeans",
+        "Wheat",
+        "Tomatoes",
+        "Peppers"
+      ],
+      "ml_crop_confidence": {
+        "Corn": 0.434,
+        "Cotton": 0.999,
+        "Sorghum": 0.999,
+        "Soybeans": 0.999,
+        "Wheat": 1.0,
+        "Tomatoes": 0.508,
+        "Peppers": 0.975,
+        "Blueberries": 0.0,
+        "Strawberries": 0.004,
+        "Hemp": 0.409
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [],
+        "total_est_cost_per_acre": "~$0 to $0/acre",
+        "total_est_value_protected_per_acre": "~$0 to $0/acre/yr",
+        "rough_first_year_net_per_acre": "~$0 to $0/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S06",
+      "latitude": 29.5815,
+      "longitude": -95.7605,
+      "zone": "Z1-1",
+      "measurements": {
+        "ph": 7.3,
+        "ec": 2.4,
+        "nitrogen": 24.0,
+        "phosphorus": 20.0,
+        "potassium": 155.0
+      },
+      "health_score": 91.5,
+      "health_category": "Excellent",
+      "ml_health_score": 91.5,
+      "ml_category_classifier": "Excellent",
+      "rule_health_score": 91.6,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "mild",
+        "message": "Salinity is high (EC 2.4 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 2.4,
+          "penalty": 5.4,
+          "severity": "mild",
+          "message": "Salinity is high (EC 2.4 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 7.3,
+          "penalty": 3.0,
+          "severity": "mild",
+          "message": "Soil is too alkaline (pH 7.3); iron, phosphorus and zinc become less available."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "mild",
+          "priority_weight": 5.4,
+          "addresses": "Salinity is high (EC 2.4 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "300-500 lb/acre elemental sulfur",
+          "cost_estimate": "~$90 to $165/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 90.0,
+          "cost_per_acre_high": 165.0,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "mild",
+          "priority_weight": 3.0,
+          "addresses": "Soil is too alkaline (pH 7.3); iron, phosphorus and zinc become less available."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [
+          "Sorghum"
+        ],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 7.3 above 7.0 (too alkaline)",
+              "EC 2.4 above 1.7 dS/m (too salty)",
+              "N 24 below 30 ppm"
+            ]
+          },
+          {
+            "crop": "Cotton",
+            "limiting_factors": [
+              "N 24 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 7.3 above 7.0 (too alkaline)"
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "limiting_factors": [
+              "N 24 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 7.3 above 7.0 (too alkaline)",
+              "N 24 below 30 ppm",
+              "P 20 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 7.3 above 7.0 (too alkaline)",
+              "EC 2.4 above 1.5 dS/m (too salty)",
+              "N 24 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 7.3 above 5.5 (too alkaline)",
+              "EC 2.4 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 7.3 above 6.5 (too alkaline)",
+              "EC 2.4 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 7.3 above 7.0 (too alkaline)",
+              "N 24 below 30 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [
+        "Sorghum"
+      ],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.004,
+        "Sorghum": 0.984,
+        "Soybeans": 0.0,
+        "Wheat": 0.004,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "mild",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          },
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "mild",
+            "est_cost_per_acre": "~$90 to $165/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$110 to $225/acre",
+        "total_est_value_protected_per_acre": "~$20 to $176/acre/yr",
+        "rough_first_year_net_per_acre": "~-$205 to $66/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S07",
+      "latitude": 29.5815,
+      "longitude": -95.759,
+      "zone": "Z1-2",
+      "measurements": {
+        "ph": 7.5,
+        "ec": 3.2,
+        "nitrogen": 28.0,
+        "phosphorus": 165.0,
+        "potassium": 160.0
+      },
+      "health_score": 85.2,
+      "health_category": "Excellent",
+      "ml_health_score": 85.2,
+      "ml_category_classifier": "Excellent",
+      "rule_health_score": 80.9,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "moderate",
+        "message": "Salinity is high (EC 3.2 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 3.2,
+          "penalty": 10.2,
+          "severity": "moderate",
+          "message": "Salinity is high (EC 3.2 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 7.5,
+          "penalty": 5.0,
+          "severity": "mild",
+          "message": "Soil is too alkaline (pH 7.5); iron, phosphorus and zinc become less available."
+        },
+        {
+          "code": "phosphorus_excess",
+          "fix_code": "phosphorus_excess",
+          "metric": "phosphorus",
+          "value": 165.0,
+          "penalty": 3.9,
+          "severity": "mild",
+          "message": "Phosphorus is very high (165 ppm); runoff and water-quality risk, wasted inputs."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "moderate",
+          "priority_weight": 10.2,
+          "addresses": "Salinity is high (EC 3.2 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "300-500 lb/acre elemental sulfur",
+          "cost_estimate": "~$90 to $165/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 90.0,
+          "cost_per_acre_high": 165.0,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "mild",
+          "priority_weight": 5.0,
+          "addresses": "Soil is too alkaline (pH 7.5); iron, phosphorus and zinc become less available."
+        },
+        {
+          "title": "Stop over-applying phosphorus",
+          "action": "Halt all P fertilizer and manure. Protect water: buffer strips, cover crops, and erosion control to stop P-laden runoff.",
+          "rate": "0 lb P2O5/acre until soil test P drops below 150 ppm.",
+          "cost_estimate": "$0 (a saving) + buffer/cover-crop cost",
+          "cost_per_acre_low": 0.0,
+          "cost_per_acre_high": 0.0,
+          "timing": "Immediately, and ongoing.",
+          "notes": "High P is a runoff / water-quality liability, not a yield gain. Draw it down through crop removal over several seasons.",
+          "problem_code": "phosphorus_excess",
+          "fix_code": "phosphorus_excess",
+          "severity": "mild",
+          "priority_weight": 3.9,
+          "addresses": "Phosphorus is very high (165 ppm); runoff and water-quality risk, wasted inputs."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [
+          "Cotton",
+          "Sorghum",
+          "Wheat"
+        ],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 7.5 above 7.0 (too alkaline)",
+              "EC 3.2 above 1.7 dS/m (too salty)",
+              "N 28 below 30 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 7.5 above 7.0 (too alkaline)"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 7.5 above 7.0 (too alkaline)",
+              "EC 3.2 above 2.5 dS/m (too salty)",
+              "N 28 below 30 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 7.5 above 7.0 (too alkaline)",
+              "EC 3.2 above 1.5 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 7.5 above 5.5 (too alkaline)",
+              "EC 3.2 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 7.5 above 6.5 (too alkaline)",
+              "EC 3.2 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 7.5 above 7.0 (too alkaline)",
+              "EC 3.2 above 3.0 dS/m (too salty)",
+              "N 28 below 30 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [
+        "Cotton",
+        "Wheat"
+      ],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.837,
+        "Sorghum": 0.494,
+        "Soybeans": 0.065,
+        "Wheat": 0.567,
+        "Tomatoes": 0.0,
+        "Peppers": 0.004,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "mild",
+            "est_cost_per_acre": "~$90 to $165/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          },
+          {
+            "fix": "Stop over-applying phosphorus",
+            "severity": "mild",
+            "est_cost_per_acre": "~$0 to $0/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$110 to $225/acre",
+        "total_est_value_protected_per_acre": "~$60 to $418/acre/yr",
+        "rough_first_year_net_per_acre": "~-$165 to $308/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S08",
+      "latitude": 29.5815,
+      "longitude": -95.7575,
+      "zone": "Z1-2",
+      "measurements": {
+        "ph": 8.0,
+        "ec": 5.5,
+        "nitrogen": 14.0,
+        "phosphorus": 10.0,
+        "potassium": 125.0
+      },
+      "health_score": 55.2,
+      "health_category": "Fair",
+      "ml_health_score": 55.2,
+      "ml_category_classifier": "Fair",
+      "rule_health_score": 55.2,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "severe",
+        "message": "Salinity is high (EC 5.5 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 5.5,
+          "penalty": 21.38,
+          "severity": "severe",
+          "message": "Salinity is high (EC 5.5 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 8.0,
+          "penalty": 12.0,
+          "severity": "moderate",
+          "message": "Soil is too alkaline (pH 8.0); iron, phosphorus and zinc become less available."
+        },
+        {
+          "code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "metric": "nitrogen",
+          "value": 14.0,
+          "penalty": 6.8,
+          "severity": "mild",
+          "message": "Nitrogen is deficient (14 ppm); expect pale, stunted growth."
+        },
+        {
+          "code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "metric": "phosphorus",
+          "value": 10.0,
+          "penalty": 4.67,
+          "severity": "mild",
+          "message": "Phosphorus is deficient (10 ppm); poor root and early growth."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "severe",
+          "priority_weight": 21.38,
+          "addresses": "Salinity is high (EC 5.5 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "475-675 lb/acre elemental sulfur",
+          "cost_estimate": "~$143 to $261/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 142.50000000000006,
+          "cost_per_acre_high": 261.25000000000017,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "moderate",
+          "priority_weight": 12.0,
+          "addresses": "Soil is too alkaline (pH 8.0); iron, phosphorus and zinc become less available."
+        },
+        {
+          "title": "Correct nitrogen deficiency",
+          "action": "Apply nitrogen fertilizer (urea 46-0-0 or UAN). Split the application on corn/leafy crops to limit leaching.",
+          "rate": "134-154 lb N/acre (~291 lb urea)",
+          "cost_estimate": "~$74 to $100/acre (N ~$0.55-0.75/lb)",
+          "cost_per_acre_low": 73.7,
+          "cost_per_acre_high": 100.5,
+          "timing": "At/near planting; split-apply for corn (pre-plant + side-dress).",
+          "notes": "Rate sized to a generic ~40 ppm soil-N target; specify a crop for a tailored rate. A legume cover crop can fix 40-100 lb N/acre biologically and cut this bill over time.",
+          "problem_code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "severity": "mild",
+          "priority_weight": 6.8,
+          "addresses": "Nitrogen is deficient (14 ppm); expect pale, stunted growth."
+        },
+        {
+          "title": "Correct phosphorus deficiency",
+          "action": "Band phosphate (DAP 18-46-0 or triple superphosphate) near the seed row for best early uptake.",
+          "rate": "60-75 lb P2O5/acre",
+          "cost_estimate": "~$36 to $54/acre (P2O5 ~$0.60-0.90/lb)",
+          "cost_per_acre_low": 36.0,
+          "cost_per_acre_high": 54.0,
+          "timing": "At planting (banded/starter).",
+          "notes": "Banding beats broadcasting on high-pH soils where P gets tied up.",
+          "problem_code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "severity": "mild",
+          "priority_weight": 4.67,
+          "addresses": "Phosphorus is deficient (10 ppm); poor root and early growth."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 8.0 above 7.0 (too alkaline)",
+              "EC 5.5 above 1.7 dS/m (too salty)",
+              "N 14 below 30 ppm",
+              "P 10 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Cotton",
+            "limiting_factors": [
+              "N 14 below 25 ppm",
+              "P 10 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Sorghum",
+            "limiting_factors": [
+              "pH 8.0 above 7.5 (too alkaline)",
+              "N 14 below 20 ppm",
+              "P 10 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 8.0 above 7.0 (too alkaline)",
+              "EC 5.5 above 5.0 dS/m (too salty)",
+              "N 14 below 20 ppm",
+              "P 10 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "limiting_factors": [
+              "pH 8.0 above 7.5 (too alkaline)",
+              "N 14 below 25 ppm",
+              "P 10 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 8.0 above 7.0 (too alkaline)",
+              "EC 5.5 above 2.5 dS/m (too salty)",
+              "N 14 below 30 ppm",
+              "P 10 below 25 ppm",
+              "K 125 below 150 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 8.0 above 7.0 (too alkaline)",
+              "EC 5.5 above 1.5 dS/m (too salty)",
+              "N 14 below 25 ppm",
+              "P 10 below 20 ppm",
+              "K 125 below 130 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 8.0 above 5.5 (too alkaline)",
+              "EC 5.5 above 1.0 dS/m (too salty)",
+              "N 14 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 8.0 above 6.5 (too alkaline)",
+              "EC 5.5 above 1.0 dS/m (too salty)",
+              "N 14 below 20 ppm",
+              "P 10 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 8.0 above 7.0 (too alkaline)",
+              "EC 5.5 above 3.0 dS/m (too salty)",
+              "N 14 below 30 ppm",
+              "P 10 below 20 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.0,
+        "Sorghum": 0.0,
+        "Soybeans": 0.0,
+        "Wheat": 0.0,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "severe",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$100 to $495/acre/yr",
+            "note": "Benefit = assumed 20-45% of a $500-1,100/acre reference crop protected by fixing a severe problem."
+          },
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$143 to $261/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Correct nitrogen deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$74 to $100/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          },
+          {
+            "fix": "Correct phosphorus deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$36 to $54/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$272 to $476/acre",
+        "total_est_value_protected_per_acre": "~$160 to $913/acre/yr",
+        "rough_first_year_net_per_acre": "~-$316 to $641/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S09",
+      "latitude": 29.583,
+      "longitude": -95.762,
+      "zone": "Z2-1",
+      "measurements": {
+        "ph": 6.7,
+        "ec": 1.0,
+        "nitrogen": 20.0,
+        "phosphorus": 16.0,
+        "potassium": 160.0
+      },
+      "health_score": 99.3,
+      "health_category": "Excellent",
+      "ml_health_score": 99.3,
+      "ml_category_classifier": "Excellent",
+      "rule_health_score": 100.0,
+      "primary_problem": {
+        "code": "none",
+        "label": "No major problem detected",
+        "severity": "none",
+        "message": "No threshold violations detected -- soil is in good shape."
+      },
+      "problems": [],
+      "recommendations": [],
+      "crop_suitability": {
+        "viable_now": [
+          "Sorghum"
+        ],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "N 20 below 30 ppm",
+              "P 16 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Cotton",
+            "limiting_factors": [
+              "N 20 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "P 16 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "limiting_factors": [
+              "N 20 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "N 20 below 30 ppm",
+              "P 16 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "N 20 below 25 ppm",
+              "P 16 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 6.7 above 5.5 (too alkaline)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 6.7 above 6.5 (too alkaline)"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "N 20 below 30 ppm",
+              "P 16 below 20 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.0,
+        "Sorghum": 0.023,
+        "Soybeans": 0.0,
+        "Wheat": 0.004,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [],
+        "total_est_cost_per_acre": "~$0 to $0/acre",
+        "total_est_value_protected_per_acre": "~$0 to $0/acre/yr",
+        "rough_first_year_net_per_acre": "~$0 to $0/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S10",
+      "latitude": 29.583,
+      "longitude": -95.7605,
+      "zone": "Z2-1",
+      "measurements": {
+        "ph": 7.1,
+        "ec": 1.9,
+        "nitrogen": 32.0,
+        "phosphorus": 24.0,
+        "potassium": 170.0
+      },
+      "health_score": 99.9,
+      "health_category": "Excellent",
+      "ml_health_score": 99.9,
+      "ml_category_classifier": "Excellent",
+      "rule_health_score": 99.0,
+      "primary_problem": {
+        "code": "ph_alkaline",
+        "label": "Alkaline soil (high pH)",
+        "severity": "mild",
+        "message": "Soil is too alkaline (pH 7.1); iron, phosphorus and zinc become less available."
+      },
+      "problems": [
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 7.1,
+          "penalty": 1.0,
+          "severity": "mild",
+          "message": "Soil is too alkaline (pH 7.1); iron, phosphorus and zinc become less available."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "300-500 lb/acre elemental sulfur",
+          "cost_estimate": "~$90 to $165/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 90.0,
+          "cost_per_acre_high": 165.0,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "mild",
+          "priority_weight": 1.0,
+          "addresses": "Soil is too alkaline (pH 7.1); iron, phosphorus and zinc become less available."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [
+          "Cotton",
+          "Sorghum",
+          "Wheat"
+        ],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 7.1 above 7.0 (too alkaline)",
+              "EC 1.9 above 1.7 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 7.1 above 7.0 (too alkaline)"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 7.1 above 7.0 (too alkaline)",
+              "P 24 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 7.1 above 7.0 (too alkaline)",
+              "EC 1.9 above 1.5 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 7.1 above 5.5 (too alkaline)",
+              "EC 1.9 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 7.1 above 6.5 (too alkaline)",
+              "EC 1.9 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 7.1 above 7.0 (too alkaline)"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [
+        "Cotton",
+        "Sorghum",
+        "Wheat"
+      ],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.984,
+        "Sorghum": 0.994,
+        "Soybeans": 0.058,
+        "Wheat": 0.99,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.109
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "mild",
+            "est_cost_per_acre": "~$90 to $165/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$90 to $165/acre",
+        "total_est_value_protected_per_acre": "~$10 to $88/acre/yr",
+        "rough_first_year_net_per_acre": "~-$155 to -$2/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S11",
+      "latitude": 29.583,
+      "longitude": -95.759,
+      "zone": "Z2-2",
+      "measurements": {
+        "ph": 7.7,
+        "ec": 3.9,
+        "nitrogen": 17.0,
+        "phosphorus": 13.0,
+        "potassium": 135.0
+      },
+      "health_score": 71.5,
+      "health_category": "Good",
+      "ml_health_score": 71.5,
+      "ml_category_classifier": "Good",
+      "rule_health_score": 71.1,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "moderate",
+        "message": "Salinity is high (EC 3.9 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 3.9,
+          "penalty": 14.4,
+          "severity": "moderate",
+          "message": "Salinity is high (EC 3.9 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 7.7,
+          "penalty": 7.0,
+          "severity": "moderate",
+          "message": "Soil is too alkaline (pH 7.7); iron, phosphorus and zinc become less available."
+        },
+        {
+          "code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "metric": "nitrogen",
+          "value": 17.0,
+          "penalty": 4.4,
+          "severity": "mild",
+          "message": "Nitrogen is deficient (17 ppm); expect pale, stunted growth."
+        },
+        {
+          "code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "metric": "phosphorus",
+          "value": 13.0,
+          "penalty": 3.07,
+          "severity": "mild",
+          "message": "Phosphorus is deficient (13 ppm); poor root and early growth."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "moderate",
+          "priority_weight": 14.4,
+          "addresses": "Salinity is high (EC 3.9 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "300-500 lb/acre elemental sulfur",
+          "cost_estimate": "~$90 to $165/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 90.0,
+          "cost_per_acre_high": 165.0,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "moderate",
+          "priority_weight": 7.0,
+          "addresses": "Soil is too alkaline (pH 7.7); iron, phosphorus and zinc become less available."
+        },
+        {
+          "title": "Correct nitrogen deficiency",
+          "action": "Apply nitrogen fertilizer (urea 46-0-0 or UAN). Split the application on corn/leafy crops to limit leaching.",
+          "rate": "122-142 lb N/acre (~265 lb urea)",
+          "cost_estimate": "~$67 to $92/acre (N ~$0.55-0.75/lb)",
+          "cost_per_acre_low": 67.10000000000001,
+          "cost_per_acre_high": 91.5,
+          "timing": "At/near planting; split-apply for corn (pre-plant + side-dress).",
+          "notes": "Rate sized to a generic ~40 ppm soil-N target; specify a crop for a tailored rate. A legume cover crop can fix 40-100 lb N/acre biologically and cut this bill over time.",
+          "problem_code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "severity": "mild",
+          "priority_weight": 4.4,
+          "addresses": "Nitrogen is deficient (17 ppm); expect pale, stunted growth."
+        },
+        {
+          "title": "Correct phosphorus deficiency",
+          "action": "Band phosphate (DAP 18-46-0 or triple superphosphate) near the seed row for best early uptake.",
+          "rate": "51-66 lb P2O5/acre",
+          "cost_estimate": "~$31 to $46/acre (P2O5 ~$0.60-0.90/lb)",
+          "cost_per_acre_low": 30.599999999999998,
+          "cost_per_acre_high": 45.9,
+          "timing": "At planting (banded/starter).",
+          "notes": "Banding beats broadcasting on high-pH soils where P gets tied up.",
+          "problem_code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "severity": "mild",
+          "priority_weight": 3.07,
+          "addresses": "Phosphorus is deficient (13 ppm); poor root and early growth."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 7.7 above 7.0 (too alkaline)",
+              "EC 3.9 above 1.7 dS/m (too salty)",
+              "N 17 below 30 ppm",
+              "P 13 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Cotton",
+            "limiting_factors": [
+              "N 17 below 25 ppm",
+              "P 13 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Sorghum",
+            "limiting_factors": [
+              "pH 7.7 above 7.5 (too alkaline)",
+              "N 17 below 20 ppm",
+              "P 13 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 7.7 above 7.0 (too alkaline)",
+              "N 17 below 20 ppm",
+              "P 13 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "limiting_factors": [
+              "pH 7.7 above 7.5 (too alkaline)",
+              "N 17 below 25 ppm",
+              "P 13 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 7.7 above 7.0 (too alkaline)",
+              "EC 3.9 above 2.5 dS/m (too salty)",
+              "N 17 below 30 ppm",
+              "P 13 below 25 ppm",
+              "K 135 below 150 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 7.7 above 7.0 (too alkaline)",
+              "EC 3.9 above 1.5 dS/m (too salty)",
+              "N 17 below 25 ppm",
+              "P 13 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 7.7 above 5.5 (too alkaline)",
+              "EC 3.9 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 7.7 above 6.5 (too alkaline)",
+              "EC 3.9 above 1.0 dS/m (too salty)",
+              "N 17 below 20 ppm",
+              "P 13 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 7.7 above 7.0 (too alkaline)",
+              "EC 3.9 above 3.0 dS/m (too salty)",
+              "N 17 below 30 ppm",
+              "P 13 below 20 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.0,
+        "Sorghum": 0.0,
+        "Soybeans": 0.0,
+        "Wheat": 0.0,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$90 to $165/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Correct nitrogen deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$67 to $92/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          },
+          {
+            "fix": "Correct phosphorus deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$31 to $46/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$208 to $362/acre",
+        "total_est_value_protected_per_acre": "~$100 to $660/acre/yr",
+        "rough_first_year_net_per_acre": "~-$262 to $452/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S12",
+      "latitude": 29.583,
+      "longitude": -95.7575,
+      "zone": "Z2-2",
+      "measurements": {
+        "ph": 8.1,
+        "ec": 6.0,
+        "nitrogen": 12.0,
+        "phosphorus": 9.0,
+        "potassium": 120.0
+      },
+      "health_score": 48.9,
+      "health_category": "Fair",
+      "ml_health_score": 48.9,
+      "ml_category_classifier": "Fair",
+      "rule_health_score": 48.9,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "severe",
+        "message": "Salinity is high (EC 6.0 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 6.0,
+          "penalty": 23.5,
+          "severity": "severe",
+          "message": "Salinity is high (EC 6.0 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 8.1,
+          "penalty": 14.0,
+          "severity": "moderate",
+          "message": "Soil is too alkaline (pH 8.1); iron, phosphorus and zinc become less available."
+        },
+        {
+          "code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "metric": "nitrogen",
+          "value": 12.0,
+          "penalty": 8.4,
+          "severity": "moderate",
+          "message": "Nitrogen is deficient (12 ppm); expect pale, stunted growth."
+        },
+        {
+          "code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "metric": "phosphorus",
+          "value": 9.0,
+          "penalty": 5.2,
+          "severity": "mild",
+          "message": "Phosphorus is deficient (9 ppm); poor root and early growth."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "severe",
+          "priority_weight": 23.5,
+          "addresses": "Salinity is high (EC 6.0 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "562-762 lb/acre elemental sulfur",
+          "cost_estimate": "~$169 to $309/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 168.74999999999997,
+          "cost_per_acre_high": 309.37499999999994,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "moderate",
+          "priority_weight": 14.0,
+          "addresses": "Soil is too alkaline (pH 8.1); iron, phosphorus and zinc become less available."
+        },
+        {
+          "title": "Correct nitrogen deficiency",
+          "action": "Apply nitrogen fertilizer (urea 46-0-0 or UAN). Split the application on corn/leafy crops to limit leaching.",
+          "rate": "142-162 lb N/acre (~309 lb urea)",
+          "cost_estimate": "~$78 to $106/acre (N ~$0.55-0.75/lb)",
+          "cost_per_acre_low": 78.10000000000001,
+          "cost_per_acre_high": 106.5,
+          "timing": "At/near planting; split-apply for corn (pre-plant + side-dress).",
+          "notes": "Rate sized to a generic ~40 ppm soil-N target; specify a crop for a tailored rate. A legume cover crop can fix 40-100 lb N/acre biologically and cut this bill over time.",
+          "problem_code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "severity": "moderate",
+          "priority_weight": 8.4,
+          "addresses": "Nitrogen is deficient (12 ppm); expect pale, stunted growth."
+        },
+        {
+          "title": "Correct phosphorus deficiency",
+          "action": "Band phosphate (DAP 18-46-0 or triple superphosphate) near the seed row for best early uptake.",
+          "rate": "63-78 lb P2O5/acre",
+          "cost_estimate": "~$38 to $57/acre (P2O5 ~$0.60-0.90/lb)",
+          "cost_per_acre_low": 37.8,
+          "cost_per_acre_high": 56.7,
+          "timing": "At planting (banded/starter).",
+          "notes": "Banding beats broadcasting on high-pH soils where P gets tied up.",
+          "problem_code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "severity": "mild",
+          "priority_weight": 5.2,
+          "addresses": "Phosphorus is deficient (9 ppm); poor root and early growth."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 8.1 above 7.0 (too alkaline)",
+              "EC 6.0 above 1.7 dS/m (too salty)",
+              "N 12 below 30 ppm",
+              "P 9 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Cotton",
+            "limiting_factors": [
+              "pH 8.1 above 8.0 (too alkaline)",
+              "N 12 below 25 ppm",
+              "P 9 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Sorghum",
+            "limiting_factors": [
+              "pH 8.1 above 7.5 (too alkaline)",
+              "N 12 below 20 ppm",
+              "P 9 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 8.1 above 7.0 (too alkaline)",
+              "EC 6.0 above 5.0 dS/m (too salty)",
+              "N 12 below 20 ppm",
+              "P 9 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "limiting_factors": [
+              "pH 8.1 above 7.5 (too alkaline)",
+              "N 12 below 25 ppm",
+              "P 9 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 8.1 above 7.0 (too alkaline)",
+              "EC 6.0 above 2.5 dS/m (too salty)",
+              "N 12 below 30 ppm",
+              "P 9 below 25 ppm",
+              "K 120 below 150 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 8.1 above 7.0 (too alkaline)",
+              "EC 6.0 above 1.5 dS/m (too salty)",
+              "N 12 below 25 ppm",
+              "P 9 below 20 ppm",
+              "K 120 below 130 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 8.1 above 5.5 (too alkaline)",
+              "EC 6.0 above 1.0 dS/m (too salty)",
+              "N 12 below 15 ppm",
+              "P 9 below 10 ppm"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 8.1 above 6.5 (too alkaline)",
+              "EC 6.0 above 1.0 dS/m (too salty)",
+              "N 12 below 20 ppm",
+              "P 9 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 8.1 above 7.0 (too alkaline)",
+              "EC 6.0 above 3.0 dS/m (too salty)",
+              "N 12 below 30 ppm",
+              "P 9 below 20 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.0,
+        "Sorghum": 0.0,
+        "Soybeans": 0.0,
+        "Wheat": 0.0,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "severe",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$100 to $495/acre/yr",
+            "note": "Benefit = assumed 20-45% of a $500-1,100/acre reference crop protected by fixing a severe problem."
+          },
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$169 to $309/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Correct nitrogen deficiency",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$78 to $106/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Correct phosphorus deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$38 to $57/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$305 to $533/acre",
+        "total_est_value_protected_per_acre": "~$190 to $1,067/acre/yr",
+        "rough_first_year_net_per_acre": "~-$343 to $762/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S13",
+      "latitude": 29.5845,
+      "longitude": -95.762,
+      "zone": "Z2-1",
+      "measurements": {
+        "ph": 6.6,
+        "ec": 1.2,
+        "nitrogen": 28.0,
+        "phosphorus": 28.0,
+        "potassium": 175.0
+      },
+      "health_score": 100.0,
+      "health_category": "Excellent",
+      "ml_health_score": 100.0,
+      "ml_category_classifier": "Excellent",
+      "rule_health_score": 100.0,
+      "primary_problem": {
+        "code": "none",
+        "label": "No major problem detected",
+        "severity": "none",
+        "message": "No threshold violations detected -- soil is in good shape."
+      },
+      "problems": [],
+      "recommendations": [],
+      "crop_suitability": {
+        "viable_now": [
+          "Cotton",
+          "Sorghum",
+          "Soybeans",
+          "Wheat",
+          "Peppers"
+        ],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "N 28 below 30 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "N 28 below 30 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 6.6 above 5.5 (too alkaline)",
+              "EC 1.2 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 6.6 above 6.5 (too alkaline)",
+              "EC 1.2 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "N 28 below 30 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [
+        "Cotton",
+        "Sorghum",
+        "Soybeans",
+        "Wheat",
+        "Peppers"
+      ],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.989,
+        "Sorghum": 1.0,
+        "Soybeans": 0.995,
+        "Wheat": 0.995,
+        "Tomatoes": 0.004,
+        "Peppers": 0.943,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [],
+        "total_est_cost_per_acre": "~$0 to $0/acre",
+        "total_est_value_protected_per_acre": "~$0 to $0/acre/yr",
+        "rough_first_year_net_per_acre": "~$0 to $0/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S14",
+      "latitude": 29.5845,
+      "longitude": -95.7605,
+      "zone": "Z2-1",
+      "measurements": {
+        "ph": 7.0,
+        "ec": 2.2,
+        "nitrogen": 34.0,
+        "phosphorus": 30.0,
+        "potassium": 185.0
+      },
+      "health_score": 96.2,
+      "health_category": "Excellent",
+      "ml_health_score": 96.2,
+      "ml_category_classifier": "Excellent",
+      "rule_health_score": 95.8,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "mild",
+        "message": "Salinity is high (EC 2.2 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 2.2,
+          "penalty": 4.2,
+          "severity": "mild",
+          "message": "Salinity is high (EC 2.2 dS/m); salt stress reduces water uptake and yield."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "mild",
+          "priority_weight": 4.2,
+          "addresses": "Salinity is high (EC 2.2 dS/m); salt stress reduces water uptake and yield."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [
+          "Cotton",
+          "Sorghum",
+          "Soybeans",
+          "Wheat",
+          "Tomatoes",
+          "Hemp"
+        ],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "EC 2.2 above 1.7 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "EC 2.2 above 1.5 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 7.0 above 5.5 (too alkaline)",
+              "EC 2.2 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 7.0 above 6.5 (too alkaline)",
+              "EC 2.2 above 1.0 dS/m (too salty)"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [
+        "Cotton",
+        "Sorghum",
+        "Wheat",
+        "Hemp"
+      ],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.99,
+        "Sorghum": 1.0,
+        "Soybeans": 0.461,
+        "Wheat": 1.0,
+        "Tomatoes": 0.41,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.646
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "mild",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$20 to $60/acre",
+        "total_est_value_protected_per_acre": "~$10 to $88/acre/yr",
+        "rough_first_year_net_per_acre": "~-$50 to $68/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S15",
+      "latitude": 29.5845,
+      "longitude": -95.759,
+      "zone": "Z2-2",
+      "measurements": {
+        "ph": 7.4,
+        "ec": 3.4,
+        "nitrogen": 19.0,
+        "phosphorus": 15.0,
+        "potassium": 145.0
+      },
+      "health_score": 80.9,
+      "health_category": "Excellent",
+      "ml_health_score": 80.9,
+      "ml_category_classifier": "Excellent",
+      "rule_health_score": 81.8,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "moderate",
+        "message": "Salinity is high (EC 3.4 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 3.4,
+          "penalty": 11.4,
+          "severity": "moderate",
+          "message": "Salinity is high (EC 3.4 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 7.4,
+          "penalty": 4.0,
+          "severity": "mild",
+          "message": "Soil is too alkaline (pH 7.4); iron, phosphorus and zinc become less available."
+        },
+        {
+          "code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "metric": "nitrogen",
+          "value": 19.0,
+          "penalty": 2.8,
+          "severity": "mild",
+          "message": "Nitrogen is deficient (19 ppm); expect pale, stunted growth."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "moderate",
+          "priority_weight": 11.4,
+          "addresses": "Salinity is high (EC 3.4 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "300-500 lb/acre elemental sulfur",
+          "cost_estimate": "~$90 to $165/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 90.0,
+          "cost_per_acre_high": 165.0,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "mild",
+          "priority_weight": 4.0,
+          "addresses": "Soil is too alkaline (pH 7.4); iron, phosphorus and zinc become less available."
+        },
+        {
+          "title": "Correct nitrogen deficiency",
+          "action": "Apply nitrogen fertilizer (urea 46-0-0 or UAN). Split the application on corn/leafy crops to limit leaching.",
+          "rate": "114-134 lb N/acre (~248 lb urea)",
+          "cost_estimate": "~$63 to $86/acre (N ~$0.55-0.75/lb)",
+          "cost_per_acre_low": 62.7,
+          "cost_per_acre_high": 85.5,
+          "timing": "At/near planting; split-apply for corn (pre-plant + side-dress).",
+          "notes": "Rate sized to a generic ~40 ppm soil-N target; specify a crop for a tailored rate. A legume cover crop can fix 40-100 lb N/acre biologically and cut this bill over time.",
+          "problem_code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "severity": "mild",
+          "priority_weight": 2.8,
+          "addresses": "Nitrogen is deficient (19 ppm); expect pale, stunted growth."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 7.4 above 7.0 (too alkaline)",
+              "EC 3.4 above 1.7 dS/m (too salty)",
+              "N 19 below 30 ppm",
+              "P 15 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Cotton",
+            "limiting_factors": [
+              "N 19 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Sorghum",
+            "limiting_factors": [
+              "N 19 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 7.4 above 7.0 (too alkaline)",
+              "N 19 below 20 ppm",
+              "P 15 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "limiting_factors": [
+              "N 19 below 25 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 7.4 above 7.0 (too alkaline)",
+              "EC 3.4 above 2.5 dS/m (too salty)",
+              "N 19 below 30 ppm",
+              "P 15 below 25 ppm",
+              "K 145 below 150 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 7.4 above 7.0 (too alkaline)",
+              "EC 3.4 above 1.5 dS/m (too salty)",
+              "N 19 below 25 ppm",
+              "P 15 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 7.4 above 5.5 (too alkaline)",
+              "EC 3.4 above 1.0 dS/m (too salty)"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 7.4 above 6.5 (too alkaline)",
+              "EC 3.4 above 1.0 dS/m (too salty)",
+              "N 19 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 7.4 above 7.0 (too alkaline)",
+              "EC 3.4 above 3.0 dS/m (too salty)",
+              "N 19 below 30 ppm",
+              "P 15 below 20 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.0,
+        "Sorghum": 0.0,
+        "Soybeans": 0.0,
+        "Wheat": 0.0,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "mild",
+            "est_cost_per_acre": "~$90 to $165/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          },
+          {
+            "fix": "Correct nitrogen deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$63 to $86/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$173 to $310/acre",
+        "total_est_value_protected_per_acre": "~$60 to $418/acre/yr",
+        "rough_first_year_net_per_acre": "~-$250 to $245/acre/yr"
+      }
+    },
+    {
+      "sample_id": "S16",
+      "latitude": 29.5845,
+      "longitude": -95.7575,
+      "zone": "Z2-2",
+      "measurements": {
+        "ph": 7.8,
+        "ec": 4.6,
+        "nitrogen": 13.0,
+        "phosphorus": 11.0,
+        "potassium": 128.0
+      },
+      "health_score": 63.0,
+      "health_category": "Good",
+      "ml_health_score": 63.0,
+      "ml_category_classifier": "Good",
+      "rule_health_score": 62.7,
+      "primary_problem": {
+        "code": "salinity",
+        "label": "High salinity (salt)",
+        "severity": "severe",
+        "message": "Salinity is high (EC 4.6 dS/m); salt stress reduces water uptake and yield."
+      },
+      "problems": [
+        {
+          "code": "salinity",
+          "fix_code": "salinity",
+          "metric": "ec",
+          "value": 4.6,
+          "penalty": 17.55,
+          "severity": "severe",
+          "message": "Salinity is high (EC 4.6 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "metric": "ph",
+          "value": 7.8,
+          "penalty": 8.0,
+          "severity": "moderate",
+          "message": "Soil is too alkaline (pH 7.8); iron, phosphorus and zinc become less available."
+        },
+        {
+          "code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "metric": "nitrogen",
+          "value": 13.0,
+          "penalty": 7.6,
+          "severity": "moderate",
+          "message": "Nitrogen is deficient (13 ppm); expect pale, stunted growth."
+        },
+        {
+          "code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "metric": "phosphorus",
+          "value": 11.0,
+          "penalty": 4.13,
+          "severity": "mild",
+          "message": "Phosphorus is deficient (11 ppm); poor root and early growth."
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Reduce salinity (leach + drain)",
+          "action": "Leach salts with good-quality water once drainage is adequate (apply ~6 in extra water to push salts below the root zone).",
+          "rate": "Leaching fraction sized to soil; add drainage if water ponds.",
+          "cost_estimate": "~$20 to $60/acre",
+          "cost_per_acre_low": 20.0,
+          "cost_per_acre_high": 60.0,
+          "timing": "Pre-season, when you can move water through the profile.",
+          "notes": "Test your IRRIGATION water too -- Brazos water in the Fort Bend/Richmond reach runs saltier downstream, so over-irrigating with it adds salt. Meanwhile grow salt-tolerant cotton or sorghum.",
+          "problem_code": "salinity",
+          "fix_code": "salinity",
+          "severity": "severe",
+          "priority_weight": 17.55,
+          "addresses": "Salinity is high (EC 4.6 dS/m); salt stress reduces water uptake and yield."
+        },
+        {
+          "title": "Lower pH / manage alkalinity",
+          "action": "Apply elemental sulfur and use acidifying fertilizers (ammonium sulfate). On calcareous Blackland clay, fully lowering pH is slow and costly -- lean on tolerant crops + chelated micronutrients instead.",
+          "rate": "300-500 lb/acre elemental sulfur",
+          "cost_estimate": "~$90 to $165/acre (sulfur ~$0.30-0.55/lb)",
+          "cost_per_acre_low": 90.0,
+          "cost_per_acre_high": 165.0,
+          "timing": "Apply and incorporate several months ahead; oxidation to acid takes weeks-months and warm soil.",
+          "notes": "Test for free lime first. If the soil fizzes with acid it is calcareous and sulfur demand is very high -- prefer cotton, sorghum and other alkaline-tolerant crops.",
+          "problem_code": "ph_alkaline",
+          "fix_code": "ph_alkaline",
+          "severity": "moderate",
+          "priority_weight": 8.0,
+          "addresses": "Soil is too alkaline (pH 7.8); iron, phosphorus and zinc become less available."
+        },
+        {
+          "title": "Correct nitrogen deficiency",
+          "action": "Apply nitrogen fertilizer (urea 46-0-0 or UAN). Split the application on corn/leafy crops to limit leaching.",
+          "rate": "138-158 lb N/acre (~300 lb urea)",
+          "cost_estimate": "~$76 to $104/acre (N ~$0.55-0.75/lb)",
+          "cost_per_acre_low": 75.9,
+          "cost_per_acre_high": 103.5,
+          "timing": "At/near planting; split-apply for corn (pre-plant + side-dress).",
+          "notes": "Rate sized to a generic ~40 ppm soil-N target; specify a crop for a tailored rate. A legume cover crop can fix 40-100 lb N/acre biologically and cut this bill over time.",
+          "problem_code": "nitrogen_deficient",
+          "fix_code": "nitrogen_deficient",
+          "severity": "moderate",
+          "priority_weight": 7.6,
+          "addresses": "Nitrogen is deficient (13 ppm); expect pale, stunted growth."
+        },
+        {
+          "title": "Correct phosphorus deficiency",
+          "action": "Band phosphate (DAP 18-46-0 or triple superphosphate) near the seed row for best early uptake.",
+          "rate": "57-72 lb P2O5/acre",
+          "cost_estimate": "~$34 to $51/acre (P2O5 ~$0.60-0.90/lb)",
+          "cost_per_acre_low": 34.199999999999996,
+          "cost_per_acre_high": 51.300000000000004,
+          "timing": "At planting (banded/starter).",
+          "notes": "Banding beats broadcasting on high-pH soils where P gets tied up.",
+          "problem_code": "phosphorus_deficient",
+          "fix_code": "phosphorus_deficient",
+          "severity": "mild",
+          "priority_weight": 4.13,
+          "addresses": "Phosphorus is deficient (11 ppm); poor root and early growth."
+        }
+      ],
+      "crop_suitability": {
+        "viable_now": [],
+        "not_viable": [
+          {
+            "crop": "Corn",
+            "limiting_factors": [
+              "pH 7.8 above 7.0 (too alkaline)",
+              "EC 4.6 above 1.7 dS/m (too salty)",
+              "N 13 below 30 ppm",
+              "P 11 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Cotton",
+            "limiting_factors": [
+              "N 13 below 25 ppm",
+              "P 11 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Sorghum",
+            "limiting_factors": [
+              "pH 7.8 above 7.5 (too alkaline)",
+              "N 13 below 20 ppm",
+              "P 11 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Soybeans",
+            "limiting_factors": [
+              "pH 7.8 above 7.0 (too alkaline)",
+              "N 13 below 20 ppm",
+              "P 11 below 20 ppm"
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "limiting_factors": [
+              "pH 7.8 above 7.5 (too alkaline)",
+              "N 13 below 25 ppm",
+              "P 11 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Tomatoes",
+            "limiting_factors": [
+              "pH 7.8 above 7.0 (too alkaline)",
+              "EC 4.6 above 2.5 dS/m (too salty)",
+              "N 13 below 30 ppm",
+              "P 11 below 25 ppm",
+              "K 128 below 150 ppm"
+            ]
+          },
+          {
+            "crop": "Peppers",
+            "limiting_factors": [
+              "pH 7.8 above 7.0 (too alkaline)",
+              "EC 4.6 above 1.5 dS/m (too salty)",
+              "N 13 below 25 ppm",
+              "P 11 below 20 ppm",
+              "K 128 below 130 ppm"
+            ]
+          },
+          {
+            "crop": "Blueberries",
+            "limiting_factors": [
+              "pH 7.8 above 5.5 (too alkaline)",
+              "EC 4.6 above 1.0 dS/m (too salty)",
+              "N 13 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Strawberries",
+            "limiting_factors": [
+              "pH 7.8 above 6.5 (too alkaline)",
+              "EC 4.6 above 1.0 dS/m (too salty)",
+              "N 13 below 20 ppm",
+              "P 11 below 15 ppm"
+            ]
+          },
+          {
+            "crop": "Hemp",
+            "limiting_factors": [
+              "pH 7.8 above 7.0 (too alkaline)",
+              "EC 4.6 above 3.0 dS/m (too salty)",
+              "N 13 below 30 ppm",
+              "P 11 below 20 ppm"
+            ]
+          }
+        ]
+      },
+      "ml_crop_suitable": [],
+      "ml_crop_confidence": {
+        "Corn": 0.0,
+        "Cotton": 0.0,
+        "Sorghum": 0.0,
+        "Soybeans": 0.0,
+        "Wheat": 0.0,
+        "Tomatoes": 0.0,
+        "Peppers": 0.0,
+        "Blueberries": 0.0,
+        "Strawberries": 0.0,
+        "Hemp": 0.0
+      },
+      "cost_benefit_experimental": {
+        "experimental": true,
+        "disclaimer": "EXPERIMENTAL ESTIMATE -- NOT FINANCIAL ADVICE. These are rough, order-of-magnitude ballparks to help prioritize, using generic Texas input prices and assumed yield responses. Real costs and returns vary widely with crop, market, weather and your operation. Confirm with your county Extension agent and your own numbers before spending money.",
+        "reference_revenue_per_acre": "~$500 to $1,100/acre",
+        "items": [
+          {
+            "fix": "Reduce salinity (leach + drain)",
+            "severity": "severe",
+            "est_cost_per_acre": "~$20 to $60/acre",
+            "est_value_protected_per_acre": "~$100 to $495/acre/yr",
+            "note": "Benefit = assumed 20-45% of a $500-1,100/acre reference crop protected by fixing a severe problem."
+          },
+          {
+            "fix": "Lower pH / manage alkalinity",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$90 to $165/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Correct nitrogen deficiency",
+            "severity": "moderate",
+            "est_cost_per_acre": "~$76 to $104/acre",
+            "est_value_protected_per_acre": "~$40 to $242/acre/yr",
+            "note": "Benefit = assumed 8-22% of a $500-1,100/acre reference crop protected by fixing a moderate problem."
+          },
+          {
+            "fix": "Correct phosphorus deficiency",
+            "severity": "mild",
+            "est_cost_per_acre": "~$34 to $51/acre",
+            "est_value_protected_per_acre": "~$10 to $88/acre/yr",
+            "note": "Benefit = assumed 2-8% of a $500-1,100/acre reference crop protected by fixing a mild problem."
+          }
+        ],
+        "total_est_cost_per_acre": "~$220 to $380/acre",
+        "total_est_value_protected_per_acre": "~$190 to $1,067/acre/yr",
+        "rough_first_year_net_per_acre": "~-$190 to $847/acre/yr"
+      }
+    }
+  ],
+  "artifacts": {
+    "field_map_png": "outputs/sample_field_field_map.png"
+  }
+}

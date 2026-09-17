@@ -1,0 +1,5 @@
+zone,n_samples,centroid_lat,centroid_lon,mean_health_score,health_category,min_health_score,dominant_problem,viable_crops,n_viable_crops,mean_ph,mean_ec,mean_nitrogen,mean_phosphorus,mean_potassium
+Z2-2,4,29.58375,-95.75825,66.1,Good,48.9,salinity,none,0,7.75,4.47,15.25,12.0,132.0
+Z1-2,4,29.58075,-95.75825,69.1,Good,55.2,salinity,none,0,7.75,4.28,18.75,50.25,138.75
+Z1-1,4,29.58075,-95.76125,96.5,Excellent,91.5,salinity,"Cotton, Sorghum, Wheat",3,7.05,1.62,25.5,21.5,162.5
+Z2-1,4,29.58375,-95.76125,98.8,Excellent,96.2,ph_alkaline,"Cotton, Sorghum, Soybeans, Wheat",4,6.85,1.57,28.5,24.5,172.5
