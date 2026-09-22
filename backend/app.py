@@ -450,14 +450,31 @@ def report_section(farm_id: int, section_label: str):
     return _pdf_response(pdf_bytes, filename)
 
 
-@app.get("/api/report/<int:farm_id>/all")
+@app.route("/api/report/<int:farm_id>/all", methods=["GET", "POST"])
 @auth.login_required
 def report_all(farm_id: int):
+    """The combined report.
+
+    POST additionally accepts `{"map_image": "data:image/jpeg;base64,..."}`: the
+    results map as the browser rasterised it, with its score colours, which is
+    embedded as the report's field map page. Rendering that map server-side
+    would need a headless browser, which the free tier cannot run, so the
+    client sends the picture. GET still works and simply omits the map.
+    """
     analysis = _load_analysis(farm_id)
     if not analysis:
         return jsonify({"error": "not found"}), 404
 
-    pdf_bytes = pdf_report.build_combined_pdf(analysis)
+    map_image = None
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        candidate = data.get("map_image")
+        # A malformed image is dropped here rather than failing the download;
+        # build_combined_pdf validates the payload itself before decoding.
+        if isinstance(candidate, str) and candidate.startswith("data:image/"):
+            map_image = candidate
+
+    pdf_bytes = pdf_report.build_combined_pdf(analysis, map_image=map_image)
     filename = "%s_full_report.pdf" % _slug(analysis.get("farm_name"))
     return _pdf_response(pdf_bytes, filename)
 

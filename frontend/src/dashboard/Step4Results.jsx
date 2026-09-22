@@ -6,7 +6,7 @@
    PDF download links. Cards use the same colour as their map marker.
    ========================================================================== */
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   MapContainer,
   Pane,
@@ -20,6 +20,7 @@ import {
 import api from '../api/client.js'
 import { useDashboard } from './DashboardProvider.jsx'
 import { gridCellRing, polygonCentroid } from './geo.js'
+import { captureMapImage } from './mapCapture.js'
 import { InvalidateSizeOnVisible } from './mapView.js'
 import ScoreLegend from './ScoreLegend.jsx'
 import { scoreColor } from './soilColor.js'
@@ -56,6 +57,10 @@ function FitView({ polygon, positions }) {
 
 export default function Step4Results() {
   const { analysis, farmId, polygon, points, resetDraft } = useDashboard()
+  const mapRef = useRef(null)
+  // null | 'working' | 'error'. A failed capture is not an error: the report
+  // still downloads, just without its map page.
+  const [download, setDownload] = useState(null)
 
   if (!analysis || !Array.isArray(analysis.results)) {
     return (
@@ -101,6 +106,22 @@ export default function Step4Results() {
     (polygon && polygon.length >= 3 && polygonCentroid(polygon)) ||
     (positions.length > 0 ? positions[0] : CENTER)
 
+  /**
+   * Capture the map exactly as it is on screen — colours and all, since the
+   * cells and pins are already rendered by the time this button can be
+   * clicked — then post it up and save the PDF that comes back.
+   */
+  async function handleDownloadAll() {
+    setDownload('working')
+    try {
+      const mapImage = await captureMapImage(mapRef.current)
+      await api.downloadReportAll(id, mapImage)
+      setDownload(null)
+    } catch {
+      setDownload('error')
+    }
+  }
+
   return (
     <div>
       <div className="ff-step-head">
@@ -134,10 +155,18 @@ export default function Step4Results() {
         </div>
       </div>
 
-      {/* Results map */}
-      <div className="ff-map" style={{ marginBottom: 24 }}>
+      {/* Results map. The ref is what the PDF's map capture rasterises. */}
+      <div className="ff-map" style={{ marginBottom: 24 }} ref={mapRef}>
         <MapContainer center={center} zoom={15} scrollWheelZoom>
-          <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} />
+          {/* crossOrigin is what lets the PDF's map capture read this canvas
+              back: without it the tiles taint it and toDataURL throws. Esri
+              serves these tiles with Access-Control-Allow-Origin: *. */}
+          <TileLayer
+            url={ESRI_URL}
+            attribution={ESRI_ATTR}
+            maxZoom={19}
+            crossOrigin="anonymous"
+          />
           <InvalidateSizeOnVisible />
           <ScoreLegend />
           <FitView polygon={polygon} positions={positions} />
@@ -346,13 +375,23 @@ export default function Step4Results() {
 
       {/* Field-level actions */}
       <div className="ff-actions">
-        <a
+        {/* A button, not a download link: the field map has to be captured
+            from the live map and posted with the request. */}
+        <button
+          type="button"
           className="ff-btn ff-btn--primary"
-          href={api.reportAllUrl(id)}
-          download
+          onClick={handleDownloadAll}
+          disabled={download === 'working'}
         >
-          Download all reports
-        </a>
+          {download === 'working'
+            ? 'Preparing report…'
+            : 'Download all reports'}
+        </button>
+        {download === 'error' && (
+          <p className="ff-help ff-mb-0" role="alert">
+            That download didn&apos;t work. Please try again.
+          </p>
+        )}
         <span className="ff-spacer" />
         <button
           type="button"

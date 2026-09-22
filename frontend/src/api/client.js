@@ -181,6 +181,53 @@ export function reportAllUrl(farmId) {
   return `${BASE}/report/${farmId}/all`
 }
 
+/**
+ * Download the combined PDF report, optionally with a field map image on its
+ * cover page.
+ *
+ * The map is rasterised in the browser (see `dashboard/mapCapture.js`), so it
+ * has to be POSTed rather than fetched through a plain `<a download>` link.
+ * The response is saved via an object URL.
+ *
+ * @param {number} farmId
+ * @param {string|null} [mapImage] - `data:image/jpeg;base64,...` of the map, or
+ *   null/omitted for a report without one.
+ * @returns {Promise<void>} Resolves once the download has been handed to the
+ *   browser.
+ * @throws {Error} with `.status` set when the server rejects the request.
+ */
+export async function downloadReportAll(farmId, mapImage) {
+  const res = await fetch(`${BASE}/report/${farmId}/all`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(mapImage ? { map_image: mapImage } : {}),
+  })
+
+  if (!res.ok) {
+    const err = new Error(`Report download failed with status ${res.status}`)
+    err.status = res.status
+    throw err
+  }
+
+  // Prefer the filename the server set, so reports keep their farm-name slug.
+  let filename = 'farmers_forward_report.pdf'
+  const disposition = res.headers.get('Content-Disposition') || ''
+  const match = /filename="?([^";]+)"?/.exec(disposition)
+  if (match) filename = match[1]
+
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  // Revoke on the next tick; revoking synchronously can cancel the download.
+  setTimeout(() => URL.revokeObjectURL(url), 10000)
+}
+
 /* ------------------------------------------------------------------ API */
 
 const api = {
@@ -197,6 +244,7 @@ const api = {
   sendContact,
   reportSectionUrl,
   reportAllUrl,
+  downloadReportAll,
 }
 
 export default api

@@ -2,7 +2,8 @@
 
 Two public builders:
   * build_section_pdf(section, farm_name, date) -> bytes   (one section)
-  * build_combined_pdf(analysis) -> bytes                  (cover + all sections)
+  * build_combined_pdf(analysis, map_image=None) -> bytes  (cover, field map,
+    all sections)
 
 Both return raw PDF bytes rendered via SimpleDocTemplate into a BytesIO buffer.
 Colors come from the brand tokens in BUILD_CONTRACT §1.
@@ -10,17 +11,21 @@ Colors come from the brand tokens in BUILD_CONTRACT §1.
 
 from __future__ import annotations
 
+import base64
+import binascii
 import io
 from html import escape
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
 from reportlab.platypus import (
     HRFlowable,
+    Image,
     PageBreak,
     Paragraph,
     SimpleDocTemplate,
@@ -59,6 +64,65 @@ def _score_hex(score: float) -> colors.Color:
     if s >= 40:
         return FF_AMBER
     return FF_RED
+
+
+def _decode_data_url(data_url: str) -> Optional[bytes]:
+    """Raw bytes from a `data:image/<type>;base64,...` URL, or None if unusable.
+
+    The value comes straight from the browser, so every malformed shape has to
+    fall through to None rather than raise: a bad image must cost the report
+    its map, never the whole download.
+    """
+    if not isinstance(data_url, str) or not data_url.startswith("data:image/"):
+        return None
+    _, _, encoded = data_url.partition(",")
+    if not encoded:
+        return None
+    try:
+        return base64.b64decode(encoded, validate=True)
+    except (binascii.Error, ValueError):
+        return None
+
+
+def _map_flowables(map_image: Optional[str], avail_width: float,
+                   styles: Dict[str, ParagraphStyle]) -> List:
+    """A scaled field-map image plus caption, or [] when there is no usable one.
+
+    `map_image` is the results map as the user saw it, rasterised in the
+    browser (score-coloured cells, pins and legend included) and posted up with
+    the report request.
+    """
+    raw = _decode_data_url(map_image or "")
+    if not raw:
+        return []
+
+    try:
+        reader = ImageReader(io.BytesIO(raw))
+        src_w, src_h = reader.getSize()
+    except Exception:  # noqa: BLE001 - any unreadable image just loses the map
+        return []
+    if not src_w or not src_h:
+        return []
+
+    # Fit the width, then cap the height so the map can never push the cover
+    # page's summary table onto a second page.
+    width = avail_width
+    height = width * (float(src_h) / float(src_w))
+    max_height = 3.6 * inch
+    if height > max_height:
+        height = max_height
+        width = height * (float(src_w) / float(src_h))
+
+    img = Image(io.BytesIO(raw), width=width, height=height)
+    img.hAlign = "CENTER"
+    return [
+        img,
+        Spacer(1, 4),
+        Paragraph(
+            "Sampling grid and soil health colours as shown when this report "
+            "was generated.",
+            styles["muted"]),
+    ]
 
 
 def _styles() -> Dict[str, ParagraphStyle]:
@@ -315,8 +379,13 @@ def build_section_pdf(section: Dict, farm_name: str, date: str) -> bytes:
     return _render(flow)
 
 
-def build_combined_pdf(analysis: Dict) -> bytes:
-    """Render a cover page + one page per section to PDF bytes."""
+def build_combined_pdf(analysis: Dict, map_image: Optional[str] = None) -> bytes:
+    """Render a cover page + field map + one page per section to PDF bytes.
+
+    `map_image` is an optional `data:image/...;base64,...` of the results map,
+    captured in the browser. When it is missing or unreadable the report is
+    built exactly as before, just without the map page.
+    """
     styles = _styles()
     farm_name = analysis.get("farm_name", "-")
     date = analysis.get("date", "-")
@@ -373,6 +442,21 @@ def build_combined_pdf(analysis: Dict) -> bytes:
         ("LEFTPADDING", (0, 0), (-1, -1), 8),
     ]))
     flow.append(stbl)
+
+    # --- field map, on its own page so it can be full width ---------------
+    # Page width less the 0.75" margins SimpleDocTemplate is built with below.
+    avail_width = letter[0] - 1.5 * inch
+    map_flow = _map_flowables(map_image, avail_width, styles)
+    if map_flow:
+        flow.append(PageBreak())
+        flow += _header_block(styles)
+        flow.append(Paragraph("Field Map", styles["h1"]))
+        flow.append(Paragraph(
+            "Sample points and their grid cells, coloured by soil health "
+            "score: red for poor, amber for moderate, green for good.",
+            styles["body"]))
+        flow.append(Spacer(1, 8))
+        flow += map_flow
 
     # --- one section per page --------------------------------------------
     for section in results:
