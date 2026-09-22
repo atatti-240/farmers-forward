@@ -498,19 +498,25 @@ attribution `Tiles © Esri`. Center on Fort Bend `[29.53,-95.77]` zoom 13. User
 clicks map to add polygon vertices (render as `Polyline`/`Polygon` + small
 `CircleMarker`s); a "Close boundary" button closes it into `polygon`. After a
 closed polygon:
-- ONE GRID FLOW (no manual/auto modes; map clicks only draw the boundary):
-  number inputs rows & cols (default 3×3) + "Apply" → `grid = {rows, cols}`
-  and, when "Add baseline points" is checked, `points = autoGrid(...)`
-  (re-applying regenerates both). `<GridLines cells={gridCells(...)} />`
+- ONE GRID FLOW (no manual/auto modes): number inputs rows & cols (default
+  3×3) + "Apply" → `grid = {rows, cols}` and, when "Add baseline points" is
+  checked, `setGridPoints(autoGrid(...))` (re-applying regenerates both). `<GridLines cells={gridCells(...)} />`
   draws every cell outline (white, 1px, non-interactive) as one Leaflet
   `layerGroup` in pane `ff-grid` (z 390, under the points); each cell polygon
   is in `group.cellLayers` under `cellKey(row, col)` for per-cell styling.
+- Map clicks: before the boundary closes they add corners; after, a click
+  inside the polygon adds a point (`addPoint`, next free `A#`, no `cell`). A
+  click that only closes a popup is ignored.
 - "Add baseline points" checkbox (default on) acts at once on an applied grid:
-  on → points at every cell center inside the field; off → grid lines only, no
-  points (confirms first if soil data would be lost). With no points, "Next"
-  stays disabled and says data entry needs at least one sample point.
-- "Tweak mode" checkbox (disabled without baseline points): when on, points
-  are draggable (`Marker draggable` with a `divIcon` dot); dragend → `updatePoint`.
+  on → points at every cell center inside the field; off → grid lines only
+  (confirms first if grid points' soil data would be lost).
+- `setGridPoints(list)` replaces only the points with a `cell` and keeps the
+  clicked ones, renumbering all `A1, A2, …` (grid first). A clicked point's
+  data follows it to its new label; a grid point keeps data only when the same
+  label is still a grid point at the same spot. With no points, "Next" stays
+  disabled and says data entry needs at least one sample point.
+- "Tweak mode" checkbox (disabled with no points): when on, points are
+  draggable (`Marker draggable` with a `divIcon` dot); dragend → `updatePoint`.
 - Clicking a point on the map opens a popup with a "Remove point" button; the
   side-panel list also has a remove (×) per point.
 Right-side panel lists every point with label + lat/long (6 dp), and a "Copy" and
@@ -539,8 +545,8 @@ store debounces them to `/api/score`, which returns the same ML score step 4
 shows), **gray** until then - each point colours as its own data lands, not
 when the field is finished. Each point also shades its grid cell
 (`gridCellRing(polygon, p.cell)`, `fillOpacity` 0.38) in a `<Pane>` below the
-markers, so the field reads as a heatmap; a point without a cell (older drafts)
-colours the dot only. A `<ScoreLegend showNoData />` control sits bottom-right.
+markers, so the field reads as a heatmap; a point added by clicking has no
+cell and colours the dot only. A `<ScoreLegend showNoData />` control sits bottom-right.
 A `.ff-progress` bar showing `completeCount / points.length`.
 
 STEP 3 - Review + Submit: "Review All" table (`.ff-table`) of every section +

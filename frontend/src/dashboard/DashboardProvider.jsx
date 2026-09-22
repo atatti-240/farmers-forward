@@ -17,6 +17,7 @@ import {
 } from 'react'
 
 import api from '../api/client.js'
+import { mergeGridPoints, nextLabel } from './points.js'
 
 const STORAGE_KEY = 'ff_field_draft'
 // Results of the last submit, kept separately so a refresh on Step 4 re-hydrates
@@ -282,22 +283,22 @@ export default function DashboardProvider({ children }) {
 
   /* -------------------------------------------------------- point helpers */
 
-  // Replace the whole point set, pruning measurement data for labels that were
-  // removed or now sit somewhere else (a regenerated grid reuses A1, A2, …).
-  const setPoints = useCallback(
-    (points) => {
-      const list = Array.isArray(points) ? points : []
-      patch((prev) => {
-        const before = new Map(prev.points.map((p) => [p.label, p]))
-        const data = {}
-        for (const p of list) {
-          const old = before.get(p.label)
-          if (old && old.lat === p.lat && old.lng === p.lng && prev.data[p.label]) {
-            data[p.label] = prev.data[p.label]
-          }
-        }
-        return { points: list, data }
-      })
+  // Swap in new grid points, keeping clicked points (see mergeGridPoints).
+  const setGridPoints = useCallback(
+    (gridPoints) => {
+      const list = Array.isArray(gridPoints) ? gridPoints : []
+      patch((prev) => mergeGridPoints(prev.points, prev.data, list))
+    },
+    [patch]
+  )
+
+  // Add a point where the map was clicked, at the next free `A#` label. It has
+  // no grid cell, so it survives Apply and colours only its own dot later.
+  const addPoint = useCallback(
+    (lat, lng) => {
+      patch((prev) => ({
+        points: [...prev.points, { label: nextLabel(prev.points), lat, lng }],
+      }))
     },
     [patch]
   )
@@ -326,7 +327,7 @@ export default function DashboardProvider({ children }) {
     [patch]
   )
 
-  const clearPoints = useCallback(() => setPoints([]), [setPoints])
+  const clearPoints = useCallback(() => patch({ points: [], data: {} }), [patch])
 
   /* --------------------------------------------------- farm finder pins */
 
@@ -442,7 +443,8 @@ export default function DashboardProvider({ children }) {
     setCols,
     setTweakMode,
     setMapView,
-    setPoints,
+    setGridPoints,
+    addPoint,
     updatePoint,
     removePoint,
     clearPoints,

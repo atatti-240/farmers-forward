@@ -2,8 +2,8 @@
    Farmers Forward - Step 2: Data Entry (BUILD_CONTRACT §5)
    The same gridded satellite map. Selecting a point opens a side panel for its
    five soil measurements (pH, EC, N, P, K) which auto-save to the store on
-   every keystroke. As soon as a point's five values are in, its dot and its
-   grid cell take the soil health colour.
+   every keystroke. As soon as a point's five values are in, its dot (and a
+   grid point's cell) takes the soil health colour.
    ========================================================================== */
 
 import { useEffect, useRef, useState } from 'react'
@@ -141,8 +141,8 @@ export default function Step2DataEntry() {
               />
             )}
 
-            {/* Grid cells shaded by score (a point without a cell, e.g. from an
-                older draft, colours its dot only), in a pane under the markers
+            {/* Grid cells shaded by score (a point added by clicking has no
+                cell and colours its dot only), in a pane under the markers
                 (overlayPane is z-index 400) since they load after them. */}
             <Pane name="ff-cells" style={{ zIndex: 390 }}>
               {points.map((p) => {

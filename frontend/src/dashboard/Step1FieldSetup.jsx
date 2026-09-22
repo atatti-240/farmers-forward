@@ -3,8 +3,9 @@
    Draw the field boundary on ESRI satellite imagery, then lay a rows × columns
    grid over it. Grid lines are drawn clipped to the boundary; with "Add
    baseline points" on, a sample point sits at the center of every cell inside
-   the field. Points can be removed from the map (click → Remove) or the list,
-   and are listed with 6-dp coordinates that can be copied or exported as CSV.
+   the field. Clicking inside the field adds more points anywhere. Points can
+   be removed from the map (click → Remove) or the list, and are listed with
+   6-dp coordinates that can be copied or exported as CSV.
    ========================================================================== */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -24,7 +25,7 @@ import L from 'leaflet'
 
 import { useDashboard } from './DashboardProvider.jsx'
 import FarmFinder, { FarmFinderPins } from './FarmFinder.jsx'
-import { autoGrid, gridCells } from './geo.js'
+import { autoGrid, gridCells, pointInPolygon } from './geo.js'
 import GridLines from './GridLines.jsx'
 import { InvalidateSizeOnVisible, TrackMapView } from './mapView.js'
 
@@ -48,7 +49,7 @@ function dotIcon(label) {
 /**
  * Forwards map clicks to a handler that always sees fresh props. A click that
  * only dismisses an open popup is swallowed, so clicking away from a popup
- * doesn't also drop a boundary corner.
+ * doesn't also drop a boundary corner or a new point.
  */
 function MapClicks({ onClick }) {
   const dismissing = useRef(false)
@@ -136,7 +137,8 @@ export default function Step1FieldSetup() {
     cols,
     setCols,
     points,
-    setPoints,
+    setGridPoints,
+    addPoint,
     updatePoint,
     removePoint,
     clearPoints,
@@ -160,8 +162,14 @@ export default function Step1FieldSetup() {
     [closed, polygon, grid]
   )
 
-  function addCorner(lat, lng) {
-    setVerts((prev) => [...prev, [lat, lng]])
+  // Before the boundary is closed a click adds a corner; after, a click inside
+  // the field adds a sample point.
+  function handleMapClick(lat, lng) {
+    if (!closed) {
+      setVerts((prev) => [...prev, [lat, lng]])
+    } else if (pointInPolygon([lat, lng], polygon)) {
+      addPoint(lat, lng)
+    }
   }
 
   function closeBoundary() {
@@ -181,11 +189,12 @@ export default function Step1FieldSetup() {
   function applyGrid() {
     const next = { rows: rows || 3, cols: cols || 3 }
     setGrid(next)
-    setPoints(baselinePoints ? autoGrid(polygon, next.rows, next.cols) : [])
+    setGridPoints(baselinePoints ? autoGrid(polygon, next.rows, next.cols) : [])
   }
 
-  // Takes effect at once on an applied grid: on fills every cell center,
-  // off removes the points (after confirming if any soil data would go too).
+  // Takes effect at once on an applied grid: on fills every cell center, off
+  // removes the grid's points (confirming first if soil data would go too).
+  // Points added by clicking the map are kept either way.
   function toggleBaselinePoints(on) {
     if (!grid) {
       setBaselinePoints(on)
@@ -193,22 +202,24 @@ export default function Step1FieldSetup() {
     }
     if (on) {
       setBaselinePoints(true)
-      setPoints(autoGrid(polygon, grid.rows, grid.cols))
+      setGridPoints(autoGrid(polygon, grid.rows, grid.cols))
       return
     }
-    const hasData = points.some((p) =>
-      Object.values(data[p.label] || {}).some((v) => String(v ?? '').trim() !== '')
+    const hasData = points.some(
+      (p) =>
+        p.cell &&
+        Object.values(data[p.label] || {}).some((v) => String(v ?? '').trim() !== '')
     )
     if (
       hasData &&
       !window.confirm(
-        'Turning off baseline points also clears the soil data entered for them. Continue?'
+        'Turning off baseline points also clears the soil data entered for the grid points. Continue?'
       )
     ) {
       return
     }
     setBaselinePoints(false)
-    clearPoints()
+    setGridPoints([])
   }
 
   async function copyPoints() {
@@ -267,7 +278,7 @@ export default function Step1FieldSetup() {
               <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} />
               <TrackMapView onChange={setMapView} />
               <InvalidateSizeOnVisible />
-              {!closed && <MapClicks onClick={addCorner} />}
+              <MapClicks onClick={handleMapClick} />
               <FitPolygon polygon={polygon} hasSavedView={!!mapView} />
               <FarmFinderPins />
 
@@ -493,7 +504,7 @@ export default function Step1FieldSetup() {
                   <input
                     type="checkbox"
                     checked={tweakMode}
-                    disabled={!baselinePoints}
+                    disabled={points.length === 0}
                     onChange={(e) => setTweakMode(e.target.checked)}
                   />
                   Tweak mode
@@ -503,8 +514,9 @@ export default function Step1FieldSetup() {
                 Apply divides the field into rows × columns and draws the grid
                 inside your boundary. Baseline points put a sample point at the
                 center of each cell inside the field. Change the numbers and
-                apply again to regenerate. Click a point to remove it, or turn
-                on tweak mode to drag points into place.
+                apply again to regenerate. Click anywhere inside the field to
+                add a point of your own; click a point to remove it, or turn on
+                tweak mode to drag points into place.
               </p>
             </div>
           )}
@@ -539,10 +551,10 @@ export default function Step1FieldSetup() {
               {points.length === 0 ? (
                 <p className="ff-empty" style={{ marginTop: 12 }}>
                   {!grid
-                    ? 'No sample points yet. Apply a grid to add them.'
+                    ? 'No sample points yet. Apply a grid, or click inside the field to add one.'
                     : baselinePoints
-                      ? 'No sample points left. Apply the grid again to restore them.'
-                      : 'Grid only. Turn on baseline points to add sample points.'}
+                      ? 'No sample points left. Apply the grid again, or click inside the field.'
+                      : 'Grid only. Turn on baseline points, or click inside the field to add one.'}
                 </p>
               ) : (
                 <ul className="ff-point-list" style={{ marginTop: 12 }}>
