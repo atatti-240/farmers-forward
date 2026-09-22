@@ -43,9 +43,13 @@ function defaultState() {
     farmName: '',
     date: todayISO(),
     polygon: [],
-    gridMode: 'auto',
+    // Row/col inputs; `grid` is the last applied grid ({ rows, cols } or null),
+    // which the grid lines are drawn from.
     rows: 3,
     cols: 3,
+    grid: null,
+    // Put a sample point at the center of each grid cell inside the field.
+    baselinePoints: true,
     points: [],
     tweakMode: false,
     // Last map view ({ center: [lat, lng], zoom }) so every step's map opens on
@@ -71,6 +75,11 @@ function loadState() {
         const merged = { ...defaultState(), ...parsed }
         merged.points = Array.isArray(merged.points) ? merged.points : []
         merged.polygon = Array.isArray(merged.polygon) ? merged.polygon : []
+        // Drafts from before the single grid flow: drop the old manual/auto
+        // mode and recover the applied grid from the points' cells.
+        delete merged.gridMode
+        merged.grid = isGrid(merged.grid) ? merged.grid : gridFromPoints(merged.points)
+        merged.baselinePoints = merged.baselinePoints !== false
         merged.data =
           merged.data && typeof merged.data === 'object' && !Array.isArray(merged.data)
             ? merged.data
@@ -116,6 +125,24 @@ function isMapView(v) {
   )
 }
 
+/** @returns {boolean} Whether `g` is a usable applied grid `{ rows, cols }`. */
+function isGrid(g) {
+  return (
+    !!g &&
+    Number.isInteger(g.rows) &&
+    Number.isInteger(g.cols) &&
+    g.rows >= 1 &&
+    g.cols >= 1
+  )
+}
+
+/** The grid the points were generated from, or `null` if they carry none. */
+function gridFromPoints(points) {
+  const cell = points.find((p) => p && p.cell)?.cell
+  const grid = cell ? { rows: cell.rows, cols: cell.cols } : null
+  return isGrid(grid) ? grid : null
+}
+
 /** @returns {boolean} Whether `p` is a well-formed Farm Finder pin. */
 function isFinderPin(p) {
   return (
@@ -158,14 +185,6 @@ function measurementKey(values) {
     nums.push(n)
   }
   return nums.join('|')
-}
-
-/** Next unused manual label in the `A1, A2, …` sequence. */
-function nextManualLabel(points) {
-  const used = new Set(points.map((p) => p.label))
-  let i = 1
-  while (used.has(`A${i}`)) i += 1
-  return `A${i}`
 }
 
 /**
@@ -250,7 +269,11 @@ export default function DashboardProvider({ children }) {
   const setFarmName = useCallback((farmName) => patch({ farmName }), [patch])
   const setDate = useCallback((date) => patch({ date }), [patch])
   const setPolygon = useCallback((polygon) => patch({ polygon: polygon || [] }), [patch])
-  const setGridMode = useCallback((gridMode) => patch({ gridMode }), [patch])
+  const setGrid = useCallback((grid) => patch({ grid }), [patch])
+  const setBaselinePoints = useCallback(
+    (baselinePoints) => patch({ baselinePoints }),
+    [patch]
+  )
   const setRows = useCallback((rows) => patch({ rows }), [patch])
   const setCols = useCallback((cols) => patch({ cols }), [patch])
   const setTweakMode = useCallback((tweakMode) => patch({ tweakMode }), [patch])
@@ -279,20 +302,7 @@ export default function DashboardProvider({ children }) {
     [patch]
   )
 
-  // Append a manual point at the next `A#` label.
-  const addPoint = useCallback(
-    (lat, lng) => {
-      patch((prev) => ({
-        points: [
-          ...prev.points,
-          { label: nextManualLabel(prev.points), lat, lng },
-        ],
-      }))
-    },
-    [patch]
-  )
-
-  // Move an existing point (auto tweak / manual drag).
+  // Move an existing point (tweak-mode drag).
   const updatePoint = useCallback(
     (label, lat, lng) => {
       patch((prev) => ({
@@ -406,7 +416,8 @@ export default function DashboardProvider({ children }) {
     farmName: state.farmName,
     date: state.date,
     polygon: state.polygon,
-    gridMode: state.gridMode,
+    grid: state.grid,
+    baselinePoints: state.baselinePoints,
     rows: state.rows,
     cols: state.cols,
     points: state.points,
@@ -425,13 +436,13 @@ export default function DashboardProvider({ children }) {
     setFarmName,
     setDate,
     setPolygon,
-    setGridMode,
+    setGrid,
+    setBaselinePoints,
     setRows,
     setCols,
     setTweakMode,
     setMapView,
     setPoints,
-    addPoint,
     updatePoint,
     removePoint,
     clearPoints,

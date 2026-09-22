@@ -122,32 +122,6 @@
   justify-content: space-between;
 }
 
-/* Segmented control (auto / manual) */
-.ff-seg {
-  display: inline-flex;
-  background: var(--ff-bg);
-  border: 1px solid var(--ff-border);
-  border-radius: 999px;
-  padding: 3px;
-  gap: 3px;
-}
-.ff-seg__btn {
-  border: none;
-  background: transparent;
-  color: var(--ff-text-muted);
-  font-weight: 600;
-  font-size: 0.9rem;
-  min-height: 40px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-.ff-seg__btn--active {
-  background: var(--pub-ink);
-  color: var(--pub-card);
-}
-
 /* Small number field (rows / cols) */
 .ff-num {
   width: 74px;
@@ -164,7 +138,7 @@
   margin-bottom: 0;
 }
 
-/* Checkbox row (tweak mode) */
+/* Checkbox row (baseline points, tweak mode) */
 .ff-check {
   display: inline-flex;
   align-items: center;
@@ -613,9 +587,6 @@
 .ff-side__section + .ff-side__section { margin-top: 24px; padding-top: 24px; }
 .ff-side .ff-hint { line-height: 1.65; }
 .ff-hint.ff-mt-0 { margin-bottom: 14px; }
-.ff-seg { border-color: var(--pub-ink-line); border-radius: 8px; background: var(--pub-paper-deep); }
-.ff-seg__btn { border-radius: 5px; font-family: var(--pub-serif); }
-.ff-seg__btn:not(.ff-seg__btn--active):hover { background: var(--pub-card); color: var(--pub-ink); }
 .ff-check input { width: 18px; height: 18px; accent-color: var(--pub-green); }
 .ff-point-item { min-height: 48px; }
 .ff-point-item--active { box-shadow: inset 3px 0 0 var(--pub-green); }

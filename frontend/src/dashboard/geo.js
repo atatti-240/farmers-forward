@@ -66,9 +66,8 @@ export function polygonBounds(polygon) {
  *
  * The bbox is split into `rows` × `cols` equal cells. Each cell's center is
  * kept only if it falls inside the polygon. Kept points are read row by row
- * (north→south, then west→east) and labelled sequentially `A1, A2, A3, …`,
- * matching manually placed points. Centers outside the polygon are skipped
- * without using up a label.
+ * (north→south, then west→east) and labelled sequentially `A1, A2, A3, …`.
+ * Centers outside the polygon are skipped without using up a label.
  *
  * Each point also carries `cell: { row, col, rows, cols }` so its grid cell can
  * be redrawn later with {@link gridCellRing} (e.g. to shade it by soil score).
@@ -110,7 +109,7 @@ export function autoGrid(polygon, rows, cols) {
 }
 
 /**
- * The part of the field polygon that lies inside an auto-grid point's cell.
+ * The part of the field polygon that lies inside one grid cell.
  *
  * Rebuilds the cell rectangle from the polygon's bounding box (exactly as
  * {@link autoGrid} laid it out) and clips the polygon to it with
@@ -121,7 +120,8 @@ export function autoGrid(polygon, rows, cols) {
  * @param {{row:number, col:number, rows:number, cols:number}} cell - A point's
  *   `cell` from {@link autoGrid}.
  * @returns {Array<[number, number]>|null} The clipped ring as `[lat, lng]`
- *   pairs, or `null` for a manual point, a malformed cell or an empty result.
+ *   pairs, or `null` for a point without a cell, a malformed cell, or a cell
+ *   that only touches the field along an edge or at a corner (no area).
  */
 export function gridCellRing(polygon, cell) {
   if (!cell || !Array.isArray(polygon) || polygon.length < 3) return null
@@ -165,7 +165,45 @@ export function gridCellRing(polygon, cell) {
     }
     ring = next
   }
-  return ring.length >= 3 ? ring : null
+  if (ring.length < 3) return null
+  // A cell that only meets a concave field along an edge clips to a sliver of
+  // zero area; drawing it would just trace that edge.
+  let twiceArea = 0
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    twiceArea += ring[j][1] * ring[i][0] - ring[i][1] * ring[j][0]
+  }
+  return Math.abs(twiceArea) > cellH * cellW * 1e-9 ? ring : null
+}
+
+/** Key for one grid cell, shared by {@link gridCells} and each point's `cell`. */
+export function cellKey(row, col) {
+  return `${row}:${col}`
+}
+
+/**
+ * Every cell of a `rows` × `cols` grid that overlaps the field, clipped to it.
+ * Laid out exactly like {@link autoGrid}, so `cellKey(p.cell.row, p.cell.col)`
+ * finds a point's cell. Unlike the points, a cell is kept even when its center
+ * falls outside the field, so the grid lines cover the whole boundary.
+ *
+ * @param {Array<[number, number]>} polygon - Closed field boundary.
+ * @param {number} rows - Number of grid rows (>= 1).
+ * @param {number} cols - Number of grid columns (>= 1).
+ * @returns {Array<{key:string, row:number, col:number,
+ *   ring:Array<[number, number]>}>} Cells in row-major order.
+ */
+export function gridCells(polygon, rows, cols) {
+  const r = Math.max(1, Math.floor(Number(rows)) || 0)
+  const c = Math.max(1, Math.floor(Number(cols)) || 0)
+  if (!Array.isArray(polygon) || polygon.length < 3) return []
+  const cells = []
+  for (let row = 0; row < r; row++) {
+    for (let col = 0; col < c; col++) {
+      const ring = gridCellRing(polygon, { row, col, rows: r, cols: c })
+      if (ring) cells.push({ key: cellKey(row, col), row, col, ring })
+    }
+  }
+  return cells
 }
 
 /**

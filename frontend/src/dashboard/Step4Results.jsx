@@ -2,7 +2,7 @@
    Farmers Forward - Step 4: Results (BUILD_CONTRACT §5)
    Renders the analysis: a field-level summary, per-section colour-coded score
    cards with crop viability and recommendations, a satellite map colouring
-   each sample point (and its auto-grid cell) on the soil health gradient, and
+   each sample point (and its grid cell) on the soil health gradient, and
    PDF download links. Cards use the same colour as their map marker.
    ========================================================================== */
 
@@ -154,7 +154,7 @@ export default function Step4Results() {
             />
           )}
 
-          {/* Auto-grid cells, in a pane under the markers (overlayPane is 400). */}
+          {/* Grid cells, in a pane under the markers (overlayPane is 400). */}
           <Pane name="ff-cells" style={{ zIndex: 390 }}>
             {results.map((r) => {
               const ring = cellRings[r.section_label]

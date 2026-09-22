@@ -1,12 +1,13 @@
 /* ==========================================================================
    Farmers Forward - Step 1: Field Setup (BUILD_CONTRACT §5)
-   Draw the field boundary on ESRI satellite imagery, then place sample points
-   either automatically (row/col grid) or manually (click-to-drop). Points can
-   be removed from the map (click → Remove) or the list, and are listed with
-   6-dp coordinates that can be copied or exported as CSV.
+   Draw the field boundary on ESRI satellite imagery, then lay a rows × columns
+   grid over it. Grid lines are drawn clipped to the boundary; with "Add
+   baseline points" on, a sample point sits at the center of every cell inside
+   the field. Points can be removed from the map (click → Remove) or the list,
+   and are listed with 6-dp coordinates that can be copied or exported as CSV.
    ========================================================================== */
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   MapContainer,
   TileLayer,
@@ -23,7 +24,8 @@ import L from 'leaflet'
 
 import { useDashboard } from './DashboardProvider.jsx'
 import FarmFinder, { FarmFinderPins } from './FarmFinder.jsx'
-import { autoGrid, pointInPolygon } from './geo.js'
+import { autoGrid, gridCells } from './geo.js'
+import GridLines from './GridLines.jsx'
 import { InvalidateSizeOnVisible, TrackMapView } from './mapView.js'
 
 const ESRI_URL =
@@ -45,8 +47,8 @@ function dotIcon(label) {
 
 /**
  * Forwards map clicks to a handler that always sees fresh props. A click that
- * only dismisses an open popup is swallowed, so clicking away from a point's
- * popup doesn't also drop a new point or boundary corner.
+ * only dismisses an open popup is swallowed, so clicking away from a popup
+ * doesn't also drop a boundary corner.
  */
 function MapClicks({ onClick }) {
   const dismissing = useRef(false)
@@ -125,20 +127,22 @@ export default function Step1FieldSetup() {
     setDate,
     polygon,
     setPolygon,
-    gridMode,
-    setGridMode,
+    grid,
+    setGrid,
+    baselinePoints,
+    setBaselinePoints,
     rows,
     setRows,
     cols,
     setCols,
     points,
     setPoints,
-    addPoint,
     updatePoint,
     removePoint,
     clearPoints,
     tweakMode,
     setTweakMode,
+    data,
     mapView,
     setMapView,
     goStep,
@@ -150,14 +154,14 @@ export default function Step1FieldSetup() {
 
   const closed = polygon.length >= 3
 
-  function handleMapClick(lat, lng) {
-    if (!closed) {
-      setVerts((prev) => [...prev, [lat, lng]])
-      return
-    }
-    if (gridMode === 'manual' && pointInPolygon([lat, lng], polygon)) {
-      addPoint(lat, lng)
-    }
+  // Cell outlines for the applied grid (not the unsaved row/col inputs).
+  const cells = useMemo(
+    () => (closed && grid ? gridCells(polygon, grid.rows, grid.cols) : []),
+    [closed, polygon, grid]
+  )
+
+  function addCorner(lat, lng) {
+    setVerts((prev) => [...prev, [lat, lng]])
   }
 
   function closeBoundary() {
@@ -169,12 +173,42 @@ export default function Step1FieldSetup() {
 
   function resetBoundary() {
     setPolygon([])
+    setGrid(null)
     clearPoints()
     setVerts([])
   }
 
-  function generate() {
-    setPoints(autoGrid(polygon, rows || 3, cols || 3))
+  function applyGrid() {
+    const next = { rows: rows || 3, cols: cols || 3 }
+    setGrid(next)
+    setPoints(baselinePoints ? autoGrid(polygon, next.rows, next.cols) : [])
+  }
+
+  // Takes effect at once on an applied grid: on fills every cell center,
+  // off removes the points (after confirming if any soil data would go too).
+  function toggleBaselinePoints(on) {
+    if (!grid) {
+      setBaselinePoints(on)
+      return
+    }
+    if (on) {
+      setBaselinePoints(true)
+      setPoints(autoGrid(polygon, grid.rows, grid.cols))
+      return
+    }
+    const hasData = points.some((p) =>
+      Object.values(data[p.label] || {}).some((v) => String(v ?? '').trim() !== '')
+    )
+    if (
+      hasData &&
+      !window.confirm(
+        'Turning off baseline points also clears the soil data entered for them. Continue?'
+      )
+    ) {
+      return
+    }
+    setBaselinePoints(false)
+    clearPoints()
   }
 
   async function copyPoints() {
@@ -233,7 +267,7 @@ export default function Step1FieldSetup() {
               <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} />
               <TrackMapView onChange={setMapView} />
               <InvalidateSizeOnVisible />
-              <MapClicks onClick={handleMapClick} />
+              {!closed && <MapClicks onClick={addCorner} />}
               <FitPolygon polygon={polygon} hasSavedView={!!mapView} />
               <FarmFinderPins />
 
@@ -260,6 +294,9 @@ export default function Step1FieldSetup() {
                 </>
               )}
 
+              {/* Grid lines (own pane, under the points) */}
+              {cells.length > 0 && <GridLines cells={cells} />}
+
               {/* Closed boundary */}
               {closed && (
                 <Polygon
@@ -276,10 +313,7 @@ export default function Step1FieldSetup() {
               {/* Sample points */}
               {closed &&
                 points.map((p) => {
-                  const draggable =
-                    gridMode === 'manual' ||
-                    (gridMode === 'auto' && tweakMode)
-                  if (draggable) {
+                  if (tweakMode) {
                     return (
                       <Marker
                         key={p.label}
@@ -408,88 +442,70 @@ export default function Step1FieldSetup() {
           {/* Grid controls */}
           {closed && (
             <div className="ff-side__section">
-              <h3 className="ff-side__title">Sample points</h3>
-              <div className="ff-toolbar">
-                <div className="ff-seg" role="group" aria-label="Grid mode">
-                  <button
-                    type="button"
-                    className={`ff-seg__btn${gridMode === 'auto' ? ' ff-seg__btn--active' : ''}`}
-                    onClick={() => setGridMode('auto')}
-                  >
-                    Auto grid
-                  </button>
-                  <button
-                    type="button"
-                    className={`ff-seg__btn${gridMode === 'manual' ? ' ff-seg__btn--active' : ''}`}
-                    onClick={() => setGridMode('manual')}
-                  >
-                    Manual
-                  </button>
+              <h3 className="ff-side__title">Sampling grid</h3>
+              <div className="ff-num-group">
+                <div className="ff-field">
+                  <label className="ff-label" htmlFor="ff-rows">
+                    Rows
+                  </label>
+                  <input
+                    id="ff-rows"
+                    className="ff-input ff-num"
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={rows}
+                    onChange={(e) => setRows(clampInt(e.target.value))}
+                  />
+                </div>
+                <div className="ff-field">
+                  <label className="ff-label" htmlFor="ff-cols">
+                    Columns
+                  </label>
+                  <input
+                    id="ff-cols"
+                    className="ff-input ff-num"
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={cols}
+                    onChange={(e) => setCols(clampInt(e.target.value))}
+                  />
                 </div>
               </div>
-
-              {gridMode === 'auto' ? (
-                <>
-                  <div className="ff-num-group">
-                    <div className="ff-field">
-                      <label className="ff-label" htmlFor="ff-rows">
-                        Rows
-                      </label>
-                      <input
-                        id="ff-rows"
-                        className="ff-input ff-num"
-                        type="number"
-                        min="1"
-                        max="12"
-                        value={rows}
-                        onChange={(e) => setRows(clampInt(e.target.value))}
-                      />
-                    </div>
-                    <div className="ff-field">
-                      <label className="ff-label" htmlFor="ff-cols">
-                        Columns
-                      </label>
-                      <input
-                        id="ff-cols"
-                        className="ff-input ff-num"
-                        type="number"
-                        min="1"
-                        max="12"
-                        value={cols}
-                        onChange={(e) => setCols(clampInt(e.target.value))}
-                      />
-                    </div>
-                  </div>
-                  <div className="ff-inline" style={{ marginTop: 12 }}>
-                    <button
-                      type="button"
-                      className="ff-btn ff-btn--primary ff-btn--sm"
-                      onClick={generate}
-                    >
-                      Apply
-                    </button>
-                    <label className="ff-check">
-                      <input
-                        type="checkbox"
-                        checked={tweakMode}
-                        onChange={(e) => setTweakMode(e.target.checked)}
-                      />
-                      Tweak mode
-                    </label>
-                  </div>
-                  <p className="ff-hint">
-                    Apply spreads rows × columns points evenly across the field and
-                    keeps only those inside your boundary. Change the numbers and
-                    apply again to regenerate. Click a point to remove it, or turn
-                    on tweak mode to drag points into place.
-                  </p>
-                </>
-              ) : (
-                <p className="ff-hint ff-mt-0">
-                  Click anywhere inside the boundary to drop a labelled point.
-                  Drag any point to reposition it, or click it to remove it.
-                </p>
-              )}
+              <div className="ff-inline" style={{ marginTop: 12 }}>
+                <button
+                  type="button"
+                  className="ff-btn ff-btn--primary ff-btn--sm"
+                  onClick={applyGrid}
+                >
+                  Apply
+                </button>
+                <label className="ff-check">
+                  <input
+                    type="checkbox"
+                    checked={baselinePoints}
+                    onChange={(e) => toggleBaselinePoints(e.target.checked)}
+                  />
+                  Add baseline points
+                </label>
+                <label className="ff-check">
+                  <input
+                    type="checkbox"
+                    checked={tweakMode}
+                    disabled={!baselinePoints}
+                    onChange={(e) => setTweakMode(e.target.checked)}
+                  />
+                  Tweak mode
+                </label>
+              </div>
+              <p className="ff-hint">
+                Apply divides the field into rows × columns and draws the grid
+                inside your boundary. Baseline points put a sample point at the
+                center of each cell inside the field. Change the numbers and
+                apply again to regenerate. Click a point to remove it, or turn
+                on tweak mode to drag points into place.
+              </p>
             </div>
           )}
 
@@ -522,7 +538,11 @@ export default function Step1FieldSetup() {
 
               {points.length === 0 ? (
                 <p className="ff-empty" style={{ marginTop: 12 }}>
-                  No sample points yet.
+                  {!grid
+                    ? 'No sample points yet. Apply a grid to add them.'
+                    : baselinePoints
+                      ? 'No sample points left. Apply the grid again to restore them.'
+                      : 'Grid only. Turn on baseline points to add sample points.'}
                 </p>
               ) : (
                 <ul className="ff-point-list" style={{ marginTop: 12 }}>
@@ -565,6 +585,11 @@ export default function Step1FieldSetup() {
 
           {/* Advance */}
           <div className="ff-actions ff-actions--end">
+            {closed && points.length < 1 && (
+              <span className="ff-hint ff-mb-0" style={{ alignSelf: 'center' }}>
+                Data entry needs at least one sample point.
+              </span>
+            )}
             <button
               type="button"
               className="ff-btn ff-btn--primary"

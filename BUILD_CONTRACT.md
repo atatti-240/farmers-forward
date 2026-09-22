@@ -459,9 +459,10 @@ Store (`useDashboard`) holds & persists to localStorage key `ff_field_draft`
 ```
 { step:1..4, farmName, date,
   polygon: [[lat,lng],...],            // closed field boundary
-  gridMode: 'auto'|'manual',
-  rows, cols,                          // for auto grid
-  points: [{label, lat, lng}],         // sample points
+  rows, cols,                          // grid inputs (1-12 each)
+  grid: null | {rows, cols},           // last applied grid; grid lines draw from it
+  baselinePoints: bool,                // point at each cell center (default true)
+  points: [{label, lat, lng, cell:{row,col,rows,cols}}],  // sample points
   tweakMode: bool,
   mapView: null | {center:[lat,lng], zoom},  // last map view, shared by steps 1-2
   finderPins: [{id, lat, lng, title, name}], // Farm Finder search pins
@@ -476,10 +477,15 @@ resetDraft, etc.).
 geo.js pure functions (with JSDoc, no external deps):
 - `pointInPolygon([lat,lng], polygon) -> bool` (ray casting).
 - `polygonBounds(polygon) -> {minLat,maxLat,minLng,maxLng}`.
-- `autoGrid(polygon, rows, cols) -> [{label,lat,lng}]` - split bbox into
+- `autoGrid(polygon, rows, cols) -> [{label,lat,lng,cell}]` - split bbox into
   rows×cols cells, take each cell center, keep only centers inside the polygon,
   and label the kept points sequentially `A1, A2, …` in row order (top→bottom,
-  left→right), the same scheme as manual points.
+  left→right). `cell` is `{row,col,rows,cols}`.
+- `gridCellRing(polygon, cell) -> ring|null` - one cell clipped to the field
+  (Sutherland-Hodgman); `null` when the cell has no area inside it.
+- `gridCells(polygon, rows, cols) -> [{key,row,col,ring}]` - every cell with
+  area inside the field (even if its center is outside), for the grid lines.
+- `cellKey(row, col) -> 'row:col'` - shared key between cells and `point.cell`.
 - `polygonCentroid(polygon) -> [lat,lng]`.
 - `parseCoordinates(text) -> {lat,lng} | {error} | null` - accepts `29.5310, -95.7730`,
   space/semicolon separators, and `29.531° N, 95.773° W`; `null` means "not
@@ -492,13 +498,21 @@ attribution `Tiles © Esri`. Center on Fort Bend `[29.53,-95.77]` zoom 13. User
 clicks map to add polygon vertices (render as `Polyline`/`Polygon` + small
 `CircleMarker`s); a "Close boundary" button closes it into `polygon`. After a
 closed polygon:
-- AUTO GRID: number inputs rows & cols (default 3×3) + "Apply"
-  → `autoGrid` → set `points` (re-applying regenerates the grid). "Tweak mode" toggle: when on, points are draggable
-  (`Marker draggable` with a `divIcon` dot); dragend → `updatePoint`.
-- MANUAL GRID: toggle to manual; clicking inside the polygon adds a labeled point
-  (sequential A1, A2, …); dragging moves it.
-- Either mode: clicking a point on the map opens a popup with a "Remove point"
-  button; the side-panel list also has a remove (×) per point.
+- ONE GRID FLOW (no manual/auto modes; map clicks only draw the boundary):
+  number inputs rows & cols (default 3×3) + "Apply" → `grid = {rows, cols}`
+  and, when "Add baseline points" is checked, `points = autoGrid(...)`
+  (re-applying regenerates both). `<GridLines cells={gridCells(...)} />`
+  draws every cell outline (white, 1px, non-interactive) as one Leaflet
+  `layerGroup` in pane `ff-grid` (z 390, under the points); each cell polygon
+  is in `group.cellLayers` under `cellKey(row, col)` for per-cell styling.
+- "Add baseline points" checkbox (default on) acts at once on an applied grid:
+  on → points at every cell center inside the field; off → grid lines only, no
+  points (confirms first if soil data would be lost). With no points, "Next"
+  stays disabled and says data entry needs at least one sample point.
+- "Tweak mode" checkbox (disabled without baseline points): when on, points
+  are draggable (`Marker draggable` with a `divIcon` dot); dragend → `updatePoint`.
+- Clicking a point on the map opens a popup with a "Remove point" button; the
+  side-panel list also has a remove (×) per point.
 Right-side panel lists every point with label + lat/long (6 dp), and a "Copy" and
 "Export CSV" (download `points.csv`) action. "Next" advances to step 2 (enabled
 once ≥1 point exists). Show point labels on the map (permanent `Tooltip` or
@@ -523,10 +537,10 @@ inputs ph, ec, nitrogen, phosphorus, potassium. Inputs auto-save to the store
 Dot color: `scoreColor(score)` once a point's five measurements are in (the
 store debounces them to `/api/score`, which returns the same ML score step 4
 shows), **gray** until then - each point colours as its own data lands, not
-when the field is finished. Auto-grid points also shade their grid cell
+when the field is finished. Each point also shades its grid cell
 (`gridCellRing(polygon, p.cell)`, `fillOpacity` 0.38) in a `<Pane>` below the
-markers, so the field reads as a heatmap; manual points have no cell and colour
-the dot only. A `<ScoreLegend showNoData />` control sits bottom-right.
+markers, so the field reads as a heatmap; a point without a cell (older drafts)
+colours the dot only. A `<ScoreLegend showNoData />` control sits bottom-right.
 A `.ff-progress` bar showing `completeCount / points.length`.
 
 STEP 3 - Review + Submit: "Review All" table (`.ff-table`) of every section +
