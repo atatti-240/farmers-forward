@@ -1,0 +1,96 @@
+profile,crop,pH optimal low,pH optimal high,pH tolerable low,pH tolerable high,ECe threshold (dS/m),yield loss %/dS/m,salt class,EC data source,pH confidence,A&M table entries mapped,note
+corn,Corn (grain),5.8,7.0,5.5,8.0,1.7,12,MS,MH,standard,21,
+corn_silage,Corn (forage/silage),5.8,7.0,5.5,8.0,1.8,7.4,MS,MH,standard,5,
+sorghum,Grain sorghum / hegari / red top cane,6.0,7.5,5.5,8.5,6.8,16,MT,MH,standard,22,Iron chlorosis common on calcareous Gulf Coast soils above pH ~8
+forage_sorghum,Forage sorghum / sudan / sorghum-sudan / hay grazer / sorghum almum,5.8,7.5,5.5,8.5,2.8,4.3,MT,MH,standard,17,Uses sudangrass salinity values (conservative for all forage sorghums)
+wheat,Wheat (grain),6.0,7.0,5.5,8.0,6.0,7.1,MT,MH,standard,10,Aluminum toxicity risk below 5.5
+wheat_forage,Wheat (grazing/hay/silage/greenchop),6.0,7.0,5.5,8.0,4.5,2.6,MT,MH,standard,22,
+barley,Barley (grain),6.0,7.5,5.5,8.5,8.0,5.0,T,MH,standard,2,
+barley_forage,Barley (grazing),6.0,7.5,5.5,8.5,6.0,7.1,MT,MH,standard,4,
+oats,Oats,5.5,7.0,5.0,7.8,6.0,,T,CLASS,standard,8,
+rye,Rye (grain),5.5,7.0,5.0,7.8,11.4,10.8,T,MH,standard,1,
+rye_forage,Rye (grazing),5.5,7.0,5.0,7.8,7.6,4.9,T,MH,standard,2,
+triticale,Triticale,5.5,7.0,5.0,8.0,6.1,2.5,T,MH,standard,2,
+rice,Rice (paddy),5.5,6.5,5.0,7.5,3.0,12,S,MH,standard,9,Flooding pulls pH toward neutral; salinity matters most at seedling + flowering
+millet,Millet (pearl/foxtail/African),5.5,7.0,5.0,7.8,1.3,,MS,CLASS,standard,6,
+cotton,Cotton,5.8,7.0,5.2,8.2,7.7,5.2,T,MH,standard,18,Seedlings are much more salt-sensitive than mature plants
+kenaf,Kenaf,6.0,6.8,5.5,7.5,8.1,11.6,T,MH,standard,1,
+soybean,Soybeans,6.0,7.0,5.5,7.8,5.0,20,MT,MH,standard,1,Iron deficiency chlorosis on calcareous soils
+peanut,Peanuts,5.8,6.5,5.5,7.0,3.2,29,MS,MH,standard,2,Needs Ca in pegging zone; very steep salinity slope
+canola,Canola,6.0,7.5,5.5,8.0,11.0,13,T,MH,standard,13,
+flax,Flax,6.0,7.0,5.5,7.5,1.7,12,MS,MH,standard,1,
+guar,Guar,7.0,8.0,6.5,8.5,8.8,17,T,MH,standard,1,
+sesame,Sesame,5.5,7.5,5.0,8.0,1.0,,S,CLASS,standard,1,
+sunflower,Sunflowers,6.0,7.5,5.5,8.0,4.8,5.0,MT,MH,standard,1,
+alfalfa,Alfalfa,6.5,7.5,6.2,8.2,2.0,7.3,MS,MH,standard,6,Lime below 6.2 — nodulation fails in acid soil
+bermuda,Bermudagrass (common/improved/hybrid/NK-37/Midland),5.5,7.0,5.0,8.0,6.9,6.4,T,MH,standard,38,
+bahia,Bahiagrass,5.0,6.5,4.5,7.5,1.3,,MS,EST,estimated,6,Acid-tolerant; iron chlorosis above ~7.5
+dallis,Dallisgrass,5.5,7.5,5.0,8.0,1.3,,MS,CLASS,standard,3,
+fescue,Tall fescue,5.5,7.0,5.0,8.0,3.9,5.3,MT,MH,standard,2,
+ryegrass,Ryegrass,5.5,7.0,5.0,8.0,5.6,7.6,MT,MH,standard,3,
+smallgrain_ryegrass,Small grain + ryegrass mix,5.5,7.0,5.0,8.0,4.5,2.6,MT,MH,standard,3,Uses wheat-forage values (most sensitive component)
+clover,Clovers (arrowleaf/crimson/white/S-1),6.0,7.0,5.8,7.5,1.5,12,MS,MH,standard,4,
+clover_mix,Clover + ryegrass/small grain,6.0,7.0,5.8,7.5,1.5,12,MS,MH,standard,2,Clover is the limiting component
+sweetclover,Hubam (annual white sweetclover),6.5,7.5,6.0,8.2,3.0,,MT,CLASS,standard,1,
+vetch,Vetch,6.0,7.0,5.5,7.5,3.0,11,MS,MH,standard,3,
+vetch_mix,Vetch + ryegrass/small grain,6.0,7.0,5.5,7.5,3.0,11,MS,MH,standard,1,
+field_peas,Peas (forage/cover),6.0,7.5,5.5,8.0,3.4,10.6,MS,MH,standard,1,
+buffel,Buffelgrass,6.5,8.0,6.0,8.5,1.3,,MS,CLASS,standard,4,Prefers neutral-alkaline soils
+klein,Kleingrass,6.0,8.0,5.5,8.5,3.0,,MT,EST,estimated,3,
+lovegrass,Lovegrass (weeping),5.0,7.0,4.5,7.5,2.0,8.4,MS,MH,standard,2,
+rhodes,Rhodesgrass,6.0,8.0,5.5,8.5,3.0,,MT,CLASS,standard,2,
+blue_panic,Blue panicgrass,6.0,8.0,5.5,8.5,1.3,,MS,CLASS,standard,2,
+bluestem,Bluestems (native/improved/Old World),6.0,7.5,5.5,8.2,1.3,,MS,EST,estimated,4,
+johnson,Johnsongrass,6.0,7.5,5.5,8.2,3.0,,MT,EST,estimated,3,
+switchgrass,Switchgrass,5.5,7.5,4.5,8.0,1.3,,MS,EST,estimated,2,
+tall_wheatgrass,Tall wheatgrass ('Jose'),6.5,8.0,6.0,9.0,7.5,4.2,T,MH,standard,2,
+warm_perennial,Warm-season perennial grass (generic / range / DeSoto),5.5,7.5,5.0,8.2,1.3,,MS,EST,estimated,4,Generic fallback — confirm the actual species
+cool_perennial,Cool-season perennial grass (generic),5.5,7.0,5.0,8.0,3.9,5.3,MT,MH,standard,1,Uses tall fescue values
+bean,Beans (green/pinto),6.0,7.0,5.5,7.5,1.0,19,S,MH,standard,2,One of the most salt-sensitive crops
+lima_bean,Lima beans,6.0,7.0,5.5,7.5,3.0,,MT,CLASS,standard,1,
+cowpea,Blackeye peas (cowpea),5.5,7.0,5.0,7.5,4.9,12,MT,MH,standard,1,
+green_pea,Green peas,6.0,7.5,5.5,8.0,3.4,10.6,MS,MH,standard,1,
+beet,Beets,6.0,7.5,5.5,8.0,4.0,9.0,MT,MH,standard,1,
+chard,Swiss chard,6.0,7.5,5.5,8.0,3.0,,MT,EST,standard,1,Uses beet family behavior
+broccoli,Broccoli,6.0,7.5,5.5,8.0,2.8,9.2,MS,MH,standard,1,
+cabbage,Cabbage / Chinese cabbage,6.0,7.5,5.5,8.0,1.8,9.7,MS,MH,standard,2,
+cauliflower,Cauliflower,6.0,7.5,5.5,8.0,1.3,,MS,CLASS,standard,1,
+greens,Collards / mustard / turnip tops,6.0,7.5,5.5,8.0,3.3,4.3,MT,MH,standard,3,Uses turnip-greens values
+turnip,Turnips (root),5.8,7.0,5.5,7.8,0.9,9.0,MS,MH,standard,1,
+radish,Radishes,6.0,7.0,5.5,7.5,1.2,13,MS,MH,standard,1,
+carrot,Carrots,5.5,7.0,5.0,7.5,1.0,14,S,MH,standard,1,
+lettuce,Lettuce,6.0,7.0,5.5,7.5,1.3,13,MS,MH,standard,1,
+spinach,Spinach,6.5,7.5,6.0,8.0,2.0,7.6,MS,MH,standard,1,Very acid-sensitive
+onion,Onions,6.0,7.0,5.5,7.5,1.2,16,S,MH,standard,3,
+garlic,Garlic,6.0,7.0,5.5,7.5,3.9,14.3,MS,MH,standard,1,
+tomato,Tomatoes,6.0,6.8,5.5,7.5,2.5,9.9,MS,MH,standard,1,
+pepper,Peppers (bell/chile),6.0,7.0,5.5,7.5,1.5,14,MS,MH,standard,2,
+eggplant,Eggplant,5.8,7.0,5.5,7.5,1.1,6.9,MS,MH,standard,1,
+potato,Potatoes,5.0,6.5,4.8,7.0,1.7,12,MS,MH,standard,2,Keep below ~6.5 to limit scab
+sweet_potato,Sweet potatoes,5.5,6.5,5.0,7.0,1.5,11,MS,MH,standard,1,
+sweet_corn,Sweet corn,6.0,7.0,5.5,7.5,1.7,12,MS,MH,standard,1,
+cucumber,Cucumbers,5.8,7.0,5.5,7.5,2.5,13,MS,MH,standard,1,
+cantaloupe,Cantaloupes,6.0,7.0,5.5,7.5,1.0,8.4,MS,MH,standard,1,
+watermelon,Watermelons,5.8,7.0,5.0,7.5,1.3,,MS,CLASS,standard,1,
+squash_summer,Summer squash,6.0,7.0,5.5,7.5,4.9,10.5,MT,MH,standard,1,Zucchini values (Maas & Grattan 1999)
+squash_winter,Winter squash,6.0,7.0,5.5,7.5,3.2,16,MS,MH,standard,1,No winter squash in the salt tables — uses scallop squash as a stand-in
+okra,Okra,6.0,7.0,5.5,7.5,1.3,,MS,CLASS,standard,1,
+veg_generic,Vegetables (truck farm / garden),6.0,7.0,5.5,7.5,1.3,,MS,EST,standard,2,Generic fallback — use the specific crop when known
+strawberry,Strawberries,5.5,6.5,5.0,7.0,1.0,33,S,MH,standard,1,
+aloe,Aloe vera,6.5,8.0,6.0,8.5,3.0,,MT,EST,estimated,1,
+lavender,Lavender,6.5,8.0,6.0,8.5,1.3,,MS,EST,estimated,1,
+sugarcane,Sugarcane / syrup cane,5.5,7.5,5.0,8.0,1.7,5.9,MS,MH,standard,2,
+apple,Apples,6.0,7.0,5.5,7.5,1.0,,S,CLASS,standard,1,
+peach,Peaches,6.0,7.0,5.5,7.5,1.7,21,S,MH,standard,1,
+grape,Grapes,5.5,7.0,5.0,8.0,1.5,9.6,MS,MH,standard,1,Rootstock changes both pH and salt tolerance a lot
+pecan,Pecans,6.0,7.0,5.5,7.8,1.0,,S,EST,standard,2,Zinc deficiency common above pH 7
+blueberry,Blueberries,4.5,5.5,4.0,6.0,1.0,,S,EST,standard,1,Needs acid soil — most Fort Bend soils need heavy amendment
+bramble,Blackberries / raspberries,5.5,6.5,5.0,7.0,1.5,22,S,MH,standard,2,
+citrus,Citrus,6.0,7.0,5.5,7.5,1.3,13.1,S,MH,standard,1,Orange values
+fruit_trees,Fruit trees (generic),6.0,7.0,5.5,7.5,1.0,,S,EST,standard,1,Generic fallback
+turf,Turf / lawn / sod / fairways,6.0,7.0,5.5,8.0,3.0,,MT,EST,standard,4,"Depends on species — bermuda is T, St. Augustine MT, centipede S"
+golf_green,Golf greens,6.0,7.0,5.5,7.5,1.3,,MS,EST,standard,1,Assumes bentgrass/ultradwarf bermuda
+landscape,Landscape / shrubs / ornamentals / shade trees / flowers,5.5,7.0,5.0,7.8,1.3,,MS,EST,standard,5,Generic fallback
+azalea,Azaleas and camellias,4.5,5.5,4.0,6.0,1.0,,S,EST,standard,1,Acid-loving
+roses,Roses,6.0,6.5,5.5,7.0,1.3,,MS,EST,standard,1,
+pine,Pine / Christmas trees,4.5,6.0,4.0,6.5,1.0,,S,EST,standard,2,Acid-loving; chlorosis on alkaline soil

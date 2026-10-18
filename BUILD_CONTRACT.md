@@ -202,17 +202,26 @@ run_analysis(farm_name: str, date: str, sections: list[dict], farm_id=None) -> d
     {
       "section_label": str, "sample_id": str,
       "crop_type": str,
-      "selected_crop": {profile_name, profile_available, within_profile, limiting_factors, note},
+      "selected_crop": {profile_name, profile_available, fit, within_profile, limiting_factors,
+                        note, yield_goal, am_table, basis},  # fit: ideal|viable_with_adjustments|not_viable
+      "crop_assessment": { ... crop_data/crop_lookup.assess() + yield_goal ... } | null,
       "latitude": float, "longitude": float,
-      "inputs": {"ph":f,"ec":f,"nitrogen":f,"phosphorus":f,"potassium":f},
-      "health_score": float,            # ML headline, rounded 0-100
+      "inputs": {"ph":f,"ec":f,"nitrogen":f,"phosphorus":f,"potassium":f,
+                 "ece":f, "ec_method":"1:2"},   # ec as entered; ece = what the models used
+      "health_score": float,            # headline, rounded 0-100: the crop-specific rule
+                                        # score for an A&M-mapped crop, else the ML score
       "health_category": str,
+      "score_basis": "crop|general",
+      "general_health_score": float,    # ML score ("General soil health"), always present
+      "general_health_category": str,
       "rule_health_score": float,
       "color": {"bucket": "green|yellow|red", "hex": "#RRGGBB"},
       "primary_problem": {"code":str,"label":str,"severity":str,"message":str},
       "problems": [ ... agronomy problem dicts ... ],
       "recommendations": [ {title,action,rate,cost_estimate,timing,notes,severity,fix_code} ],
-      "crop_suitability": {"viable_now":[str], "not_viable":[{"crop":str,"limiting_factors":[str]}]},
+      "crop_suitability": {"viable_now":[str],             # ideal + viable_with_adjustments
+                           "ideal":[str], "viable_with_adjustments":[str],
+                           "not_viable":[{"crop":str,"limiting_factors":[str]}]},
       "ml_crop_suitable": [str],
       "cost_benefit_experimental": { ... recommender.estimate_cost_benefit ... }
     }, ...
@@ -249,7 +258,7 @@ Call `init_db()` and `seed_default_admin()` at import/startup. `if __name__ ==
 | POST | `/api/auth/logout` | none | - | `{ok:true}` clears session | - |
 | GET | `/api/auth/me` | none | - | `{authed:bool, username?:str}` | - |
 | POST | `/api/submit` | login_required | `{farm_name,date,sections:[{section_label,crop_type,latitude,longitude,ph,ec,nitrogen,phosphorus,potassium}]}` | the run_analysis dict (with farm_id) | 400 `{error}` if missing/empty sections |
-| POST | `/api/score` | login_required | `{sections:[{section_label,ph,ec,nitrogen,phosphorus,potassium}]}` (<= 500, no crop/coords) | `{scores:[{section_label,health_score,health_category}]}` | 400 `{error}` if a measurement is missing/non-finite |
+| POST | `/api/score` | login_required | `{sections:[{section_label,ph,ec,nitrogen,phosphorus,potassium,crop_type?}]}` (<= 500, no coords; crop optional, makes the score crop-specific like /api/submit) | `{scores:[{section_label,health_score,health_category}]}` | 400 `{error}` if a measurement is missing/non-finite |
 | GET | `/api/results/<int:farm_id>` | login_required | - | stored analysis dict | 404 `{error:'not found'}` |
 | GET | `/api/history` | login_required | - | `{farms:[{farm_id,farm_name,date,created_at,n_sections,mean_health_score}]}` | - |
 | POST | `/api/contact` | none | `{name,email,message}` | `{ok:true}` | 400 `{error}` if any empty or email invalid |

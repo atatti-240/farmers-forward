@@ -123,10 +123,11 @@ def field_crop_suitability(zone_summary: pd.DataFrame) -> Dict:
         means = {c: float(z["mean_" + c]) for c in T.MEASUREMENT_COLUMNS}
         for crop in agronomy.crop_viability(means)["viable"]:
             count[crop] += 1
-    everywhere = [c for c in T.CROP_NAMES if count[c] == n_zones and n_zones > 0]
-    nowhere = [c for c in T.CROP_NAMES if count[c] == 0]
+    crops = list(T.CROP_DEFAULT_YIELD)  # the crops crop_viability judges
+    everywhere = [c for c in crops if count[c] == n_zones and n_zones > 0]
+    nowhere = [c for c in crops if count[c] == 0]
     some = [{"crop": c, "n_zones": count[c]}
-            for c in T.CROP_NAMES if 0 < count[c] < n_zones]
+            for c in crops if 0 < count[c] < n_zones]
     return {"viable_everywhere": everywhere,
             "viable_in_some_zones": some,
             "not_viable_anywhere": nowhere}

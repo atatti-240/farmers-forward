@@ -129,12 +129,25 @@ def _clear_pending(keep_secret: bool = False) -> None:
         session.pop(key, None)
 
 
+def _clean_crop(sec: Dict, label: str) -> Tuple[str, str]:
+    """(crop_type, error) for one section: one trimmed crop name, no control
+    characters, at most 100 characters."""
+    crop_type = sec.get("crop_type")
+    if not isinstance(crop_type, str) or not crop_type.strip():
+        return "", "section '%s' requires one crop_type" % label
+    crop_type = crop_type.strip()
+    if len(crop_type) > 100 or any(ord(char) < 32 or ord(char) == 127 for char in crop_type):
+        return "", "section '%s' crop_type must be at most 100 characters without control characters" % label
+    return crop_type, ""
+
+
 def _validate_sections(payload, require_crop: bool = True,
                        max_sections: int = 0) -> Tuple[List[Dict], str]:
     """Validate + coerce the submit payload's sections.
 
     With `require_crop=False` (live scoring) only the label and the five
-    measurements are required; coordinates and crop are ignored.
+    measurements are required; coordinates are ignored and a crop_type, if
+    sent, is validated and kept so the score can be crop-specific.
     Returns (clean_sections, error). On success error is ''.
     """
     if not isinstance(payload, list) or len(payload) == 0:
@@ -163,6 +176,11 @@ def _validate_sections(payload, require_crop: bool = True,
                     return [], "section '%s' is missing a numeric '%s'" % (label, key)
                 if not math.isfinite(row[key]):
                     return [], "section '%s' has a non-finite '%s'" % (label, key)
+            crop_type = sec.get("crop_type")
+            if crop_type is not None and not (isinstance(crop_type, str) and not crop_type.strip()):
+                row["crop_type"], err = _clean_crop(sec, label)
+                if err:
+                    return [], err
             clean.append(row)
             continue
 
@@ -172,12 +190,9 @@ def _validate_sections(payload, require_crop: bool = True,
         except (KeyError, TypeError, ValueError):
             return [], "section '%s' has invalid latitude/longitude" % label
 
-        crop_type = sec.get("crop_type")
-        if not isinstance(crop_type, str) or not crop_type.strip():
-            return [], "section '%s' requires one crop_type" % label
-        crop_type = crop_type.strip()
-        if len(crop_type) > 100 or any(ord(char) < 32 or ord(char) == 127 for char in crop_type):
-            return [], "section '%s' crop_type must be at most 100 characters without control characters" % label
+        crop_type, err = _clean_crop(sec, label)
+        if err:
+            return [], err
 
         row = {"section_label": label, "latitude": lat, "longitude": lng,
                "crop_type": crop_type}
@@ -356,7 +371,7 @@ def submit():
 @app.post("/api/score")
 @auth.login_required
 def score():
-    """Live health scores for the data-entry map (no storage, no crop needed)."""
+    """Live health scores for the data-entry map (no storage; crop optional)."""
     data = request.get_json(silent=True) or {}
     sections, err = _validate_sections(data.get("sections"), require_crop=False,
                                        max_sections=MAX_SCORE_SECTIONS)

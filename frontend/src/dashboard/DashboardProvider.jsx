@@ -172,10 +172,12 @@ function isSectionComplete(data, label) {
 }
 
 /**
- * Stable key for a point's five measurements, or `null` until all five are
- * numeric. Points with identical readings share one cached score.
+ * Stable key for a point's five measurements plus its crop, or `null` until
+ * all five are numeric. The crop is part of the key because a mapped crop is
+ * scored against its own thresholds. Points with identical readings and crop
+ * share one cached score.
  */
-function measurementKey(values) {
+function scoreKey(values) {
   if (!values) return null
   const nums = []
   for (const field of MEASUREMENTS) {
@@ -185,7 +187,10 @@ function measurementKey(values) {
     if (!Number.isFinite(n)) return null
     nums.push(n)
   }
-  return nums.join('|')
+  const crop = typeof values.crop_type === 'string'
+    ? values.crop_type.trim().replace(/\s+/g, ' ').toLowerCase().slice(0, 100)
+    : ''
+  return JSON.stringify([...nums, crop])
 }
 
 /**
@@ -199,7 +204,7 @@ export default function DashboardProvider({ children }) {
   // immediately re-writing the just-cleared draft.
   const skipSaves = useRef(0)
 
-  // measurementKey -> ML health score, filled by /api/score as data comes in.
+  // scoreKey -> headline health score, filled by /api/score as data comes in.
   const [scoreCache, setScoreCache] = useState({})
   const pendingScores = useRef(new Set())
 
@@ -228,7 +233,7 @@ export default function DashboardProvider({ children }) {
   useEffect(() => {
     const wanted = new Set()
     for (const p of state.points) {
-      const key = measurementKey(state.data[p.label])
+      const key = scoreKey(state.data[p.label])
       if (key && !(key in scoreCache) && !pendingScores.current.has(key)) {
         wanted.add(key)
       }
@@ -241,8 +246,10 @@ export default function DashboardProvider({ children }) {
       try {
         const res = await api.scoreSections(
           keys.map((key) => {
-            const [ph, ec, nitrogen, phosphorus, potassium] = key.split('|').map(Number)
-            return { section_label: key, ph, ec, nitrogen, phosphorus, potassium }
+            const [ph, ec, nitrogen, phosphorus, potassium, crop] = JSON.parse(key)
+            const section = { section_label: key, ph, ec, nitrogen, phosphorus, potassium }
+            if (crop) section.crop_type = crop
+            return section
           })
         )
         const found = {}
@@ -262,7 +269,7 @@ export default function DashboardProvider({ children }) {
   // label -> score for points that currently have one.
   const scores = {}
   for (const p of state.points) {
-    const key = measurementKey(state.data[p.label])
+    const key = scoreKey(state.data[p.label])
     if (key && key in scoreCache) scores[p.label] = scoreCache[key]
   }
 

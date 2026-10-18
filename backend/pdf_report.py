@@ -186,15 +186,21 @@ def _inputs_table(inputs: Dict, styles: Dict[str, ParagraphStyle]) -> Table:
         except (TypeError, ValueError):
             return "-"
 
+    ec_method = inputs.get("ec_method")
     rows = [
         ["Property", "Value", "Units"],
         ["pH", fmt(inputs.get("ph"), 1), ""],
-        ["EC (salinity)", fmt(inputs.get("ec"), 2), "dS/m"],
+        ["EC (%s soil:water)" % ec_method if ec_method else "EC (salinity)",
+         fmt(inputs.get("ec"), 2), "dS/m"],
+    ]
+    if inputs.get("ece") is not None:  # older saved results have no ECe
+        rows.append(["ECe (est. saturated paste)", fmt(inputs["ece"], 2), "dS/m"])
+    rows += [
         ["Nitrogen (N)", fmt(inputs.get("nitrogen"), 0), "ppm"],
         ["Phosphorus (P)", fmt(inputs.get("phosphorus"), 0), "ppm"],
         ["Potassium (K)", fmt(inputs.get("potassium"), 0), "ppm"],
     ]
-    tbl = Table(rows, colWidths=[2.2 * inch, 1.4 * inch, 1.4 * inch])
+    tbl = Table(rows, colWidths=[2.0 * inch, 0.9 * inch, 0.9 * inch])
     tbl.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), FF_BLUE_SOFT),
         ("TEXTCOLOR", (0, 0), (-1, 0), FF_BLUE_DARK),
@@ -227,7 +233,7 @@ def _score_block(score, category, styles: Dict[str, ParagraphStyle]) -> Table:
         '<font color="%s">%s</font>' % (color.hexval(), str(category or "").upper()),
         styles["scoreCat"])
 
-    box = Table([[score_para], [cat_para]], colWidths=[3.0 * inch])
+    box = Table([[score_para], [cat_para]], colWidths=[2.8 * inch])
     box.setStyle(TableStyle([
         ("BOX", (0, 0), (-1, -1), 1.5, color),
         ("BACKGROUND", (0, 0), (-1, -1), colors.white),
@@ -262,6 +268,8 @@ def _section_flowables(section: Dict, farm_name: str, date: str,
     flow.append(Paragraph(meta, styles["meta"]))
     flow.append(Paragraph("Crop: <b>%s</b>" % escape(section.get("crop_type") or "Not recorded"), styles["meta"]))
     selected = section.get("selected_crop") or {}
+    if selected.get("basis"):
+        flow.append(Paragraph(escape(selected["basis"]), styles["muted"]))
     if selected.get("note"):
         flow.append(Paragraph(escape(selected["note"]), styles["muted"]))
     for factor in selected.get("limiting_factors", []):
@@ -275,9 +283,17 @@ def _section_flowables(section: Dict, farm_name: str, date: str,
         Paragraph("Soil Measurements", styles["h2"]),
         _inputs_table(section.get("inputs", {}), styles),
     ]
-    two = Table(
-        [[col, _score_block(score, category, styles)]],
-        colWidths=[5.0 * inch, 3.2 * inch])
+    score_col = [_score_block(score, category, styles)]
+    if section.get("score_basis") == "crop":
+        crop_name = (selected.get("profile_name") or section.get("crop_type") or "").lower()
+        score_col += [Spacer(1, 6), Paragraph(
+            "Score is for %s. General soil health: <b>%.0f</b>/100 (%s)." % (
+                escape(crop_name), float(section.get("general_health_score") or 0),
+                escape(section.get("general_health_category") or "-")),
+            styles["muted"])]
+    two = Table(  # 7.0 in = the letter page inside 0.75 in margins
+        [[col, score_col]],
+        colWidths=[4.1 * inch, 2.9 * inch])
     two.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("LEFTPADDING", (0, 0), (-1, -1), 0),
@@ -290,7 +306,13 @@ def _section_flowables(section: Dict, farm_name: str, date: str,
     flow.append(Paragraph("Crops You Can Plant Now", styles["h2"]))
     crop = section.get("crop_suitability", {}) or {}
     viable = crop.get("viable_now", []) or []
-    if viable:
+    if viable and "ideal" in crop:
+        for heading, names in (("Ideal", crop.get("ideal") or []),
+                               ("Viable with adjustments", crop.get("viable_with_adjustments") or [])):
+            if names:
+                flow.append(Paragraph("<b>%s:</b> %s" % (heading, escape(", ".join(names))),
+                                      styles["body"]))
+    elif viable:  # results saved before the ideal / with-adjustments split
         flow.append(Paragraph(", ".join(viable), styles["body"]))
     else:
         flow.append(Paragraph(
@@ -304,8 +326,8 @@ def _section_flowables(section: Dict, farm_name: str, date: str,
         flow.append(Paragraph("Primary Problem", styles["h2"]))
         flow.append(Paragraph(
             "<b>%s</b> (%s): %s" % (
-                primary.get("label", ""), primary.get("severity", ""),
-                primary.get("message", "")),
+                escape(primary.get("label", "")), escape(primary.get("severity", "")),
+                escape(primary.get("message", ""))),
             styles["body"]))
         flow.append(Spacer(1, 6))
 

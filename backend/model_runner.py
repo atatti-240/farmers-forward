@@ -62,10 +62,18 @@ def score_color(score: float) -> Dict[str, str]:
 
 
 def _measurements(section: Dict) -> Dict[str, float]:
-    """Extract the five soil measurements as plain floats."""
+    """The five soil measurements as plain floats, with EC as ECe.
+
+    The sensor reads a 1:2 soil:water extract (T.SENSOR_EC_METHOD), while the
+    ML model was trained on ECe and every EC threshold is ECe, so the reading is
+    converted here, once, for live scoring and full analysis alike.
+    """
     _ensure_pipeline_path()
+    from pipeline import crop_profile  # light (two JSON tables)
     from pipeline import thresholds as T  # light (plain dicts)
-    return {c: float(section[c]) for c in T.MEASUREMENT_COLUMNS}
+    m = {c: float(section[c]) for c in T.MEASUREMENT_COLUMNS}
+    m["ec"] = crop_profile.to_ece(m["ec"])
+    return m
 
 
 def _predict(sections: List[Dict], prefix) -> List[Dict]:
@@ -95,21 +103,44 @@ def _predict(sections: List[Dict], prefix) -> List[Dict]:
     return M.predict_frame(_get_bundle(), features)
 
 
+def _headline_score(m: Dict[str, float], crop, ml: Dict) -> Dict:
+    """The score a section is shown and coloured by.
+
+    For a crop with a Texas A&M table that is the crop-specific rule score;
+    otherwise (no crop, or a custom/unmapped one) it is the ML score. The ML
+    score is always kept as the "general soil health" score.
+    """
+    from pipeline import agronomy
+    from pipeline import thresholds as T
+    general = round(float(ml["ml_health_score"]), 1)
+    out = {"general_health_score": general,
+           "general_health_category": ml["ml_category_from_score"]}
+    if crop is not None and crop.mapped:
+        score = round(float(agronomy.compute_health_score(m, crop)), 1)
+        out.update(health_score=score, health_category=T.categorize(score), score_basis="crop")
+    else:
+        out.update(health_score=general, health_category=out["general_health_category"],
+                   score_basis="general")
+    return out
+
+
 def score_sections(sections: List[Dict]) -> List[Dict]:
     """Health score only, for live map colouring while data is being entered.
 
-    Uses the same ML score as `run_analysis`, so a point keeps its colour when
-    the field is submitted. Each section needs `section_label` and the five
-    measurements; returns `[{section_label, health_score, health_category}]`.
+    Uses the same headline score as `run_analysis` (crop-specific when the
+    optional `crop_type` maps to an A&M table, else ML), so a point keeps its
+    colour when the field is submitted. Each section needs `section_label` and
+    the five measurements; returns `[{section_label, health_score, health_category}]`.
     """
-    return [
-        {
-            "section_label": sec["section_label"],
-            "health_score": round(float(ml["ml_health_score"]), 1),
-            "health_category": ml["ml_category_from_score"],
-        }
-        for sec, ml in zip(sections, _predict(sections, "F"))
-    ]
+    _ensure_pipeline_path()
+    from pipeline import crop_profile
+    out = []
+    for sec, ml in zip(sections, _predict(sections, "F")):
+        score = _headline_score(_measurements(sec), crop_profile.resolve(sec.get("crop_type")), ml)
+        out.append({"section_label": sec["section_label"],
+                    "health_score": score["health_score"],
+                    "health_category": score["health_category"]})
+    return out
 
 
 def run_analysis(farm_name: str, date: str, sections: List[Dict],
@@ -118,11 +149,13 @@ def run_analysis(farm_name: str, date: str, sections: List[Dict],
 
     `sections` is a list of dicts with keys: section_label, latitude, longitude,
     crop_type, ph, ec, nitrogen, phosphorus, potassium. Returns the structure defined in
-    BUILD_CONTRACT §2.5.
+    BUILD_CONTRACT §2.5. Each section's crop_type selects the Texas A&M table its
+    pH, salinity and N/P/K are judged against (pipeline.crop_profile).
     """
     # Lazy heavy imports (see module note): only paid on the first submission.
     _ensure_pipeline_path()
     from pipeline import agronomy
+    from pipeline import crop_profile
     from pipeline import recommender
     from pipeline import reporter
     from pipeline import thresholds as T
@@ -137,19 +170,19 @@ def run_analysis(farm_name: str, date: str, sections: List[Dict],
     for sec, ml in zip(sections, ml_results):
         label = sec["section_label"]
         m = _measurements(sec)
-
-        problems = agronomy.detect_problems(m)
-        primary = agronomy.primary_problem(m)
-        rule_score = agronomy.compute_health_score(m)
-        viability = agronomy.crop_viability(m)
         crop_type = sec.get("crop_type")
-        recs = recommender.build_recommendations(m, problems, target_crop=crop_type)
-        selected_crop = recommender.assess_target_crop(m, crop_type)
+        crop = crop_profile.resolve(crop_type)
+
+        problems = agronomy.detect_problems(m, crop)
+        primary = agronomy.primary_problem(m, crop)
+        rule_score = agronomy.compute_health_score(m, crop)
+        viability = agronomy.crop_viability(m)
+        recs = recommender.build_recommendations(m, problems, target_crop=crop)
+        selected_crop = recommender.assess_target_crop(m, crop)
         cost_benefit = recommender.estimate_cost_benefit(m, recs)
 
-        health_score = round(float(ml["ml_health_score"]), 1)
-        health_category = ml["ml_category_from_score"]
-        scores.append(health_score)
+        score = _headline_score(m, crop, ml)
+        scores.append(score["health_score"])
         if primary["code"] != "none":
             problem_codes.append(primary["code"])
 
@@ -160,11 +193,17 @@ def run_analysis(farm_name: str, date: str, sections: List[Dict],
             "sample_id": "%s-%s" % (prefix, label),
             "latitude": float(sec["latitude"]),
             "longitude": float(sec["longitude"]),
-            "inputs": {c: round(m[c], 2) for c in T.MEASUREMENT_COLUMNS},
-            "health_score": health_score,
-            "health_category": health_category,
+            # As entered (EC on the sensor's basis), plus the ECe used for analysis.
+            "inputs": dict({c: round(float(sec[c]), 2) for c in T.MEASUREMENT_COLUMNS},
+                           ece=round(m["ec"], 2), ec_method=T.SENSOR_EC_METHOD),
+            "crop_assessment": crop_profile.assess(m, crop),
+            "health_score": score["health_score"],
+            "health_category": score["health_category"],
+            "score_basis": score["score_basis"],  # "crop" or "general"
+            "general_health_score": score["general_health_score"],
+            "general_health_category": score["general_health_category"],
             "rule_health_score": round(float(rule_score), 1),
-            "color": score_color(health_score),
+            "color": score_color(score["health_score"]),
             "primary_problem": {
                 "code": primary["code"],
                 "label": reporter.problem_label(primary["code"]),
@@ -174,7 +213,9 @@ def run_analysis(farm_name: str, date: str, sections: List[Dict],
             "problems": problems,
             "recommendations": recs,
             "crop_suitability": {
-                "viable_now": viability["viable"],
+                "viable_now": viability["viable"],          # ideal + with adjustments
+                "ideal": viability["ideal"],
+                "viable_with_adjustments": viability["with_adjustments"],
                 "not_viable": viability["not_viable"],
             },
             "ml_crop_suitable": ml["ml_crop_suitable"],

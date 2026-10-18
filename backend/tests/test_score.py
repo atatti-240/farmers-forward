@@ -77,15 +77,28 @@ class ScoreEndpointTests(unittest.TestCase):
         sections = [dict(section_label="A1", **MEASUREMENTS),
                     dict(section_label="A2", ph=5.0, ec=4.0, nitrogen=5,
                          phosphorus=5, potassium=40)]
-        live = model_runner.score_sections(sections)
-        analysis = model_runner.run_analysis(
-            "Field", "2026-09-17",
-            [dict(s, latitude=29.53, longitude=-95.77, crop_type="Corn") for s in sections])
+        # A mapped crop (crop-specific headline) and a custom one (ML headline).
+        for crop in ("Corn", "Local heritage millet"):
+            with self.subTest(crop=crop):
+                live = model_runner.score_sections([dict(s, crop_type=crop) for s in sections])
+                analysis = model_runner.run_analysis(
+                    "Field", "2026-09-17",
+                    [dict(s, latitude=29.53, longitude=-95.77, crop_type=crop) for s in sections])
+                self.assertEqual([s["health_score"] for s in live],
+                                 [r["health_score"] for r in analysis["results"]])
+                self.assertEqual([s["health_category"] for s in live],
+                                 [r["health_category"] for r in analysis["results"]])
 
-        self.assertEqual([s["health_score"] for s in live],
-                         [r["health_score"] for r in analysis["results"]])
-        self.assertEqual([s["health_category"] for s in live],
-                         [r["health_category"] for r in analysis["results"]])
+    def test_a_mapped_crop_is_scored_on_its_own_thresholds(self):
+        plain = self.score([dict(section_label="A1", **MEASUREMENTS)]).json["scores"][0]
+        blank = self.score([dict(section_label="A1", crop_type="  ", **MEASUREMENTS)]).json["scores"][0]
+        corn = self.score([dict(section_label="A1", crop_type="Corn", **MEASUREMENTS)]).json["scores"][0]
+        self.assertEqual(plain["health_score"], 40.0)   # no crop: the ML score, as before
+        self.assertEqual(blank, plain)
+        self.assertNotEqual(corn["health_score"], 40.0)
+        bad = self.score([dict(section_label="A1", crop_type=123, **MEASUREMENTS)])
+        self.assertEqual(bad.status_code, 400)
+        self.assertIn("crop_type", bad.json["error"])
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1972 @@
+{
+ "meta": {
+  "ph": "ph_opt = target range. ph_tol = outer limits; outside these expect real yield loss or nutrient lockup. Between opt and tol = 'marginal'.",
+  "ec": "EC values are ECe (saturated-paste extract, dS/m) \u2014 the standard for crop salt-tolerance data. Maas-Hoffman: relative_yield% = 100 - slope*(ECe - threshold) when ECe > threshold.",
+  "ec_source": {
+   "MH": "Published threshold + slope (Maas & Hoffman 1977; Maas & Grattan 1999; FAO-29/USDA Salinity Lab tables)",
+   "CLASS": "Only a qualitative rating is published; threshold set to the low edge of that class (S 1.0, MS 1.3, MT 3.0, T 6.0). Slope unknown.",
+   "EST": "No published rating; estimated from the most similar crop. Treat as a placeholder."
+  },
+  "IMPORTANT_ec_units": "Convert your sensor reading to ECe before comparing. Rough factors (texture-dependent \u2014 calibrate with a few lab saturated-paste samples): ECe \u2248 2.0 \u00d7 EC(1:1 soil:water); ECe \u2248 6.4 \u00d7 EC(1:5). In-field probe bulk EC is NOT comparable without moisture correction.",
+  "ph_sources": "Consensus extension ranges (Texas A&M AgriLife, NRCS, land-grant extension guides). ph_confidence='estimated' where the crop has little published guidance."
+ },
+ "profiles": {
+  "corn": {
+   "name": "Corn (grain)",
+   "ph_opt": [
+    5.8,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 1.7,
+   "ec_slope_pct_per_dS_m": 12,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "corn_silage": {
+   "name": "Corn (forage/silage)",
+   "ph_opt": [
+    5.8,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 1.8,
+   "ec_slope_pct_per_dS_m": 7.4,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "sorghum": {
+   "name": "Grain sorghum / hegari / red top cane",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.5
+   ],
+   "ec_threshold_dS_m": 6.8,
+   "ec_slope_pct_per_dS_m": 16,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Iron chlorosis common on calcareous Gulf Coast soils above pH ~8"
+  },
+  "forage_sorghum": {
+   "name": "Forage sorghum / sudan / sorghum-sudan / hay grazer / sorghum almum",
+   "ph_opt": [
+    5.8,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.5
+   ],
+   "ec_threshold_dS_m": 2.8,
+   "ec_slope_pct_per_dS_m": 4.3,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Uses sudangrass salinity values (conservative for all forage sorghums)"
+  },
+  "wheat": {
+   "name": "Wheat (grain)",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 6.0,
+   "ec_slope_pct_per_dS_m": 7.1,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Aluminum toxicity risk below 5.5"
+  },
+  "wheat_forage": {
+   "name": "Wheat (grazing/hay/silage/greenchop)",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 4.5,
+   "ec_slope_pct_per_dS_m": 2.6,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "barley": {
+   "name": "Barley (grain)",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.5
+   ],
+   "ec_threshold_dS_m": 8.0,
+   "ec_slope_pct_per_dS_m": 5.0,
+   "salt_class": "T",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "barley_forage": {
+   "name": "Barley (grazing)",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.5
+   ],
+   "ec_threshold_dS_m": 6.0,
+   "ec_slope_pct_per_dS_m": 7.1,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "oats": {
+   "name": "Oats",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    7.8
+   ],
+   "ec_threshold_dS_m": 6.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "T",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "rye": {
+   "name": "Rye (grain)",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    7.8
+   ],
+   "ec_threshold_dS_m": 11.4,
+   "ec_slope_pct_per_dS_m": 10.8,
+   "salt_class": "T",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "rye_forage": {
+   "name": "Rye (grazing)",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    7.8
+   ],
+   "ec_threshold_dS_m": 7.6,
+   "ec_slope_pct_per_dS_m": 4.9,
+   "salt_class": "T",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "triticale": {
+   "name": "Triticale",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 6.1,
+   "ec_slope_pct_per_dS_m": 2.5,
+   "salt_class": "T",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "rice": {
+   "name": "Rice (paddy)",
+   "ph_opt": [
+    5.5,
+    6.5
+   ],
+   "ph_tol": [
+    5.0,
+    7.5
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": 12,
+   "salt_class": "S",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Flooding pulls pH toward neutral; salinity matters most at seedling + flowering"
+  },
+  "millet": {
+   "name": "Millet (pearl/foxtail/African)",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    7.8
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "cotton": {
+   "name": "Cotton",
+   "ph_opt": [
+    5.8,
+    7.0
+   ],
+   "ph_tol": [
+    5.2,
+    8.2
+   ],
+   "ec_threshold_dS_m": 7.7,
+   "ec_slope_pct_per_dS_m": 5.2,
+   "salt_class": "T",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Seedlings are much more salt-sensitive than mature plants"
+  },
+  "kenaf": {
+   "name": "Kenaf",
+   "ph_opt": [
+    6.0,
+    6.8
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 8.1,
+   "ec_slope_pct_per_dS_m": 11.6,
+   "salt_class": "T",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "soybean": {
+   "name": "Soybeans",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.8
+   ],
+   "ec_threshold_dS_m": 5.0,
+   "ec_slope_pct_per_dS_m": 20,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Iron deficiency chlorosis on calcareous soils"
+  },
+  "peanut": {
+   "name": "Peanuts",
+   "ph_opt": [
+    5.8,
+    6.5
+   ],
+   "ph_tol": [
+    5.5,
+    7.0
+   ],
+   "ec_threshold_dS_m": 3.2,
+   "ec_slope_pct_per_dS_m": 29,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Needs Ca in pegging zone; very steep salinity slope"
+  },
+  "canola": {
+   "name": "Canola",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 11.0,
+   "ec_slope_pct_per_dS_m": 13,
+   "salt_class": "T",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "flax": {
+   "name": "Flax",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.7,
+   "ec_slope_pct_per_dS_m": 12,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "guar": {
+   "name": "Guar",
+   "ph_opt": [
+    7.0,
+    8.0
+   ],
+   "ph_tol": [
+    6.5,
+    8.5
+   ],
+   "ec_threshold_dS_m": 8.8,
+   "ec_slope_pct_per_dS_m": 17,
+   "salt_class": "T",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "sesame": {
+   "name": "Sesame",
+   "ph_opt": [
+    5.5,
+    7.5
+   ],
+   "ph_tol": [
+    5.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "S",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "sunflower": {
+   "name": "Sunflowers",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 4.8,
+   "ec_slope_pct_per_dS_m": 5.0,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "alfalfa": {
+   "name": "Alfalfa",
+   "ph_opt": [
+    6.5,
+    7.5
+   ],
+   "ph_tol": [
+    6.2,
+    8.2
+   ],
+   "ec_threshold_dS_m": 2.0,
+   "ec_slope_pct_per_dS_m": 7.3,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Lime below 6.2 \u2014 nodulation fails in acid soil"
+  },
+  "bermuda": {
+   "name": "Bermudagrass (common/improved/hybrid/NK-37/Midland)",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 6.9,
+   "ec_slope_pct_per_dS_m": 6.4,
+   "salt_class": "T",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "bahia": {
+   "name": "Bahiagrass",
+   "ph_opt": [
+    5.0,
+    6.5
+   ],
+   "ph_tol": [
+    4.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "EST",
+   "ph_confidence": "estimated",
+   "note": "Acid-tolerant; iron chlorosis above ~7.5"
+  },
+  "dallis": {
+   "name": "Dallisgrass",
+   "ph_opt": [
+    5.5,
+    7.5
+   ],
+   "ph_tol": [
+    5.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "fescue": {
+   "name": "Tall fescue",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 3.9,
+   "ec_slope_pct_per_dS_m": 5.3,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "ryegrass": {
+   "name": "Ryegrass",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 5.6,
+   "ec_slope_pct_per_dS_m": 7.6,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "smallgrain_ryegrass": {
+   "name": "Small grain + ryegrass mix",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 4.5,
+   "ec_slope_pct_per_dS_m": 2.6,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Uses wheat-forage values (most sensitive component)"
+  },
+  "clover": {
+   "name": "Clovers (arrowleaf/crimson/white/S-1)",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.8,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.5,
+   "ec_slope_pct_per_dS_m": 12,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "clover_mix": {
+   "name": "Clover + ryegrass/small grain",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.8,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.5,
+   "ec_slope_pct_per_dS_m": 12,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Clover is the limiting component"
+  },
+  "sweetclover": {
+   "name": "Hubam (annual white sweetclover)",
+   "ph_opt": [
+    6.5,
+    7.5
+   ],
+   "ph_tol": [
+    6.0,
+    8.2
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MT",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "vetch": {
+   "name": "Vetch",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": 11,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "vetch_mix": {
+   "name": "Vetch + ryegrass/small grain",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": 11,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "field_peas": {
+   "name": "Peas (forage/cover)",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 3.4,
+   "ec_slope_pct_per_dS_m": 10.6,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "buffel": {
+   "name": "Buffelgrass",
+   "ph_opt": [
+    6.5,
+    8.0
+   ],
+   "ph_tol": [
+    6.0,
+    8.5
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": "Prefers neutral-alkaline soils"
+  },
+  "klein": {
+   "name": "Kleingrass",
+   "ph_opt": [
+    6.0,
+    8.0
+   ],
+   "ph_tol": [
+    5.5,
+    8.5
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MT",
+   "ec_source": "EST",
+   "ph_confidence": "estimated",
+   "note": ""
+  },
+  "lovegrass": {
+   "name": "Lovegrass (weeping)",
+   "ph_opt": [
+    5.0,
+    7.0
+   ],
+   "ph_tol": [
+    4.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 2.0,
+   "ec_slope_pct_per_dS_m": 8.4,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "rhodes": {
+   "name": "Rhodesgrass",
+   "ph_opt": [
+    6.0,
+    8.0
+   ],
+   "ph_tol": [
+    5.5,
+    8.5
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MT",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "blue_panic": {
+   "name": "Blue panicgrass",
+   "ph_opt": [
+    6.0,
+    8.0
+   ],
+   "ph_tol": [
+    5.5,
+    8.5
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "bluestem": {
+   "name": "Bluestems (native/improved/Old World)",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.2
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "EST",
+   "ph_confidence": "estimated",
+   "note": ""
+  },
+  "johnson": {
+   "name": "Johnsongrass",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.2
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MT",
+   "ec_source": "EST",
+   "ph_confidence": "estimated",
+   "note": ""
+  },
+  "switchgrass": {
+   "name": "Switchgrass",
+   "ph_opt": [
+    5.5,
+    7.5
+   ],
+   "ph_tol": [
+    4.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "EST",
+   "ph_confidence": "estimated",
+   "note": ""
+  },
+  "tall_wheatgrass": {
+   "name": "Tall wheatgrass ('Jose')",
+   "ph_opt": [
+    6.5,
+    8.0
+   ],
+   "ph_tol": [
+    6.0,
+    9.0
+   ],
+   "ec_threshold_dS_m": 7.5,
+   "ec_slope_pct_per_dS_m": 4.2,
+   "salt_class": "T",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "warm_perennial": {
+   "name": "Warm-season perennial grass (generic / range / DeSoto)",
+   "ph_opt": [
+    5.5,
+    7.5
+   ],
+   "ph_tol": [
+    5.0,
+    8.2
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "EST",
+   "ph_confidence": "estimated",
+   "note": "Generic fallback \u2014 confirm the actual species"
+  },
+  "cool_perennial": {
+   "name": "Cool-season perennial grass (generic)",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 3.9,
+   "ec_slope_pct_per_dS_m": 5.3,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Uses tall fescue values"
+  },
+  "bean": {
+   "name": "Beans (green/pinto)",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": 19,
+   "salt_class": "S",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "One of the most salt-sensitive crops"
+  },
+  "lima_bean": {
+   "name": "Lima beans",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MT",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "cowpea": {
+   "name": "Blackeye peas (cowpea)",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    7.5
+   ],
+   "ec_threshold_dS_m": 4.9,
+   "ec_slope_pct_per_dS_m": 12,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "green_pea": {
+   "name": "Green peas",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 3.4,
+   "ec_slope_pct_per_dS_m": 10.6,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "beet": {
+   "name": "Beets",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 4.0,
+   "ec_slope_pct_per_dS_m": 9.0,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "chard": {
+   "name": "Swiss chard",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MT",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": "Uses beet family behavior"
+  },
+  "broccoli": {
+   "name": "Broccoli",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 2.8,
+   "ec_slope_pct_per_dS_m": 9.2,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "cabbage": {
+   "name": "Cabbage / Chinese cabbage",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 1.8,
+   "ec_slope_pct_per_dS_m": 9.7,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "cauliflower": {
+   "name": "Cauliflower",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "greens": {
+   "name": "Collards / mustard / turnip tops",
+   "ph_opt": [
+    6.0,
+    7.5
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 3.3,
+   "ec_slope_pct_per_dS_m": 4.3,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Uses turnip-greens values"
+  },
+  "turnip": {
+   "name": "Turnips (root)",
+   "ph_opt": [
+    5.8,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.8
+   ],
+   "ec_threshold_dS_m": 0.9,
+   "ec_slope_pct_per_dS_m": 9.0,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "radish": {
+   "name": "Radishes",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.2,
+   "ec_slope_pct_per_dS_m": 13,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "carrot": {
+   "name": "Carrots",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": 14,
+   "salt_class": "S",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "lettuce": {
+   "name": "Lettuce",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": 13,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "spinach": {
+   "name": "Spinach",
+   "ph_opt": [
+    6.5,
+    7.5
+   ],
+   "ph_tol": [
+    6.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 2.0,
+   "ec_slope_pct_per_dS_m": 7.6,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Very acid-sensitive"
+  },
+  "onion": {
+   "name": "Onions",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.2,
+   "ec_slope_pct_per_dS_m": 16,
+   "salt_class": "S",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "garlic": {
+   "name": "Garlic",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 3.9,
+   "ec_slope_pct_per_dS_m": 14.3,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "tomato": {
+   "name": "Tomatoes",
+   "ph_opt": [
+    6.0,
+    6.8
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 2.5,
+   "ec_slope_pct_per_dS_m": 9.9,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "pepper": {
+   "name": "Peppers (bell/chile)",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.5,
+   "ec_slope_pct_per_dS_m": 14,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "eggplant": {
+   "name": "Eggplant",
+   "ph_opt": [
+    5.8,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.1,
+   "ec_slope_pct_per_dS_m": 6.9,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "potato": {
+   "name": "Potatoes",
+   "ph_opt": [
+    5.0,
+    6.5
+   ],
+   "ph_tol": [
+    4.8,
+    7.0
+   ],
+   "ec_threshold_dS_m": 1.7,
+   "ec_slope_pct_per_dS_m": 12,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Keep below ~6.5 to limit scab"
+  },
+  "sweet_potato": {
+   "name": "Sweet potatoes",
+   "ph_opt": [
+    5.5,
+    6.5
+   ],
+   "ph_tol": [
+    5.0,
+    7.0
+   ],
+   "ec_threshold_dS_m": 1.5,
+   "ec_slope_pct_per_dS_m": 11,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "sweet_corn": {
+   "name": "Sweet corn",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.7,
+   "ec_slope_pct_per_dS_m": 12,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "cucumber": {
+   "name": "Cucumbers",
+   "ph_opt": [
+    5.8,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 2.5,
+   "ec_slope_pct_per_dS_m": 13,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "cantaloupe": {
+   "name": "Cantaloupes",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": 8.4,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "watermelon": {
+   "name": "Watermelons",
+   "ph_opt": [
+    5.8,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "squash_summer": {
+   "name": "Summer squash",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 4.9,
+   "ec_slope_pct_per_dS_m": 10.5,
+   "salt_class": "MT",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Zucchini values (Maas & Grattan 1999)"
+  },
+  "squash_winter": {
+   "name": "Winter squash",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 3.2,
+   "ec_slope_pct_per_dS_m": 16,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "No winter squash in the salt tables \u2014 uses scallop squash as a stand-in"
+  },
+  "okra": {
+   "name": "Okra",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "veg_generic": {
+   "name": "Vegetables (truck farm / garden)",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": "Generic fallback \u2014 use the specific crop when known"
+  },
+  "strawberry": {
+   "name": "Strawberries",
+   "ph_opt": [
+    5.5,
+    6.5
+   ],
+   "ph_tol": [
+    5.0,
+    7.0
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": 33,
+   "salt_class": "S",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "aloe": {
+   "name": "Aloe vera",
+   "ph_opt": [
+    6.5,
+    8.0
+   ],
+   "ph_tol": [
+    6.0,
+    8.5
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MT",
+   "ec_source": "EST",
+   "ph_confidence": "estimated",
+   "note": ""
+  },
+  "lavender": {
+   "name": "Lavender",
+   "ph_opt": [
+    6.5,
+    8.0
+   ],
+   "ph_tol": [
+    6.0,
+    8.5
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "EST",
+   "ph_confidence": "estimated",
+   "note": ""
+  },
+  "sugarcane": {
+   "name": "Sugarcane / syrup cane",
+   "ph_opt": [
+    5.5,
+    7.5
+   ],
+   "ph_tol": [
+    5.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 1.7,
+   "ec_slope_pct_per_dS_m": 5.9,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "apple": {
+   "name": "Apples",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "S",
+   "ec_source": "CLASS",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "peach": {
+   "name": "Peaches",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.7,
+   "ec_slope_pct_per_dS_m": 21,
+   "salt_class": "S",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "grape": {
+   "name": "Grapes",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    8.0
+   ],
+   "ec_threshold_dS_m": 1.5,
+   "ec_slope_pct_per_dS_m": 9.6,
+   "salt_class": "MS",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Rootstock changes both pH and salt tolerance a lot"
+  },
+  "pecan": {
+   "name": "Pecans",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.8
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "S",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": "Zinc deficiency common above pH 7"
+  },
+  "blueberry": {
+   "name": "Blueberries",
+   "ph_opt": [
+    4.5,
+    5.5
+   ],
+   "ph_tol": [
+    4.0,
+    6.0
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "S",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": "Needs acid soil \u2014 most Fort Bend soils need heavy amendment"
+  },
+  "bramble": {
+   "name": "Blackberries / raspberries",
+   "ph_opt": [
+    5.5,
+    6.5
+   ],
+   "ph_tol": [
+    5.0,
+    7.0
+   ],
+   "ec_threshold_dS_m": 1.5,
+   "ec_slope_pct_per_dS_m": 22,
+   "salt_class": "S",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "citrus": {
+   "name": "Citrus",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": 13.1,
+   "salt_class": "S",
+   "ec_source": "MH",
+   "ph_confidence": "standard",
+   "note": "Orange values"
+  },
+  "fruit_trees": {
+   "name": "Fruit trees (generic)",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "S",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": "Generic fallback"
+  },
+  "turf": {
+   "name": "Turf / lawn / sod / fairways",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    8.0
+   ],
+   "ec_threshold_dS_m": 3.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MT",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": "Depends on species \u2014 bermuda is T, St. Augustine MT, centipede S"
+  },
+  "golf_green": {
+   "name": "Golf greens",
+   "ph_opt": [
+    6.0,
+    7.0
+   ],
+   "ph_tol": [
+    5.5,
+    7.5
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": "Assumes bentgrass/ultradwarf bermuda"
+  },
+  "landscape": {
+   "name": "Landscape / shrubs / ornamentals / shade trees / flowers",
+   "ph_opt": [
+    5.5,
+    7.0
+   ],
+   "ph_tol": [
+    5.0,
+    7.8
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": "Generic fallback"
+  },
+  "azalea": {
+   "name": "Azaleas and camellias",
+   "ph_opt": [
+    4.5,
+    5.5
+   ],
+   "ph_tol": [
+    4.0,
+    6.0
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "S",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": "Acid-loving"
+  },
+  "roses": {
+   "name": "Roses",
+   "ph_opt": [
+    6.0,
+    6.5
+   ],
+   "ph_tol": [
+    5.5,
+    7.0
+   ],
+   "ec_threshold_dS_m": 1.3,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "MS",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": ""
+  },
+  "pine": {
+   "name": "Pine / Christmas trees",
+   "ph_opt": [
+    4.5,
+    6.0
+   ],
+   "ph_tol": [
+    4.0,
+    6.5
+   ],
+   "ec_threshold_dS_m": 1.0,
+   "ec_slope_pct_per_dS_m": null,
+   "salt_class": "S",
+   "ec_source": "EST",
+   "ph_confidence": "standard",
+   "note": "Acid-loving; chlorosis on alkaline soil"
+  }
+ },
+ "crop_to_profile": {
+  "fiber/KENAF": "kenaf",
+  "fiber/COTTON (DRYLAND OR LIMITED IRRIGATION , 1 BALE/A)": "cotton",
+  "fiber/COTTON (DRYLAND OR IRRIGATION , 1.5 BALES/A)": "cotton",
+  "fiber/COTTON (2.0 BALES/A)": "cotton",
+  "fiber/COTTON (FULL IRRIGATION , 2.5 BALE/A)": "cotton",
+  "fiber/COTTON (3.0 BALES/A)": "cotton",
+  "fiber/COTTON (3.5 BALES/A)": "cotton",
+  "fiber/COTTON (4.0 BALES/A)": "cotton",
+  "fiber/COTTON (4.5 BALES/A)": "cotton",
+  "fiber/COTTON (5.0 BALES/A)": "cotton",
+  "forage/AFRICAN MILLET": "millet",
+  "forage/ALFALFA (IRRIGATED , ESTABLISHMENT)": "alfalfa",
+  "forage/ALFALFA (IRRIGATED / 6 TON/A , ANNUALLY)": "alfalfa",
+  "forage/ALFALFA (IRRIGATED 8-12 TON/A , ANNUALLY)": "alfalfa",
+  "forage/ALFALFA (NON-IRRIGATED , ANNUALLY)": "alfalfa",
+  "forage/ALFALFA (NON-IRRIGATED , ESTABLISHMENT)": "alfalfa",
+  "forage/BAHIA GRASS (1 HAY CUTTING PLUS GRAZING)": "bahia",
+  "forage/BAHIA GRASS (3 HAY CUTTINGS)": "bahia",
+  "forage/BAHIA GRASS (4 TO 6 HAY CUTTINGS)": "bahia",
+  "forage/BAHIA GRASS ESTABLISHMENT": "bahia",
+  "forage/BAHIA GRASS, GRAZING (1 A.U. PER 1 TO 1.5 ACRES)": "bahia",
+  "forage/BAHIA GRASS, GRAZING (1 A.U. PER 1.5 TO 2 ACRES)": "bahia",
+  "forage/BARLEY (HEAVY GRAZING ON SANDY SOILS)": "barley_forage",
+  "forage/BARLEY (HEAVY GRAZING)": "barley_forage",
+  "forage/BERMUDA (COMMON, MIDLAND) GRASS (4 TO 6 HAY CUTTINGS)": "bermuda",
+  "forage/BLUE PANIC (ESTABLISHMENT)": "blue_panic",
+  "forage/BLUE PANIC (GRAZING)": "blue_panic",
+  "forage/BLUESTEM (ESTABLISHMENT)": "bluestem",
+  "forage/BLUESTEM (GRAZING OR HAY)": "bluestem",
+  "forage/BLUESTEM (IMPROVED-GRAZING OR HAY)": "bluestem",
+  "forage/BUFFEL GRASS (3 HAY CUTTINGS)": "buffel",
+  "forage/BUFFEL GRASS (ESTABLISHMENT)": "buffel",
+  "forage/BUFFEL GRASS (HEAVY GRAZING OR HAY PLUS GRAZING)": "buffel",
+  "forage/BUFFEL GRASS (MODERATE GRAZING)": "buffel",
+  "forage/CLOVER (PREPARED SEEDBED)": "clover",
+  "forage/CLOVER (SOD SEEDED)": "clover",
+  "forage/CLOVER WITH RYEGRASS OR SMALL GRAIN (PREPARED SEEDBED)": "clover_mix",
+  "forage/CLOVER WITH RYEGRASS OR SMALL GRAIN (SOD SEEDED)": "clover_mix",
+  "forage/COMMON BERMUDA GRASS (1 A.U. PER 1 TO 1.5 ACRES)": "bermuda",
+  "forage/COMMON BERMUDA GRASS (1 A.U. PER 1.5 TO 2 ACRES)": "bermuda",
+  "forage/COMMON BERMUDA GRASS (1 HAY CUTTING PLUS GRAZING , ANNUALLY)": "bermuda",
+  "forage/COMMON BERMUDA GRASS (3 HAY CUTTINGS , ANNUALLY)": "bermuda",
+  "forage/COMMON BERMUDA GRASS (ESTABLISHMENT)": "bermuda",
+  "forage/DALLIS GRASS (ESTABLISHMENT)": "dallis",
+  "forage/DALLIS GRASS (GRAZING 1 A.U. PER 1.5 TO 2 ACRES)": "dallis",
+  "forage/DALLIS GRASS(GRAZING 1 AU PER 1 TO 1.5 ACRES OR 1 HAY CUTTING PLUS GRAZING)": "dallis",
+  "forage/DESOTO GRASS": "warm_perennial",
+  "forage/FESCUE (ESTABLISHMENT)": "fescue",
+  "forage/FESCUE , HAY OR GRAZING AT 3-4 AU/A": "fescue",
+  "forage/FORAGE SORGHUM": "forage_sorghum",
+  "forage/HAY GRAZER , 1 HAY CUTTING OR LIGHT GRAZING": "forage_sorghum",
+  "forage/HAY GRAZER , 2 HAY CUTTINGS OR MODERATE GRAZING": "forage_sorghum",
+  "forage/HAY GRAZER , 3 HAY CUTTINGS OR HEAVY GRAZING": "forage_sorghum",
+  "forage/HEGARI": "sorghum",
+  "forage/HUBAN CLOVER": "sweetclover",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (1 HAY CUTTING PLUS GRAZING)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (1 HAY CUTTING-1.5 TONS/A)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (1 HAY CUTTING-2 TONS/A )": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (1 HAY CUTTING-2.5 TONS/A)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (1 HAY CUTTING-3 TONS/A)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (2 HAY CUTTINGS-1.5 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (2 HAY CUTTINGS-2 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (2 HAY CUTTINGS-2.5 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (2 HAY CUTTINGS-3 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (3 HAY CUTTINGS-1.5 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (3 HAY CUTTINGS-2 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (3 HAY CUTTINGS-2.5 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (3 HAY CUTTINGS-3 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (4 HAY CUTTINGS-1.5 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (4 HAY CUTTINGS-2 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (4 HAY CUTTINGS-2.5 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (4 HAY CUTTINGS-3 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (5 HAY CUTTINGS-2 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (5 HAY CUTTINGS-2.5 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (5 HAY CUTTINGS-3 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (6 HAY CUTTINGS-2 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (6 HAY CUTTINGS-2.5 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (6 HAY CUTTINGS-3 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (7 HAY CUTTINGS-2 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (7 HAY CUTTINGS-2.5 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (7 HAY CUTTINGS-3 TONS/A AVG.)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (ESTABLISHMENT)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS (IRRIGATED , ESTABLISHMENT)": "bermuda",
+  "forage/IMPROVED AND HYBRID BERMUDA GRASS, GRAZING": "bermuda",
+  "forage/JOHNSON GRASS , 1 HAY CUTTING OR LIGHT GRAZING": "johnson",
+  "forage/JOHNSON GRASS , 2 HAY CUTTINGS OR MODERATE GRAZING": "johnson",
+  "forage/JOHNSON GRASS , 3 HAY CUTTINGS OR HEAVY GRAZING": "johnson",
+  "forage/KLEIN GRASS (1 AU PER 2 TO 3 ACRES OR HAY PRODUCTION)": "klein",
+  "forage/KLEIN GRASS (ESTABLISHMENT)": "klein",
+  "forage/KLEIN GRASS , 1 AU PER 1.25 TO 1.75 ACRE OR HAY PRODUCTION": "klein",
+  "forage/LOVE GRASS (ESTABLISHMENT)": "lovegrass",
+  "forage/LOVE GRASS , GRAZING OR HAY": "lovegrass",
+  "forage/MILLET , 2 HAY CUTTINGS OR MODERATE GRAZING": "millet",
+  "forage/MILLET , LIGHT GRAZING OR 1 HAY CUTTING": "millet",
+  "forage/MINIMUM REQUIREMENT: ALFALFA": "alfalfa",
+  "forage/MINIMUM REQUIREMENT: BLUESTEM GRASS": "bluestem",
+  "forage/MINIMUM REQUIREMENT: CLOVER": "clover",
+  "forage/MINIMUM REQUIREMENT: COOL SEASON PERENNIAL GRASS": "cool_perennial",
+  "forage/MINIMUM REQUIREMENT: PEAS": "field_peas",
+  "forage/MINIMUM REQUIREMENT: S-1 CLOVER OR WHITE CLOVER": "clover",
+  "forage/MINIMUM REQUIREMENT: VETCH OR LESPEDZA": "vetch",
+  "forage/MINIMUM REQUIREMENT: WARM SEASON PERENNIAL GRASS": "warm_perennial",
+  "forage/NK-37 OR MIDLAND BERMUDA GRASS (ESTABLISHMENT)": "bermuda",
+  "forage/NK-37 OR MIDLAND BERMUDA GRASS (GRAZING)": "bermuda",
+  "forage/NK-37 OR MIDLAND BERMUDA GRASS , 2 TO 3 HAY CUTTINGS": "bermuda",
+  "forage/OATS (HEAVY GRAZING OR GRAZING PLUS HAY OR GRAIN)": "oats",
+  "forage/OATS (LIGHT GRAZING)": "oats",
+  "forage/OATS (MODERATE GRAZING)": "oats",
+  "forage/OATS ,HAY ONLY (2 -3 TONS/A)": "oats",
+  "forage/RANGE GRASS (ESTABLISHMENT)": "warm_perennial",
+  "forage/RANGE GRASS (GRAZING)": "warm_perennial",
+  "forage/RHODES GRASS": "rhodes",
+  "forage/RHODES GRASS (ESTABLISHMENT)": "rhodes",
+  "forage/RYE , HEAVY GRAZING": "rye_forage",
+  "forage/RYE , MODERATE GRAZING": "rye_forage",
+  "forage/RYEGRASS (SOD SEEDED)": "ryegrass",
+  "forage/RYEGRASS , HEAVY GRAZING": "ryegrass",
+  "forage/RYEGRASS , MODERATE GRAZING": "ryegrass",
+  "forage/SILAGE (CORN 11-15 TON/A)": "corn_silage",
+  "forage/SILAGE (CORN 16-20 TON/A)": "corn_silage",
+  "forage/SILAGE (CORN 21-25 TON/A)": "corn_silage",
+  "forage/SILAGE (CORN 26-30 TON/A)": "corn_silage",
+  "forage/SILAGE (CORN 7 TO 10 TON/A)": "corn_silage",
+  "forage/SILAGE (SORGHUM 11-15 TON/A)": "forage_sorghum",
+  "forage/SILAGE (SORGHUM 16-20 TON/A)": "forage_sorghum",
+  "forage/SILAGE (SORGHUM 21-25 TON/A)": "forage_sorghum",
+  "forage/SILAGE (SORGHUM 26-30 TON/A)": "forage_sorghum",
+  "forage/SILAGE (SORGHUM 7 TO 10 TON/A)": "forage_sorghum",
+  "forage/SMALL GRAIN AND RYEGRASS (INTENSIVE GRAZING)": "smallgrain_ryegrass",
+  "forage/SMALL GRAIN AND RYEGRASS (MODERATE GRAZING)": "smallgrain_ryegrass",
+  "forage/SMALL GRAIN AND RYEGRASS (SOD SEEDED)": "smallgrain_ryegrass",
+  "forage/SORGHUM ALMUM": "forage_sorghum",
+  "forage/SUDAN - SORGHUM HYBRID , 1 HAY CUTTING OR LIGHT GRAZING": "forage_sorghum",
+  "forage/SUDAN - SORGHUM HYBRID , 2 HAY CUTTINGS OR MODERATE GRAZING": "forage_sorghum",
+  "forage/SUDAN - SORGHUM HYBRID , 3 HAY CUTTINGS OR HEAVY GRAZING": "forage_sorghum",
+  "forage/SUDAN GRASS , 1 HAY CUTTING OR LIGHT GRAZING": "forage_sorghum",
+  "forage/SUDAN GRASS , 2 HAY CUTTINGS OR MODERATE GRAZING": "forage_sorghum",
+  "forage/SUDAN GRASS , 3 HAY CUTTINGS OR HEAVY GRAZING": "forage_sorghum",
+  "forage/SWITCH GRASS": "switchgrass",
+  "forage/SWITCH GRASS (ESTABLISHMENT)": "switchgrass",
+  "forage/TRITICALE GRAZING": "triticale",
+  "forage/VETCH (PREPARED SEEDBED)": "vetch",
+  "forage/VETCH (SOD SEEDED)": "vetch",
+  "forage/VETCH WITH RYEGRASS OR SMALL GRAIN (PREPARED SEEDBED)": "vetch_mix",
+  "forage/WHEAT (HEAVY GRAZING)": "wheat_forage",
+  "forage/WHEAT (LIGHT GRAZING)": "wheat_forage",
+  "forage/WHEAT (MODERATE GRAZING)": "wheat_forage",
+  "forage/WHEAT GRASS , JOSE (HEAVY GRAZING)": "tall_wheatgrass",
+  "forage/WHEAT GRASS , JOSE (LIGHT GRAZING)": "tall_wheatgrass",
+  "forage/WHEAT GREENCHOP (2 WET TONS/A-75% MOISTURE)": "wheat_forage",
+  "forage/WHEAT GREENCHOP (3 WET TONS/A-75% MOISTURE)": "wheat_forage",
+  "forage/WHEAT GREENCHOP (4 WET TONS/A-75% MOISTURE)": "wheat_forage",
+  "forage/WHEAT GREENCHOP (5 WET TONS/A-75% MOISTURE)": "wheat_forage",
+  "forage/WHEAT GREENCHOP (6 WET TONS/A-75% MOISTURE)": "wheat_forage",
+  "forage/WHEAT GREENCHOP (7 WET TONS/A-75% MOISTURE)": "wheat_forage",
+  "forage/WHEAT GREENCHOP (8 WET TONS/A-75% MOISTURE)": "wheat_forage",
+  "forage/WHEAT HAY (1 TON/A)": "wheat_forage",
+  "forage/WHEAT HAY (1.5 TON/A)": "wheat_forage",
+  "forage/WHEAT HAY (2 TON/A)": "wheat_forage",
+  "forage/WHEAT HAY (2.5 TON/A)": "wheat_forage",
+  "forage/WHEAT HAY (3 TON/A)": "wheat_forage",
+  "forage/WHEAT HAY (3.5 TON/A)": "wheat_forage",
+  "forage/WHEAT HAY (4 TON/A)": "wheat_forage",
+  "forage/WHEAT SILAGE (3 WET TONS-65% MOISTURE)": "wheat_forage",
+  "forage/WHEAT SILAGE (4.5 WET TONS-65% MOISTURE)": "wheat_forage",
+  "forage/WHEAT SILAGE (6 WET TONS-65% MOISTURE)": "wheat_forage",
+  "forage/WHEAT SILAGE (7.5 WET TONS-65% MOISTURE)": "wheat_forage",
+  "forage/WHEAT SILAGE (9 WET TONS-65% MOISTURE)": "wheat_forage",
+  "landscape/GOLF GREENS": "golf_green",
+  "landscape/LANDSCAPE (LAWN , TREES , SHRUBS , OR GROUND COVER)": "landscape",
+  "landscape/SODGRASS PRODUCTION": "turf",
+  "landscape/TURF FAIRWAYS , ATHLETIC FIELDS , ETC.": "turf",
+  "lawn/AZALEAS AND CAMEILIAS": "azalea",
+  "lawn/Blackberries/Raspberries - Garden": "bramble",
+  "lawn/FLOWERS": "landscape",
+  "lawn/FRUIT TREES": "fruit_trees",
+  "lawn/GARDEN": "veg_generic",
+  "lawn/LANDSCAPE (LAWN , TREES , SHRUBS , OR GROUND COVER)": "landscape",
+  "lawn/LAWN": "turf",
+  "lawn/LAWN ESTABLISHMENT": "turf",
+  "lawn/PECANS (INDIVIDUAL TREES)": "pecan",
+  "lawn/ROSES": "roses",
+  "lawn/SHADE TREES": "landscape",
+  "lawn/SHRUBS AND ORNAMENTALS": "landscape",
+  "oil/CANOLA (1000 LBS/A)": "canola",
+  "oil/CANOLA (1250 LBS/A)": "canola",
+  "oil/CANOLA (1500 LBS/A)": "canola",
+  "oil/CANOLA (1750 LBS/A)": "canola",
+  "oil/CANOLA (2000 LBS/A)": "canola",
+  "oil/CANOLA (2250 LBS/A)": "canola",
+  "oil/CANOLA (2500 LBS/A)": "canola",
+  "oil/CANOLA (2750 LBS/A)": "canola",
+  "oil/CANOLA (3000 LBS/A)": "canola",
+  "oil/CANOLA (3250 LBS/A)": "canola",
+  "oil/CANOLA (3500 LBS/A)": "canola",
+  "oil/CANOLA (3750 LBS/A)": "canola",
+  "oil/CANOLA (4000 LBS/A)": "canola",
+  "oil/FLAX": "flax",
+  "oil/GUAR": "guar",
+  "oil/PEANUTS , DRYLAND": "peanut",
+  "oil/PEANUTS , IRRIGATED": "peanut",
+  "oil/SESAME": "sesame",
+  "oil/SOYBEANS": "soybean",
+  "oil/SUNFLOWERS": "sunflower",
+  "row/AFRICAN MILLET": "millet",
+  "row/BARLEY (HEAVY GRAZING ON SANDY SOILS)": "barley_forage",
+  "row/BARLEY (HEAVY GRAZING)": "barley_forage",
+  "row/BARLEY GRAIN (30-40 BU/A)": "barley",
+  "row/BARLEY GRAIN (70-90 BU/A WITH LIGHT GRAZING)": "barley",
+  "row/CORN (100 BU/A)": "corn",
+  "row/CORN (110 BU/A)": "corn",
+  "row/CORN (120 BU/A)": "corn",
+  "row/CORN (130 BU/A)": "corn",
+  "row/CORN (140 BU/A)": "corn",
+  "row/CORN (150 BU/A)": "corn",
+  "row/CORN (160 BU/A)": "corn",
+  "row/CORN (170 BU/A)": "corn",
+  "row/CORN (180 BU/A)": "corn",
+  "row/CORN (190 BU/A)": "corn",
+  "row/CORN (200 BU/A)": "corn",
+  "row/CORN (210 BU/A)": "corn",
+  "row/CORN (220 BU/A)": "corn",
+  "row/CORN (230 BU/A)": "corn",
+  "row/CORN (240 BU/A)": "corn",
+  "row/CORN (250 BU/A)": "corn",
+  "row/CORN (260 BU/A)": "corn",
+  "row/CORN (270 BU/A)": "corn",
+  "row/CORN (70 BU/A)": "corn",
+  "row/CORN (80 BU/A)": "corn",
+  "row/CORN (90 BU/A)": "corn",
+  "row/COTTON (2.0 BALES/A)": "cotton",
+  "row/COTTON (3.0 BALES/A)": "cotton",
+  "row/COTTON (3.5 BALES/A)": "cotton",
+  "row/COTTON (4.0 BALES/A)": "cotton",
+  "row/COTTON (4.5 BALES/A)": "cotton",
+  "row/COTTON (5.0 BALES/A)": "cotton",
+  "row/COTTON (DRYLAND OR IRRIGATION , 1.5 BALES/A)": "cotton",
+  "row/COTTON (DRYLAND OR LIMITED IRRIGATION , 1 BALE/A)": "cotton",
+  "row/COTTON (FULL IRRIGATION , 2.5 BALE/A)": "cotton",
+  "row/GRAIN SORGHUM (1000 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (10000 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (1500 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (2000 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (2500 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (3000 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (3500 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (4000 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (4500 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (5000 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (5500 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (6000 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (6500 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (7000 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (7500 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (8000 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (8500 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (9000 LBS/A)": "sorghum",
+  "row/GRAIN SORGHUM (9500 LBS/A)": "sorghum",
+  "row/HEGARI": "sorghum",
+  "row/MILLET , 2 HAY CUTTINGS OR MODERATE GRAZING": "millet",
+  "row/MILLET , LIGHT GRAZING OR 1 HAY CUTTING": "millet",
+  "row/OATS (60-80 BU/A)": "oats",
+  "row/OATS (80-100 BU/A)": "oats",
+  "row/OATS (SOD SEEDED)": "oats",
+  "row/OATS ,HAY ONLY (2 -3 TONS/A)": "oats",
+  "row/RED TOP CANE (GRAIN)": "sorghum",
+  "row/RICE (MEDIUM HEIGHT VARIETIES <6,000 LBS/ACRE)": "rice",
+  "row/RICE (MEDIUM HEIGHT VARIETIES >10,000 LBS/ACRE)": "rice",
+  "row/RICE (MEDIUM HEIGHT VARIETIES 6,000-10,000 LBS/ACRE)": "rice",
+  "row/RICE (SHORT VARIETIES <6,000 LBS/ACRE)": "rice",
+  "row/RICE (SHORT VARIETIES >10,000 LBS/ACRE)": "rice",
+  "row/RICE (SHORT VARIETIES 6,000-10,000 LBS/ACRE)": "rice",
+  "row/RICE (TALL VARIETIES <6,000 LBS/ACRE)": "rice",
+  "row/RICE (TALL VARIETIES >10,000 LBS/ACRE)": "rice",
+  "row/RICE (TALL VARIETIES 6,000-10,000 LBS/ACRE)": "rice",
+  "row/RYE , GRAIN": "rye",
+  "row/SORGHUM ALMUM": "forage_sorghum",
+  "row/TRITICALE GRAIN": "triticale",
+  "row/WHEAT (20-29 BU/A) GRAIN ONLY": "wheat",
+  "row/WHEAT (20-29 BU/A) GRAZING & GRAIN": "wheat",
+  "row/WHEAT (30-39 BU/A) GRAIN ONLY": "wheat",
+  "row/WHEAT (30-39 BU/A) GRAZING & GRAIN": "wheat",
+  "row/WHEAT (40-59 BU/A) GRAIN ONLY": "wheat",
+  "row/WHEAT (40-59 BU/A) GRAZING & GRAIN": "wheat",
+  "row/WHEAT (60-79 BU/A) GRAIN ONLY": "wheat",
+  "row/WHEAT (60-79 BU/A) GRAZING & GRAIN": "wheat",
+  "row/WHEAT (80-100 BU/A) GRAIN ONLY": "wheat",
+  "row/WHEAT (80-100 BU/A) GRAZING & GRAIN": "wheat",
+  "tree/CHRISTMAS TREES": "pine",
+  "tree/PINE TREES": "pine",
+  "veg/ALOE VERA": "aloe",
+  "veg/APPLES": "apple",
+  "veg/BEANS, GREEN": "bean",
+  "veg/BEANS, LIMA": "lima_bean",
+  "veg/BEANS, PINTO": "bean",
+  "veg/BEETS": "beet",
+  "veg/Blackberries/Raspberries - Procuction": "bramble",
+  "veg/BLUEBERRY": "blueberry",
+  "veg/BROCCOLI": "broccoli",
+  "veg/CABBAGES": "cabbage",
+  "veg/CABBAGES,CHINESE": "cabbage",
+  "veg/CANE": "sugarcane",
+  "veg/CANTALOUPES": "cantaloupe",
+  "veg/CARROTS": "carrot",
+  "veg/CAULIFLOWER": "cauliflower",
+  "veg/CITRUS GUIDELINES FERTILITY": "citrus",
+  "veg/COLLARDS": "greens",
+  "veg/CUCUMBERS": "cucumber",
+  "veg/EGGPLANT": "eggplant",
+  "veg/GARLIC": "garlic",
+  "veg/GRAPES": "grape",
+  "veg/LAVENDER": "lavender",
+  "veg/LETTUCE": "lettuce",
+  "veg/MUSTARD": "greens",
+  "veg/OKRA": "okra",
+  "veg/ONIONS": "onion",
+  "veg/ONIONS (SEEDED)": "onion",
+  "veg/ONIONS (TRANSPLANTS)": "onion",
+  "veg/PEACHES": "peach",
+  "veg/PEAS, BLACKEYE": "cowpea",
+  "veg/PEAS, GREEN": "green_pea",
+  "veg/PECANS (UPLAND GROVES)": "pecan",
+  "veg/PEPPERS, CHILE": "pepper",
+  "veg/PEPPERS,BELL": "pepper",
+  "veg/POTATOES (EARLY VARIETY)": "potato",
+  "veg/POTATOES (LATE VARIETY)": "potato",
+  "veg/RADISHES": "radish",
+  "veg/SPINACH": "spinach",
+  "veg/SQUASH , SUMMER": "squash_summer",
+  "veg/SQUASH , WINTER": "squash_winter",
+  "veg/STRAWBERRIES (FIELD PLANTING)": "strawberry",
+  "veg/SUGARCANE": "sugarcane",
+  "veg/SWEET CORN": "sweet_corn",
+  "veg/SWEET POTATOES": "sweet_potato",
+  "veg/SWISS CHARD": "chard",
+  "veg/TOMATOES": "tomato",
+  "veg/TURNIPS": "turnip",
+  "veg/TURNIPS, TOPS": "greens",
+  "veg/VEGETABLES , TRUCK FARM": "veg_generic",
+  "veg/WATERMELONS": "watermelon"
+ }
+}

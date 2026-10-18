@@ -264,6 +264,13 @@ export default function Step4Results() {
 
               <div className="ff-crop-context">
                 <p className="ff-crop-context__name">Growing: {r.crop_type || 'Not recorded'}</p>
+                {r.score_basis === 'crop' && (
+                  <p className="ff-help">
+                    Score is for {r.selected_crop?.profile_name?.toLowerCase() || r.crop_type}.
+                    {' '}General soil health: <b>{fmtScore(r.general_health_score)}</b> ({r.general_health_category})
+                  </p>
+                )}
+                {r.selected_crop?.basis && <p className="ff-help">{r.selected_crop.basis}</p>}
                 {r.selected_crop?.note && <p className="ff-help">{r.selected_crop.note}</p>}
                 {r.selected_crop?.limiting_factors?.length > 0 && (
                   <ul>{r.selected_crop.limiting_factors.map((factor) => <li key={factor}>{factor}</li>)}</ul>
@@ -276,6 +283,7 @@ export default function Step4Results() {
                 </span>
                 <span>
                   <b>EC</b> {inputs.ec ?? 'N/A'}
+                  {inputs.ece != null && ` (ECe ~${inputs.ece})`}
                 </span>
                 <span>
                   <b>N</b> {inputs.nitrogen ?? 'N/A'}
@@ -303,13 +311,23 @@ export default function Step4Results() {
               <div>
                 <p className="ff-result-sub">Crops viable now</p>
                 {viable.length > 0 ? (
-                  <div className="ff-chips">
-                    {viable.map((crop) => (
-                      <span key={crop} className="ff-chip">
-                        {crop}
-                      </span>
-                    ))}
-                  </div>
+                  // Older saved results have one flat list instead of the two tiers.
+                  (r.crop_suitability.ideal
+                    ? [['Ideal', r.crop_suitability.ideal],
+                       ['Viable with adjustments', r.crop_suitability.viable_with_adjustments || []]]
+                    : [[null, viable]]
+                  ).filter(([, crops]) => crops.length > 0).map(([heading, crops]) => (
+                    <div key={heading || 'viable'}>
+                      {heading && <p className="ff-help ff-mb-0">{heading}</p>}
+                      <div className="ff-chips">
+                        {crops.map((crop) => (
+                          <span key={crop} className="ff-chip">
+                            {crop}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))
                 ) : (
                   <div className="ff-chips">
                     <span className="ff-chip ff-chip--muted">
