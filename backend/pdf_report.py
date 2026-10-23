@@ -34,6 +34,8 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+from backend import fert_pdf
+
 # ---------------------------------------------------------------------------
 # Brand palette (BUILD_CONTRACT §1)
 # ---------------------------------------------------------------------------
@@ -357,6 +359,8 @@ def _section_flowables(section: Dict, farm_name: str, date: str,
                                   styles["muted"]))
         flow.append(Spacer(1, 4))
 
+    flow += fert_pdf.section_flowables(section, styles)
+
     flow.append(Spacer(1, 10))
     flow.append(HRFlowable(width="100%", thickness=0.75, color=FF_BORDER,
                            spaceAfter=6))
@@ -486,5 +490,7 @@ def build_combined_pdf(analysis: Dict, map_image: Optional[str] = None) -> bytes
         flow += _header_block(styles)
         flow += _section_flowables(section, farm_name, date, styles,
                                    with_header=False)
+
+    flow += fert_pdf.field_total_flowables(analysis, styles)
 
     return _render(flow)

@@ -19,6 +19,7 @@ import {
 
 import api from '../api/client.js'
 import { useDashboard } from './DashboardProvider.jsx'
+import FertilizerPlan, { FieldFertilizerTotal } from './FertilizerPlan.jsx'
 import { gridCellRing, polygonCentroid } from './geo.js'
 import { captureMapImage } from './mapCapture.js'
 import { InvalidateSizeOnVisible } from './mapView.js'
@@ -377,6 +378,8 @@ export default function Step4Results() {
                 )}
               </div>
 
+              <FertilizerPlan plan={r.fertilizer_plan} />
+
               <div className="ff-result-card__foot">
                 <a
                   className="ff-btn ff-btn--secondary ff-btn--sm ff-btn--block"
@@ -390,6 +393,8 @@ export default function Step4Results() {
           )
         })}
       </div>
+
+      <FieldFertilizerTotal total={analysis.fertilizer_total} />
 
       {/* Field-level actions */}
       <div className="ff-actions">

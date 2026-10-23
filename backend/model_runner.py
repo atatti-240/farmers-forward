@@ -148,10 +148,14 @@ def run_analysis(farm_name: str, date: str, sections: List[Dict],
     """Analyze every section and return the full field report.
 
     `sections` is a list of dicts with keys: section_label, latitude, longitude,
-    crop_type, ph, ec, nitrogen, phosphorus, potassium. Returns the structure defined in
-    BUILD_CONTRACT §2.5. Each section's crop_type selects the Texas A&M table its
-    pH, salinity and N/P/K are judged against (pipeline.crop_profile).
+    crop_type, ph, ec, nitrogen, phosphorus, potassium, and optionally
+    area_acres (the share of the field the sample stands for). Returns the
+    structure defined in BUILD_CONTRACT §2.5. Each section's crop_type selects
+    the Texas A&M table its pH, salinity and N/P/K are judged against
+    (pipeline.crop_profile), and its fertilizer plan (backend.fert_calc).
     """
+    from backend import fert_calc
+
     # Lazy heavy imports (see module note): only paid on the first submission.
     _ensure_pipeline_path()
     from pipeline import agronomy
@@ -180,6 +184,7 @@ def run_analysis(farm_name: str, date: str, sections: List[Dict],
         recs = recommender.build_recommendations(m, problems, target_crop=crop)
         selected_crop = recommender.assess_target_crop(m, crop)
         cost_benefit = recommender.estimate_cost_benefit(m, recs)
+        assessment = crop_profile.assess(m, crop)
 
         score = _headline_score(m, crop, ml)
         scores.append(score["health_score"])
@@ -196,7 +201,9 @@ def run_analysis(farm_name: str, date: str, sections: List[Dict],
             # As entered (EC on the sensor's basis), plus the ECe used for analysis.
             "inputs": dict({c: round(float(sec[c]), 2) for c in T.MEASUREMENT_COLUMNS},
                            ece=round(m["ec"], 2), ec_method=T.SENSOR_EC_METHOD),
-            "crop_assessment": crop_profile.assess(m, crop),
+            "crop_assessment": assessment,
+            "fertilizer_plan": fert_calc.build_plan(crop_type, crop, assessment,
+                                                    sec.get("area_acres")),
             "health_score": score["health_score"],
             "health_category": score["health_category"],
             "score_basis": score["score_basis"],  # "crop" or "general"
@@ -244,5 +251,7 @@ def run_analysis(farm_name: str, date: str, sections: List[Dict],
         "farm_name": farm_name,
         "date": date,
         "field_summary": field_summary,
+        "fertilizer_total": fert_calc.field_total(
+            (r["section_label"], r["fertilizer_plan"]) for r in results),
         "results": results,
     }
