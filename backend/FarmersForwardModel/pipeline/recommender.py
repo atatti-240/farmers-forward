@@ -1,16 +1,19 @@
-"""Rule-based recommender: turns a detected problem into a specific, costed fix.
+"""Rule-based recommender: turns a detected problem into a specific fix.
 
-The whole point of FarmersFirst is actionability. Every recommendation carries a
-*rate*, a *cost estimate*, and a *timing window* -- never just "your pH is low".
+The whole point of FarmersFirst is actionability. Every recommendation says what
+to do, how much (`rate`, shown as the amount) and when -- never just "your pH is
+low".
 
 Fixes are keyed by the `fix_code` that pipeline.agronomy attaches to each
-problem, so detection and remediation stay in lock-step. Rates scale with
-severity. The five fixable properties are pH (acidic/alkaline), EC (salinity),
-and N / P / K. For a crop with a Texas A&M table, N/P/K amounts come straight
-from crop_lookup.fert_rec() for that crop and yield goal.
+problem, so detection and remediation stay in lock-step. The five fixable
+properties are pH (acidic/alkaline), EC (salinity), and N / P / K. Reports only
+show Texas A&M numbers: N/P/K amounts live in the report's Fertilizer Plan
+(backend/fert_calc.py, from crop_lookup.fert_rec() for the crop and yield
+goal), so an N/P/K item points there, and pH items refer the farmer to the A&M
+lab for a lime or sulfur rate instead of estimating one.
 
 The cost/benefit estimator at the bottom is EXPERIMENTAL and clearly labelled as
-such -- a ballpark, not financial advice.
+such -- a ballpark, not financial advice, and not shown on reports.
 """
 
 from __future__ import annotations
@@ -38,16 +41,38 @@ def _am_rate(crop, nutrient: str, ppm: float) -> Optional[float]:
 
 
 def _am_rate_note(crop, nutrient: str, ppm: float) -> str:
-    """Where an A&M rate came from, plus A&M's own application note."""
+    """Where the Fertilizer Plan's rate comes from. A&M's own application
+    notes appear in the plan, since some carry amounts (bermudagrass: 100 lb
+    more N per extra hay cutting)."""
     basis = ("a %s yield goal of %s" % (crop.label, crop.yield_goal)
              if crop.yield_goal else crop.label)
     note = "Texas A&M rate for %s at %.0f ppm soil %s." % (basis, ppm, nutrient)
     suff = crop.sufficiency(nutrient)
     if suff is not None:
         note += " None needed at %.0f ppm or more." % suff
-    if crop.am_note(nutrient):
-        note += " A&M: %s" % crop.am_note(nutrient).rstrip(".") + "."
     return note + " "
+
+
+_NUTRIENT_OF_FIX = {"nitrogen_deficient": "N", "phosphorus_deficient": "P",
+                    "potassium_deficient": "K"}
+_METRIC = {"N": "nitrogen", "P": "phosphorus", "K": "potassium"}
+
+
+def _needs(crop, nutrient: str, sample: Dict) -> bool:
+    """False only when the crop's A&M rate rounds to 0 lb/acre, where the
+    Fertilizer Plan says none is needed. No A&M table: the item still stands."""
+    rate = _am_rate(crop, nutrient, float(sample[_METRIC[nutrient]]))
+    return rate is None or rate >= crop_profile.MIN_RATE
+
+
+def _amount(crop, nutrient: str) -> str:
+    """An N/P/K action item's amount. Every number lives in the Fertilizer Plan;
+    without an A&M rate the item says what the plan says."""
+    if crop is None:
+        return "Pick a crop to get a Texas A&M rate."
+    if not crop.has_table(nutrient):
+        return crop.no_rate(nutrient)
+    return crop_profile.SEE_PLAN
 
 
 def _target_ph_note(crop) -> str:
@@ -71,8 +96,8 @@ def _fix_ph_acidic(s: Dict, p: Dict, crop=None) -> Dict:
         title="Raise pH with agricultural lime",
         action="Apply agricultural lime (calcitic; use dolomitic if Mg is also "
                "low) and incorporate 6 in deep.",
-        rate="{:.1f}-{:.1f} tons/acre".format(tons, tons + 0.5),
-        cost_estimate=_money(low, high) + " ($25-40/ton material)",
+        rate=crop_profile.lab_rate("lime"),
+        # Internal ballpark for the experimental cost/benefit only; not shown.
         cost_per_acre_low=low, cost_per_acre_high=high,
         timing="3-6 months before planting (fall for a spring crop) so it has "
                "time to react.",
@@ -92,8 +117,7 @@ def _fix_ph_alkaline(s: Dict, p: Dict, crop=None) -> Dict:
                "(ammonium sulfate). On calcareous Blackland clay, fully "
                "lowering pH is slow and costly -- lean on tolerant crops + "
                "chelated micronutrients instead.",
-        rate="{:.0f}-{:.0f} lb/acre elemental sulfur".format(lb, lb + 200),
-        cost_estimate=_money(low, high) + " (sulfur ~$0.30-0.55/lb)",
+        rate=crop_profile.lab_rate("sulfur"),
         cost_per_acre_low=low, cost_per_acre_high=high,
         timing="Apply and incorporate several months ahead; oxidation to acid "
                "takes weeks-months and warm soil.",
@@ -122,7 +146,6 @@ def _fix_salinity(s: Dict, p: Dict, crop=None) -> Dict:
         title="Reduce salinity (leach + drain)",
         action=" ".join(lines),
         rate="Leaching fraction sized to soil; add drainage if water ponds.",
-        cost_estimate=_money(low, high),
         cost_per_acre_low=low, cost_per_acre_high=high,
         timing="Pre-season, when you can move water through the profile.",
         notes=notes,
@@ -132,37 +155,33 @@ def _fix_salinity(s: Dict, p: Dict, crop=None) -> Dict:
 def _fix_nitrogen(s: Dict, p: Dict, crop=None) -> Dict:
     n = float(s["nitrogen"])
     lb_n = _am_rate(crop, "N", n)
+    # A&M's own N timing (e.g. wheat: 1/3 preplant, the rest before jointing)
+    # when it has one without an amount in it; corn's side-dress split; else
+    # the split that applies to any crop on leaching-prone ground.
+    am_timing = crop.am_note("N") if crop is not None and crop.has_table("N") else None
+    if am_timing and "lbs" in am_timing.lower():
+        am_timing = None
+    corn = crop is not None and crop.name == "Corn"
     if lb_n is not None:
-        rate = "{:.0f} lb N/acre (~{:.0f} lb urea)".format(lb_n, lb_n / 0.46)
         crop_note = _am_rate_note(crop, "N", n)
     else:
-        # No A&M N table: bring soil N toward a generic target, then convert to
-        # lb N/acre and urea.
-        target = DEFAULT_N_TARGET
-        lb_n = max(30.0, min(160.0, (target - n) * 4.0 + 30.0))
-        rate = "{:.0f}-{:.0f} lb N/acre (~{:.0f} lb urea)".format(lb_n, lb_n + 20, lb_n / 0.46)
-        if crop is not None and crop.mapped:
-            crop_note = ("Texas A&M publishes no nitrogen table for %s (%s). This "
-                         "rate uses the generic ~%.0f ppm soil-N target. "
-                         % (crop.label, crop.am_note("N") or "ask your county agent", target))
-        elif crop is not None:
-            crop_note = ("No nitrogen profile is available for %s. This rate uses "
-                         "the generic ~%.0f ppm soil-N target; confirm a crop-specific "
-                         "rate with your soil lab. " % (crop.name, target))
-        else:
-            crop_note = ("Rate sized to a generic ~%.0f ppm soil-N target; specify a "
-                         "crop for a tailored rate. " % target)
+        crop_note = ""
+        # Internal ballpark for the experimental cost/benefit only; not shown.
+        lb_n = max(30.0, min(160.0, (DEFAULT_N_TARGET - n) * 4.0 + 30.0))
     low, high = lb_n * 0.55, lb_n * 0.75
     return dict(
         title="Correct nitrogen deficiency",
-        action="Apply nitrogen fertilizer (urea 46-0-0 or UAN). Split the "
-               "application on corn/leafy crops to limit leaching.",
-        rate=rate,
-        cost_estimate=_money(low, high) + " (N ~$0.55-0.75/lb)",
+        action="Apply nitrogen fertilizer (urea 46-0-0). " + (
+            "Split the application on corn to limit leaching." if corn else
+            "On sandy or leaching-prone ground, split the application to limit "
+            "leaching."),
+        rate=_amount(crop, "N"),
         cost_per_acre_low=low, cost_per_acre_high=high,
-        timing="At/near planting; split-apply for corn (pre-plant + side-dress).",
-        notes=crop_note + "A legume cover crop can fix 40-100 lb N/acre "
-              "biologically and cut this bill over time.",
+        timing=am_timing or (
+            "At/near planting; split-apply for corn (pre-plant + side-dress)." if corn
+            else "At/near planting; on sandy ground, split it (pre-plant + side-dress)."),
+        notes=crop_note + "A legume cover crop can fix nitrogen biologically and "
+              "cut this bill over time.",
     )
 
 
@@ -170,19 +189,18 @@ def _fix_phosphorus_def(s: Dict, p: Dict, crop=None) -> Dict:
     p_ppm = float(s["phosphorus"])
     p2o5 = _am_rate(crop, "P", p_ppm)
     if p2o5 is not None:
-        rate = "{:.0f} lb P2O5/acre".format(p2o5)
         crop_note = _am_rate_note(crop, "P", p_ppm)
     else:
-        p2o5 = max(30.0, min(70.0, (20.0 - p_ppm) * 3.0 + 30.0))
-        rate = "{:.0f}-{:.0f} lb P2O5/acre".format(p2o5, p2o5 + 15)
         crop_note = ""
+        p2o5 = max(30.0, min(70.0, (20.0 - p_ppm) * 3.0 + 30.0))  # cost/benefit only
     low, high = p2o5 * 0.60, p2o5 * 0.90
     return dict(
         title="Correct phosphorus deficiency",
-        action="Band phosphate (DAP 18-46-0 or triple superphosphate) near the "
-               "seed row for best early uptake.",
-        rate=rate,
-        cost_estimate=_money(low, high) + " (P2O5 ~$0.60-0.90/lb)",
+        # Triple superphosphate, as in the Fertilizer Plan: DAP's nitrogen would
+        # come on top of the plan's urea.
+        action="Band phosphate (triple superphosphate 0-46-0) near the seed row "
+               "for best early uptake.",
+        rate=_amount(crop, "P"),
         cost_per_acre_low=low, cost_per_acre_high=high,
         timing="At planting (banded/starter).",
         notes=crop_note + "Banding beats broadcasting on high-pH soils where P "
@@ -195,8 +213,7 @@ def _fix_phosphorus_excess(s: Dict, p: Dict) -> Dict:
         title="Stop over-applying phosphorus",
         action="Halt all P fertilizer and manure. Protect water: buffer strips, "
                "cover crops, and erosion control to stop P-laden runoff.",
-        rate="0 lb P2O5/acre until soil test P drops below 150 ppm.",
-        cost_estimate="$0 (a saving) + buffer/cover-crop cost",
+        rate="None until soil test P drops below 150 ppm.",
         cost_per_acre_low=0.0, cost_per_acre_high=0.0,
         timing="Immediately, and ongoing.",
         notes="High P is a runoff / water-quality liability, not a yield gain. "
@@ -208,20 +225,17 @@ def _fix_potassium(s: Dict, p: Dict, crop=None) -> Dict:
     k = float(s["potassium"])
     k2o = _am_rate(crop, "K", k)
     if k2o is not None:
-        rate = "{:.0f} lb K2O/acre".format(k2o)
         crop_note = _am_rate_note(crop, "K", k)
     else:
         thr = T.POTASSIUM["deficient"]
-        k2o = max(40.0, min(120.0, (thr - k) * 1.2 + 40.0))
-        rate = "{:.0f}-{:.0f} lb K2O/acre".format(k2o, k2o + 20)
+        k2o = max(40.0, min(120.0, (thr - k) * 1.2 + 40.0))  # cost/benefit only
         crop_note = "K deficiency threshold is {:.0f} ppm. ".format(thr)
     low, high = k2o * 0.45, k2o * 0.70
     return dict(
         title="Correct potassium deficiency",
         action="Apply potash (muriate of potash 0-0-60). Split applications on "
                "sandy or leaching-prone ground.",
-        rate=rate,
-        cost_estimate=_money(low, high) + " (K2O ~$0.45-0.70/lb)",
+        rate=_amount(crop, "K"),
         cost_per_acre_low=low, cost_per_acre_high=high,
         timing="Pre-plant or at planting.",
         notes=crop_note + "Sandy ground holds less K than clay, so the sandier "
@@ -241,12 +255,13 @@ def assess_target_crop(sample: Dict, target_crop=None) -> Dict:
     crop = crop_profile.as_crop(target_crop)
     if crop is not None and crop.mapped:
         fit = agronomy.crop_fit(sample, crop)
+        be = "are" if crop_profile.is_plural(crop.name) else "is"
         notes = {
             "ideal": "pH and salinity suit %s." % crop.label,
-            "viable_with_adjustments": "%s is viable with adjustments; review these "
-                                       "before planting." % crop.name,
-            "not_viable": "%s is not viable on these readings until the limits below "
-                          "are fixed." % crop.name,
+            "viable_with_adjustments": "%s %s viable with adjustments; review these "
+                                       "before planting." % (crop.name, be),
+            "not_viable": "%s %s not viable on these readings until the limits below "
+                          "are fixed." % (crop.name, be),
         }
         return {
             "profile_name": crop.name, "profile_available": True,
@@ -283,7 +298,7 @@ def build_recommendations(sample: Dict,
     """Map detected problems to concrete fixes, worst-first, de-duplicated.
 
     `target_crop` is a form crop name or a resolved crop_profile.Crop. Every
-    returned dict carries rate/cost/timing.
+    returned dict carries an amount (`rate`) and timing.
     """
     crop = crop_profile.as_crop(target_crop)
     if problems is None:
@@ -313,6 +328,9 @@ def build_recommendations(sample: Dict,
             rec = _fix_potassium(sample, prob, crop)
         else:
             continue
+        nutrient = _NUTRIENT_OF_FIX.get(fc)
+        if nutrient and not _needs(crop, nutrient, sample):
+            continue  # the A&M rate rounds to 0 lb: the plan says none needed
 
         rec.update({
             "problem_code": prob["code"],
@@ -326,7 +344,7 @@ def build_recommendations(sample: Dict,
     # A&M recommends N for most crops even when soil N is fine. That rate is
     # routine crop feeding, not a soil problem, but the farmer still needs it.
     if ("nitrogen_deficient" not in seen_fix_codes
-            and _am_rate(crop, "N", float(sample["nitrogen"]))):
+            and crop is not None and crop.has_table("N") and _needs(crop, "N", sample)):
         rec = _fix_nitrogen(sample, None, crop)
         rec.update({
             "title": "Apply nitrogen for %s" % crop.label,

@@ -73,7 +73,7 @@ def field_total_flowables(analysis: Dict, styles: Dict[str, ParagraphStyle]) -> 
     """The Whole Field Total page, or [] for results saved without one."""
     total = analysis.get("fertilizer_total")
     if not total or not (total.get("products") or total.get("excluded")
-                         or total.get("n_regions")):
+                         or total.get("n_samples")):
         return []
     # pdf_report imports this module, so its helpers are looked up at call time.
     from backend import pdf_report
@@ -86,13 +86,14 @@ def field_total_flowables(analysis: Dict, styles: Dict[str, ParagraphStyle]) -> 
     products = total.get("products") or []
     if products:
         with_cost = any(p.get("cost_total") is not None for p in products)
-        rows = [["Product", "Total (lbs)", "Bags (%g lb)" % total.get("bag_lb", 50)]
+        rows = [["Product", "Total (lbs)", "%g-lb bags" % total.get("bag_lb", 50)]
                 + (["Cost"] if with_cost else [])]
         for p in products:
-            rows.append([p["label"], "{:,.0f}".format(p["total_lb"]), str(p["bags"])]
+            rows.append([p["label"], "{:,.0f}".format(p["total_lb"]),
+                         p.get("bags_text") or str(p["bags"])]
                         + (["${:,.2f}".format(p["cost_total"]) if p.get("cost_total") is not None
                             else "-"] if with_cost else []))
-        widths = [3.1, 1.3, 1.3] + ([1.3] if with_cost else [])
+        widths = [2.7, 1.2, 1.9] + ([1.2] if with_cost else [])
         tbl = Table(rows, colWidths=[w * inch for w in widths])
         tbl.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), pdf_report.FF_BLUE_SOFT),

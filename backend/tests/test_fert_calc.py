@@ -2,6 +2,7 @@
 import json
 import math
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -13,7 +14,7 @@ from backend import fert_calc, fert_pdf, model_runner, pdf_report
 from test_crop_assessment import pdf_text, predictions
 
 model_runner._ensure_pipeline_path()
-from pipeline import crop_profile, model, recommender
+from pipeline import crop_profile, model, recommender, thresholds as T
 
 # The digitized A&M tables, read raw so the calculator is checked against the
 # JSON itself and not against the lookup it uses.
@@ -111,26 +112,21 @@ class ProductMathTests(unittest.TestCase):
         # Whole pounds, so the field total is the sum of what is shown: 437.5 -> 438.
         self.assertEqual([i["total_lb"] for i in products(corn)], [925, 435, 438])
 
-    def test_plan_matches_the_recommendation_cards(self):
-        # Against the recommender's own card text across interpolated soil tests,
-        # including half-pound rates such as cotton at 17 ppm N (62.5 lb N).
-        fixes = {"N": recommender._fix_nitrogen, "P": recommender._fix_phosphorus_def,
-                 "K": recommender._fix_potassium}
-        keys = {"N": "nitrogen", "P": "phosphorus", "K": "potassium"}
-        for crop_name, *_ in LEVELS:
-            crop = crop_profile.resolve(crop_name)
-            for tenths in range(0, 2000, 5):  # 0 to 199.5 ppm
-                ppm = tenths / 10
-                for item in products(plan(crop_name, ppm, ppm, ppm)):
-                    nut = item["nutrient"]
-                    card = fixes[nut]({keys[nut]: ppm}, {}, crop)["rate"]
-                    where = (crop_name, ppm, card, item["detail"])
-                    self.assertTrue(item["detail"].startswith(
-                        "Supplies %s lb" % card.split(" lb ")[0]), where)
-                    if nut == "N":
-                        self.assertIn("(~%d lb urea)" % item["lb_per_acre"], card, where)
+    def test_half_pound_rates_do_not_drift(self):
+        # Cotton at 17 ppm N: A&M says 62.5 lb N. (62.5 / 0.46) * 0.46 lands just
+        # off 62.5 in floating point; the plan must still read 62, not 63.
         cotton = plan("Cotton", 17, 30, 100)
+        self.assertEqual(cotton["nutrients"]["N"], 62.5)
         self.assertEqual(products(cotton)[0]["detail"], "Supplies 62 lbs nitrogen (N) per acre")
+        self.assertEqual(products(cotton)[0]["lb_per_acre"], round(62.5 / 0.46))
+
+    def test_tons_show_alongside_bags_from_one_ton(self):
+        corn = plan("Corn", 6, 12, 70, acres=27.14)  # A&M: 165 lb N -> 359 lb urea/acre
+        self.assertEqual(lines(corn)[0],
+                         "Urea (46-0-0): 359 lbs/acre · 9,743 lbs total · 195 bags (~4.9\u00a0tons)")
+        self.assertEqual(lines(plan("Corn", 6, 12, 70, acres=5.6))[0],  # 2,010 lbs
+                         "Urea (46-0-0): 359 lbs/acre · 2,010 lbs total · 41 bags (~1.0\u00a0ton)")
+        self.assertNotIn("ton", lines(plan("Corn", 6, 12, 70, acres=5))[0])  # 1,795 lbs
 
     def test_a_rate_that_rounds_to_zero_needs_nothing(self):
         corn = plan("Corn", 4, 49.95, 20, acres=2)  # A&M: 0.1 lb P2O5
@@ -236,8 +232,8 @@ class MissingDataTests(unittest.TestCase):
     def test_rice_has_no_am_nitrogen_table(self):
         rice = plan("Rice", 4, 10, 20, acres=2)
         self.assertEqual(rice["items"][0]["kind"], "no_rate")
-        self.assertIn("No Texas A&M nitrogen (N) rate for rice.", rice["items"][0]["text"])
-        self.assertIn("Texas Rice Production Guidelines", rice["items"][0]["text"])
+        self.assertEqual(rice["items"][0]["text"], "No Texas A&M nitrogen (N) rate for rice; "
+                                                   "see Texas A&M AgriLife's rice production guide.")
         self.assertEqual([i["product"] for i in products(rice)], ["Triple superphosphate", "Potash"])
         # The field total says the urea line leaves rice out, rather than going quiet.
         total = fert_calc.field_total([("A5", rice)])
@@ -283,6 +279,79 @@ class WarningTests(unittest.TestCase):
         for text in warnings:
             for unit in ("tons", "lb", "lbs"):
                 self.assertNotIn(" %s" % unit, text)
+
+
+class ActionItemTests(unittest.TestCase):
+    """The report never contradicts itself: the Fertilizer Plan is the only place
+    N/P/K amounts appear, and nothing gives a cost or an invented lime/sulfur rate."""
+
+    # A fertilizer amount, not a yield goal such as "5,000 lb/A".
+    AMOUNT = re.compile(r"\d[\d,.]*\s*(?:lbs?|tons?)\s*(?:/\s*acre|/A of|N\b|P2O5|K2O|urea|"
+                        r"elemental)", re.I)
+    SOILS = [dict(ph=5.0, ec=9.0, nitrogen=4, phosphorus=5, potassium=20),
+             dict(ph=8.4, ec=0.5, nitrogen=12, phosphorus=200, potassium=60),
+             dict(ph=6.5, ec=0.5, nitrogen=30, phosphorus=30, potassium=110)]
+
+    def recs(self, crop, soil):
+        return recommender.build_recommendations(soil, target_crop=crop)
+
+    def test_no_item_carries_an_amount_or_a_cost(self):
+        for crop in list(T.CROP_DEFAULT_YIELD) + ["Hemp", "Local heritage millet", None]:
+            for soil in self.SOILS:
+                for r in self.recs(crop, soil):
+                    text = " ".join(str(r.get(k) or "")
+                                    for k in ("title", "action", "rate", "notes", "timing"))
+                    with self.subTest(crop=crop, fix=r["fix_code"]):
+                        self.assertIsNone(self.AMOUNT.search(text), text)
+                        self.assertNotIn("$", text)
+                        self.assertNotIn("cost_estimate", r)
+
+    def test_items_without_an_am_rate_say_what_the_plan_says(self):
+        soil = self.SOILS[0]
+        hemp = plan("Hemp", soil["nitrogen"], soil["phosphorus"], soil["potassium"])
+        for code in ("nitrogen_deficient", "phosphorus_deficient", "potassium_deficient"):
+            self.assertEqual(next(r for r in self.recs("Hemp", soil) if r["fix_code"] == code)
+                             ["rate"], hemp["message"])
+        rice = plan("Rice", soil["nitrogen"], soil["phosphorus"], soil["potassium"])
+        n_item = next(r for r in self.recs("Rice", soil) if r["fix_code"] == "nitrogen_deficient")
+        self.assertEqual(n_item["rate"], rice["items"][0]["text"])
+
+    def test_lime_and_sulfur_get_the_plans_referral(self):
+        for soil, fix, what in ((self.SOILS[0], "ph_acidic", "lime"),
+                                (self.SOILS[1], "ph_alkaline", "sulfur")):
+            item = next(r for r in self.recs("Corn", soil) if r["fix_code"] == fix)
+            referral = ("Get a %s rate from the Texas A&M Soil Testing Lab or your county "
+                        "AgriLife agent." % what)
+            self.assertEqual(item["rate"], referral)
+            warnings = plan("Corn", 4, 10, 20, ph=soil["ph"])["warnings"]
+            self.assertTrue(warnings[0].endswith(referral), warnings[0])
+
+    def test_nitrogen_timing_fits_the_crop(self):
+        soil = self.SOILS[0]
+        n_item = lambda crop: next(r for r in self.recs(crop, soil)  # noqa: E731
+                                   if r["fix_code"] in ("nitrogen_deficient", "nitrogen_routine"))
+        self.assertIn("split-apply for corn", n_item("Corn")["timing"])
+        for crop in ("Cotton", "Tomatoes", "Rice", "Hemp"):
+            with self.subTest(crop=crop):
+                self.assertNotIn("corn", n_item(crop)["timing"] + n_item(crop)["action"])
+        self.assertEqual(n_item("Wheat")["timing"], "Apply 1/3 of recommended nitrogen at "
+                                                    "preplant and remainder prior to jointing.")
+        self.assertNotIn("lbs", n_item("Bermudagrass")["timing"])  # its A&M note is an amount
+
+    def test_crop_names_agree_with_their_verb(self):
+        bad = dict(ph=4.5, ec=9.0, nitrogen=4, phosphorus=5, potassium=20)
+        for crop, start in (("Tomatoes", "Tomatoes are not viable"),
+                            ("Corn", "Corn is not viable"),
+                            ("Bermudagrass", "Bermudagrass is not viable")):
+            with self.subTest(crop=crop):
+                self.assertTrue(recommender.assess_target_crop(bad, crop)["note"]
+                                .startswith(start))
+
+    def test_a_rate_that_rounds_to_zero_has_no_item(self):
+        soil = dict(ph=6.5, ec=0.5, nitrogen=30, phosphorus=49.95, potassium=150)  # 0.1 lb P2O5
+        self.assertFalse(any(r["fix_code"] == "phosphorus_deficient"
+                             for r in self.recs("Corn", soil)))
+        self.assertIn("No phosphate (P2O5) needed", lines(plan("Corn", 30, 49.95, 150)))
 
 
 class FieldTotalTests(unittest.TestCase):
@@ -344,7 +413,13 @@ class FieldTotalTests(unittest.TestCase):
                                  {n: r["crop_assessment"][n]["add"] for n in "NPK"})
 
         total = analysis["fertilizer_total"]
-        self.assertEqual((total["acres"], total["n_regions"]), (5.75, 3))
+        # Every sample counts toward the field: A4's 3 acres included, A5 has none.
+        self.assertEqual((total["n_samples"], total["n_counted"], total["field_acres"],
+                          total["acres"]), (5, 3, 8.75, 5.75))
+        self.assertEqual(total["summary"],
+                         "5 samples, 2 not counted. Field: 8.75 acres; these totals cover "
+                         "5.75 acres. Each sample covers the part of the field closest to "
+                         "it; bags are 50 lb.")
         # The region totals shown: urea 925 + 174 + 54; TSP 435 + 174 + 136;
         # potash 438 + 66 + 63.
         self.assertEqual([(p["label"], p["total_lb"], p["bags"]) for p in total["products"]], [
@@ -372,6 +447,10 @@ class FieldTotalTests(unittest.TestCase):
         self.assertIn("Urea (46-0-0): 370 lbs/acre · 925 lbs total · 19 bags", a1)
         self.assertIn("Supplies 170 lbs nitrogen (N) per acre", a1)
         self.assertIn("Source: Texas A&M AgriLife CORN (150 BU/A) table", a1)
+        # The plan is the only place with amounts; no costs anywhere.
+        self.assertIn("Amount: see Fertilizer Plan below.", a1)
+        for gone in ("$", "Cost", "ballpark", "lb N/acre", "lb urea"):
+            self.assertNotIn(gone, a1)
         page = table_text(fert_pdf.field_total_flowables(analysis, styles))
         for text in ("Whole Field Total", "Urea (46-0-0)", "1,153", "24",
                      "A4: no Texas A&M table for this crop"):
@@ -399,8 +478,9 @@ class FieldTotalTests(unittest.TestCase):
         old["results"] = [{k: v for k, v in r.items() if k != "fertilizer_plan"}
                           for r in analysis["results"]]
         styles = pdf_report._styles()
-        self.assertNotIn("Fertilizer Plan", pdf_text(
-            pdf_report._section_flowables(old["results"][0], "F", "D", styles)))
+        old_text = pdf_text(pdf_report._section_flowables(old["results"][0], "F", "D", styles))
+        self.assertNotIn("50-lb bags", old_text)  # no plan block
+        self.assertNotIn("Supplies", old_text)
         self.assertEqual(fert_pdf.field_total_flowables(old, styles), [])
         self.assertTrue(pdf_report.build_combined_pdf(old).startswith(b"%PDF"))
         self.assertTrue(pdf_report.build_section_pdf(old["results"][0], "F", "D")

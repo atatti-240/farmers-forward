@@ -24,12 +24,18 @@ import os
 import re
 from typing import Dict, Iterable, List, Optional, Tuple
 
+from backend import model_runner
+
+model_runner._ensure_pipeline_path()
+from pipeline import crop_profile  # noqa: E402  (light: two JSON tables)
+
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                            "fert_products.json")
 
 NUTRIENTS = ("N", "P", "K")
-NUTRIENT_NAMES = {"N": "nitrogen (N)", "P": "phosphate (P2O5)", "K": "potash (K2O)"}
-LAB_REFERRAL = "the Texas A&M Soil Testing Lab or your county AgriLife agent"
+# Shared with the recommendations, so the report says one thing.
+NUTRIENT_NAMES = crop_profile.NUTRIENT_NAMES
+LAB_REFERRAL = crop_profile.LAB_REFERRAL
 # Larger than any farm; keeps totals and bag counts finite.
 MAX_ACRES = 1_000_000
 # Pounds per acre left over from float arithmetic count as met.
@@ -96,6 +102,16 @@ def _count(n: int, noun: str) -> str:
 def _bags(total_lb: float, bag_lb: float) -> int:
     """Whole bags needed to cover total_lb (rounding guards float fuzz)."""
     return math.ceil(round(total_lb / bag_lb, 6)) if total_lb > 0 else 0
+
+
+def _bags_text(bags: int, total_lb: float) -> str:
+    """"195 bags", plus "(~4.9 tons)" once the total reaches a ton."""
+    text = _count(bags, "bag")
+    if total_lb >= 2000:
+        tons = "%.1f" % (total_lb / 2000.0)
+        # A no-break space keeps "~2.2 tons" together when the line wraps.
+        text += " (~%s\u00a0%s)" % (tons, "ton" if tons == "1.0" else "tons")
+    return text
 
 
 def _area(acres) -> Optional[float]:
@@ -182,7 +198,7 @@ def _product_item(prod: Dict, rate: float, given: Dict[str, float], lead: str,
         # whole pounds, so the numbers on the page multiply and add up.
         total = _half_up(per_acre * area)
         bags = _bags(total, bag_lb)
-        parts += ["%s total" % _lbs(total), _count(bags, "bag")]
+        parts += ["%s total" % _lbs(total), _bags_text(bags, total)]
     price = prod["price_per_ton"]
     if price is not None:
         cost_acre = round(per_acre * price / 2000.0, 2)
@@ -232,9 +248,8 @@ def build_plan(crop_type: Optional[str], crop, assessment: Optional[Dict],
         "nutrients": {},
     }
     if assessment is None:
-        plan["message"] = ("No Texas A&M fertilizer table for %s, so no amounts are "
-                           "calculated. Ask %s for a rate."
-                           % (crop_type or "this crop", LAB_REFERRAL))
+        # Word for word what the crop's N/P/K action items say.
+        plan["message"] = crop_profile.no_table(crop.name if crop is not None else crop_type)
         return plan
 
     rates: Dict[str, Optional[float]] = {}
@@ -243,20 +258,16 @@ def build_plan(crop_type: Optional[str], crop, assessment: Optional[Dict],
         per_acre = str((assessment.get("units") or {}).get(n, "")).endswith("/acre")
         rates[n] = float(add) if add is not None and per_acre else None
     plan["nutrients"] = rates
-    # A rate that rounds to 0 lb (A&M interpolates to 0.1 lb) needs no product,
-    # just as the recommendation card would print it as "0 lb".
-    needs = {n: (r if r is None or r >= 0.5 else 0.0) for n, r in rates.items()}
+    # A rate that rounds to 0 lb (A&M interpolates to 0.1 lb) needs no product;
+    # the recommender drops its action item for the same reason.
+    needs = {n: (r if r is None or r >= crop_profile.MIN_RATE else 0.0)
+             for n, r in rates.items()}
 
     applied, remaining = _apply_products(needs, config["products"])
     for n in NUTRIENTS:
         note = crop.am_note(n)
-        if note:  # "http://... Follow the Texas Rice ..." -> "Follow ... (http://...)"
-            note = re.sub(r"^(https?://\S+)\s+(.+)$", r"\2 (\1)", note)
         if needs[n] is None:
-            plan["items"].append({
-                "kind": "no_rate", "nutrient": n,
-                "text": "No Texas A&M %s rate for %s.%s" % (
-                    NUTRIENT_NAMES[n], crop.label, " A&M note: %s" % note if note else "")})
+            plan["items"].append({"kind": "no_rate", "nutrient": n, "text": crop.no_rate(n)})
             continue
         if needs[n] <= 0:
             plan["items"].append({"kind": "none_needed", "nutrient": n,
@@ -286,9 +297,6 @@ def plan_for_region(crop_type: Optional[str], *, nitrogen: float, phosphorus: fl
                     config: Optional[Dict] = None) -> Dict:
     """build_plan() from raw readings: soil N/P/K in ppm, pH, and EC already
     converted to ECe (dS/m), plus the region's acres."""
-    from backend import model_runner
-    model_runner._ensure_pipeline_path()
-    from pipeline import crop_profile
     crop = crop_profile.resolve(crop_type)
     sample = dict(ph=ph, ec=ece, nitrogen=nitrogen, phosphorus=phosphorus,
                   potassium=potassium)
@@ -299,26 +307,31 @@ def field_total(plans: Iterable[Tuple[str, Optional[Dict]]]) -> Dict:
     """Whole-field totals per product from (section_label, plan) pairs.
 
     Bags are counted on each product's field total, not summed per region.
-    Regions without an A&M table or without an area are listed, not counted.
+    Every sample is counted toward the field's acres; samples without an A&M
+    table or without an area are listed, and left out of the product totals.
     """
     rows: Dict[str, Dict] = {}
-    acres, n_regions, excluded = 0.0, 0, []
+    counted_acres, field_acres = 0.0, 0.0
+    n_samples, n_counted, excluded = 0, 0, []
     bag_lb = PRODUCTS["bag_lb"]
     for label, plan in plans:
         if not plan:
             continue
+        n_samples += 1
         bag_lb = plan.get("bag_lb") or bag_lb
+        area = plan.get("area_acres")
+        field_acres += area or 0.0
         if not plan.get("available"):
             excluded.append("%s: no Texas A&M table for this crop, so no amounts." % label)
             continue
-        if plan.get("area_acres") is None:
+        if area is None:
             excluded.append("%s: no field area, so it is shown per acre only." % label)
             continue
-        if not plan["area_acres"]:
+        if not area:
             excluded.append("%s: covers none of the drawn field, so it adds nothing." % label)
             continue
-        acres += plan["area_acres"]
-        n_regions += 1
+        counted_acres += area
+        n_counted += 1
         for item in plan["items"]:
             if item["kind"] == "no_rate":
                 excluded.append("%s: no Texas A&M %s rate for this crop, so none is counted."
@@ -338,21 +351,33 @@ def field_total(plans: Iterable[Tuple[str, Optional[Dict]]]) -> Dict:
         total = row["total_lb"]  # whole pounds: the sum of the region totals shown
         bags = _bags(total, bag_lb)
         cost = round(row["cost_total"], 2) if row["cost_total"] is not None else None
-        parts = [_lbs(total), _count(bags, "bag")]
+        parts = [_lbs(total), _bags_text(bags, total)]
         if cost is not None:
             parts.append(_money(cost))
         products.append({"label": row["label"], "total_lb": total, "bags": bags,
-                         "cost_total": cost, "amounts": " · ".join(parts)})
-    acres = round(acres, 2)
+                         "bags_text": _bags_text(bags, total), "cost_total": cost,
+                         "amounts": " · ".join(parts)})
+
+    counted_acres, field_acres = round(counted_acres, 2), round(field_acres, 2)
+    summary = _count(n_samples, "sample")
+    if n_samples > n_counted:
+        summary += ", %d not counted" % (n_samples - n_counted)
+    if field_acres:
+        summary += ". Field: %s acres" % "{:,.2f}".format(field_acres)
+        if counted_acres < field_acres:
+            summary += "; these totals cover %s acres" % "{:,.2f}".format(counted_acres)
+        summary += (". Each sample covers the part of the field closest to it; bags are "
+                    "%g lb." % bag_lb)
+    else:
+        summary += ". Field area unknown, so there are no totals."
     return {
-        "acres": acres,
-        "n_regions": n_regions,
+        "n_samples": n_samples,
+        "n_counted": n_counted,
+        "field_acres": field_acres,
+        "acres": counted_acres,
         "bag_lb": bag_lb,
         "products": products,
         "excluded": excluded,
-        "summary": ("%s acres across %s. Each sample covers the part of the field "
-                    "closest to it; bags are %g lb." % ("{:,.2f}".format(acres),
-                                                       _count(n_regions, "sample"), bag_lb)
-                    if n_regions else "No samples with a field area and an A&M table."),
-        "none_needed": n_regions > 0 and not products,
+        "summary": summary,
+        "none_needed": n_counted > 0 and not products,
     }

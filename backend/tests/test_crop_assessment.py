@@ -8,7 +8,7 @@ from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _appfixture import app, database
-from backend import model_runner, pdf_report
+from backend import fert_calc, model_runner, pdf_report
 
 model_runner._ensure_pipeline_path()
 from crop_data.crop_lookup import fert_rec
@@ -84,13 +84,17 @@ class CropSubmissionTests(unittest.TestCase):
         stored = self.client.get("/api/results/%s" % analysis["farm_id"])
         self.assertEqual(stored.json, analysis)
         corn, soy, millet = analysis["results"]
-        # Corn: A&M rate at a 150 bu/A yield goal. Soybeans fix their own N, and
-        # A&M recommends none at 10 ppm. The custom crop gets the generic rate.
-        self.assertTrue(rec(corn, "nitrogen_deficient")["rate"].startswith(
-            "%.0f lb N/acre" % fert_rec(*CORN, "N", 10)))
+        # Corn: A&M rate at a 150 bu/A yield goal, shown in the Fertilizer Plan.
+        # Soybeans fix their own N, and A&M recommends none at 10 ppm. The
+        # custom crop has no A&M table, and says so exactly as its plan does.
+        self.assertEqual(rec(corn, "nitrogen_deficient")["rate"], "see Fertilizer Plan below.")
+        self.assertEqual(corn["fertilizer_plan"]["nutrients"]["N"], fert_rec(*CORN, "N", 10))
         self.assertIn("150 bu/A", rec(corn, "nitrogen_deficient")["notes"])
         self.assertIsNone(rec(soy, "nitrogen_deficient"))
-        self.assertIn("generic", rec(millet, "nitrogen_deficient")["notes"])
+        self.assertEqual(rec(millet, "nitrogen_deficient")["rate"],
+                         millet["fertilizer_plan"]["message"])
+        self.assertIn("No Texas A&M fertilizer table for Local heritage millet",
+                      millet["fertilizer_plan"]["message"])
         self.assertEqual(corn["selected_crop"]["basis"],
                          "Based on a corn yield goal of 150 bu/A (Texas A&M soil-test tables).")
         self.assertEqual(soy["selected_crop"]["basis"],
@@ -205,8 +209,10 @@ class CropProfileTests(unittest.TestCase):
         self.assertTrue(recommender.assess_target_crop(MEASUREMENTS, "Rice")["profile_available"])
         n_rec = rec(recommender.build_recommendations(MEASUREMENTS, target_crop="Rice"),
                     "nitrogen_deficient")
-        self.assertIn("Texas Rice Production Guidelines", n_rec["notes"])
-        self.assertIn("generic", n_rec["notes"])
+        # No generic-target rate: the same words as the Fertilizer Plan.
+        self.assertEqual(n_rec["rate"], "No Texas A&M nitrogen (N) rate for rice; "
+                                        "see Texas A&M AgriLife's rice production guide.")
+        self.assertNotIn("lb", n_rec["rate"] + n_rec["notes"])
 
     def test_crop_profiles_can_differ_for_identical_readings(self):
         readings = dict(MEASUREMENTS, ec=4.0)  # ECe: past corn's 1.7, under cotton's 7.7
@@ -290,18 +296,23 @@ class CropThresholdTests(unittest.TestCase):
         self.assertLess(codes["Cotton"]["ph_alkaline"]["penalty"],
                         codes["Tomatoes"]["ph_alkaline"]["penalty"])
 
-    def test_fertilizer_amounts_come_from_fert_rec(self):
+    def test_fertilizer_items_point_to_the_plan_and_its_am_rate(self):
         for crop, table in (("Corn", CORN), ("Cotton", COTTON), ("Tomatoes", TOMATO)):
             recs = recommender.build_recommendations(self.SAMPLE, target_crop=crop)
-            for fix_codes, nutrient, metric, unit in (
-                    (("nitrogen_deficient", "nitrogen_routine"), "N", "nitrogen", "N"),
-                    (("phosphorus_deficient",), "P", "phosphorus", "P2O5"),
-                    (("potassium_deficient",), "K", "potassium", "K2O")):
+            plan = fert_calc.build_plan(crop, crop_profile.resolve(crop),
+                                        crop_profile.assess(self.SAMPLE, crop))
+            for fix_codes, nutrient, metric in (
+                    (("nitrogen_deficient", "nitrogen_routine"), "N", "nitrogen"),
+                    (("phosphorus_deficient",), "P", "phosphorus"),
+                    (("potassium_deficient",), "K", "potassium")):
                 with self.subTest(crop=crop, nutrient=nutrient):
                     found = [rec(recs, code) for code in fix_codes if rec(recs, code)]
                     self.assertEqual(len(found), 1)
-                    expected = fert_rec(*table, nutrient, self.SAMPLE[metric])
-                    self.assertTrue(found[0]["rate"].startswith("%.0f lb %s/acre" % (expected, unit)))
+                    self.assertEqual(found[0]["rate"], "see Fertilizer Plan below.")
+                    self.assertIn("at %.0f ppm soil %s" % (self.SAMPLE[metric], nutrient),
+                                  found[0]["notes"])
+                    self.assertEqual(plan["nutrients"][nutrient],
+                                     fert_rec(*table, nutrient, self.SAMPLE[metric]))
 
     def test_n_is_a_problem_only_when_soil_n_is_genuinely_low(self):
         # Corn at 12 ppm: 155 of a 180 lb 0-ppm rate (86%) -> low soil N.
@@ -314,7 +325,8 @@ class CropThresholdTests(unittest.TestCase):
         routine = rec(recs, "nitrogen_routine")
         self.assertEqual((routine["title"], routine["severity"], routine["priority_weight"]),
                          ("Apply nitrogen for tomatoes", "routine", 0.0))
-        self.assertTrue(routine["rate"].startswith("35 lb N/acre"))
+        self.assertEqual(routine["rate"], "see Fertilizer Plan below.")
+        self.assertEqual(fert_rec(*TOMATO, "N", 12), 35)
         self.assertIs(recs[-1], routine)
         # Corn at 30 ppm: 120 of 180 lb (67%) -> routine; the score ignores N.
         well_fed = dict(self.SAMPLE, nitrogen=30)
@@ -335,8 +347,9 @@ class CropThresholdTests(unittest.TestCase):
         self.assertEqual(crop.yield_goal, "180 bu/A")
         n_rec = rec(recommender.build_recommendations(self.SAMPLE, target_crop=crop),
                     "nitrogen_deficient")
-        self.assertTrue(n_rec["rate"].startswith(
-            "%.0f lb N/acre" % fert_rec("row", "CORN (180 BU/A)", "N", 12)))
+        self.assertIn("yield goal of 180 bu/A", n_rec["notes"])
+        plan = fert_calc.build_plan("Corn", crop, crop_profile.assess(self.SAMPLE, crop))
+        self.assertEqual(plan["nutrients"]["N"], fert_rec("row", "CORN (180 BU/A)", "N", 12))
         self.assertIn("180 bu/A", recommender.assess_target_crop(self.SAMPLE, crop)["basis"])
         with self.assertRaises(ValueError):
             crop_profile.resolve("Corn", yield_goal="COTTON (2.0 BALES/A)")

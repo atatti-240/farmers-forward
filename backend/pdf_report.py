@@ -53,8 +53,7 @@ _DISCLAIMER = (
     "This report is general agronomic guidance based on Farmers Forward Texas "
     "soil thresholds (Fort Bend County / Brazos River region) and is not a "
     "substitute for a certified agronomist or a full laboratory panel. Verify "
-    "before making large purchases. Cost/benefit figures are experimental "
-    "ballpark estimates, not financial advice."
+    "before making large purchases."
 )
 
 
@@ -349,11 +348,9 @@ def _section_flowables(section: Dict, farm_name: str, date: str,
             flow.append(Paragraph(escape(r["notes"]), styles["muted"]))
         detail = []
         if r.get("rate"):
-            detail.append("<b>Rate:</b> %s" % r["rate"])
-        if r.get("cost_estimate"):
-            detail.append("<b>Cost:</b> %s" % r["cost_estimate"])
+            detail.append("<b>Amount:</b> %s" % escape(r["rate"]))
         if r.get("timing"):
-            detail.append("<b>When:</b> %s" % r["timing"])
+            detail.append("<b>When:</b> %s" % escape(r["timing"]))
         if detail:
             flow.append(Paragraph(" &nbsp;&bull;&nbsp; ".join(detail),
                                   styles["muted"]))

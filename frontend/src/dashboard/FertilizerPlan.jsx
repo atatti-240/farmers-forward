@@ -60,7 +60,7 @@ export function FieldFertilizerTotal({ total }) {
   if (!total) return null
   const products = total.products || []
   const excluded = total.excluded || []
-  if (!products.length && !excluded.length && !total.n_regions) return null
+  if (!products.length && !excluded.length && !total.n_samples) return null
   return (
     <div className="ff-card ff-fert-total">
       <h2 className="ff-fert-total__title">Whole Field Total</h2>

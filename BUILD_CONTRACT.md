@@ -205,8 +205,8 @@ drawn field closest to that sample, computed in the browser at submit by
      "dominant_problem_code": str, "dominant_problem_label": str,
      "n_sections": int
   },
-  "fertilizer_total": {acres, n_regions, bag_lb, summary, none_needed,
-                       products: [{label, total_lb, bags, cost_total|null, amounts}],
+  "fertilizer_total": {n_samples, n_counted, field_acres, acres, bag_lb, summary, none_needed,
+                       products: [{label, total_lb, bags, bags_text, cost_total|null, amounts}],
                        excluded: [str]},   # bags counted on each product's field total
   "results": [
     {
@@ -233,7 +233,7 @@ drawn field closest to that sample, computed in the browser at submit by
       "color": {"bucket": "green|yellow|red", "hex": "#RRGGBB"},
       "primary_problem": {"code":str,"label":str,"severity":str,"message":str},
       "problems": [ ... agronomy problem dicts ... ],
-      "recommendations": [ {title,action,rate,cost_estimate,timing,notes,severity,fix_code} ],
+      "recommendations": [ {title,action,rate,timing,notes,severity,fix_code} ],  # rate = the amount; N/P/K: "see Fertilizer Plan below."
       "crop_suitability": {"viable_now":[str],             # ideal + viable_with_adjustments
                            "ideal":[str], "viable_with_adjustments":[str],
                            "not_viable":[{"crop":str,"limiting_factors":[str]}]},
@@ -252,7 +252,7 @@ reuse `reporter.problem_label` for labels. Import label helper from
   section. Include: Farmers Forward header (brand blue), farm name, date, section
   label, lat/long, input values table (pH/EC/N/P/K), health score (big, colored by
   §1 rule) + category, crop recommendations (viable now list), and action items
-  (each recommendation: title, action, rate, cost, timing), then the section's
+  (each recommendation: title, action, amount, timing; no costs), then the section's
   Fertilizer Plan (`fert_pdf.section_flowables`). Footer disclaimer.
 - `build_combined_pdf(analysis: dict) -> bytes` - cover page (farm name, date,
   field summary, mean score) then one section per page (reuse the section layout),

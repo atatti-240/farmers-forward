@@ -30,6 +30,32 @@ _ALIASES = {
     "hay": "Bermudagrass", "bermuda": "Bermudagrass", "bermuda grass": "Bermudagrass",
 }
 
+# Report wording shared by the recommendations and the fertilizer plan
+# (backend/fert_calc.py), so the two never say different things.
+NUTRIENT_NAMES = {"N": "nitrogen (N)", "P": "phosphate (P2O5)", "K": "potash (K2O)"}
+LAB_REFERRAL = "the Texas A&M Soil Testing Lab or your county AgriLife agent"
+# Where an N/P/K action item would have printed an amount.
+SEE_PLAN = "see Fertilizer Plan below."
+# lb/acre: an A&M rate under this rounds to 0 lb, so none is needed.
+MIN_RATE = 0.5
+
+
+def lab_rate(what: str) -> str:
+    """"Get a lime rate from ..." -- never an amount of our own."""
+    return "Get a %s rate from %s." % (what, LAB_REFERRAL)
+
+
+def no_table(crop_name: Optional[str]) -> str:
+    """For a crop with no Texas A&M fertilizer table."""
+    return ("No Texas A&M fertilizer table for %s, so no amounts are given. Ask %s "
+            "for a rate." % (crop_name or "this crop", LAB_REFERRAL))
+
+
+def is_plural(name: str) -> bool:
+    """Whether a crop name reads as a plural ("Tomatoes are", "Bermudagrass is")."""
+    name = name.strip().lower()
+    return name.endswith("s") and not name.endswith("ss")
+
 
 def to_ece(ec: float, method: str = T.SENSOR_EC_METHOD) -> float:
     """Convert an EC reading (dS/m) on the given extract basis to estimated ECe."""
@@ -89,7 +115,19 @@ class Crop:
     def am_note(self, nutrient: str) -> Optional[str]:
         """A&M's application note for a nutrient, e.g. split-timing advice."""
         note = (self._entry().get("notes") or {}).get(nutrient)
+        if note and "Rice Production Guidelines" in note:
+            # A&M's rice note is a bare bulletin URL plus a pointer to the guide.
+            return "See Texas A&M AgriLife's rice production guide."
         return note.strip(" -") if note else None
+
+    def no_rate(self, nutrient: str) -> str:
+        """For a crop with an A&M table but no rate for this nutrient (rice N)."""
+        if not self.mapped:
+            return no_table(self.name)
+        note = self.am_note(nutrient)
+        return "No Texas A&M %s rate for %s; %s" % (
+            NUTRIENT_NAMES[nutrient], self.label,
+            note[0].lower() + note[1:] if note else "ask %s for a rate." % LAB_REFERRAL)
 
     def basis(self) -> str:
         """One line for reports naming the table the readout is based on."""
