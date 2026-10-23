@@ -59,6 +59,16 @@ ISO_UTC_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{6})?\+00:00$
 LONG_DOMAIN = ".".join(["x" * 63] * 3) + ".example.com"
 
 
+def assert_refused_body(test, response):
+    """A body that isn't a JSON object (or isn't JSON at all) gets a clean 400.
+
+    Which layer answers is deliberately not pinned: the route's own validation,
+    or an app-wide request-body check that runs before every route.
+    """
+    test.assertEqual(response.status_code, 400)
+    test.assertIsInstance((response.json or {}).get("error"), str)
+
+
 def pin_login_policy(test):
     """Run `test` under LOGIN_POLICY, with no Resend key so nothing is emailed."""
     patcher = mock.patch.multiple(config, RESEND_API_KEY=None, **LOGIN_POLICY)
@@ -262,7 +272,6 @@ class PasscodeGateTests(unittest.TestCase):
             "a JSON number": {"email": 12345},
             "a JSON list": {"email": ["owner@example.com"]},
             "a JSON null": {"email": None},
-            "a list for a body": ["owner@example.com"],
         }
         not_json = {
             "form-encoded": ("application/x-www-form-urlencoded", "email=owner%40example.com"),
@@ -273,9 +282,12 @@ class PasscodeGateTests(unittest.TestCase):
         for label, body in bodies.items():
             with self.subTest(label):
                 self.assertInvalidEmail(self.client.post("/api/auth/login", json=body))
+        with self.subTest("a list for a body"):
+            assert_refused_body(self, self.client.post("/api/auth/login",
+                                                       json=["owner@example.com"]))
         for label, (content_type, data) in not_json.items():
             with self.subTest(label):
-                self.assertInvalidEmail(self.client.post(
+                assert_refused_body(self, self.client.post(
                     "/api/auth/login", data=data, content_type=content_type))
         self.assertEqual(otp_count(), before)
         self.assertNotIn("pending_email", session_of(self.client))
@@ -283,7 +295,8 @@ class PasscodeGateTests(unittest.TestCase):
         self.assertEqual(request_code(self.client, address_of_length(254)).json, LOGIN_REPLY)
 
     def test_odd_passcode_input_is_a_plain_no_not_a_500(self):
-        """verify-code is public, so whatever arrives, the answer is {ok: false}."""
+        """verify-code is public, so whatever arrives is a plain no (never a 500),
+        and it opens nothing."""
         bodies = {
             "a JSON list": [config.ADMIN_SECRET_CODE],
             "a JSON string": config.ADMIN_SECRET_CODE,
@@ -294,7 +307,12 @@ class PasscodeGateTests(unittest.TestCase):
             with self.subTest(label):
                 client = app.test_client()
                 response = client.post("/api/auth/verify-code", json=body)
-                self.assertEqual((response.status_code, response.json), (200, {"ok": False}))
+                if isinstance(body, dict):
+                    self.assertEqual((response.status_code, response.json), (200, {"ok": False}))
+                else:
+                    # The route's own plain no, or the app-wide body check's 400.
+                    self.assertIn(response.status_code, (200, 400))
+                    self.assertNotEqual((response.json or {}).get("ok"), True)
                 self.assertEqual(request_code(client, unique_email("odd")).status_code, 403)
 
 

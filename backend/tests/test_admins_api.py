@@ -22,8 +22,8 @@ from urllib.parse import urlencode
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _appfixture import app, auth, database, sign_in  # noqa: E402
 from test_admin_auth import (  # noqa: E402
-    address_of_length, gated_client, make_admin, parse_utc, pin_login_policy, request_code,
-    sign_in_by_email, unique_email)
+    address_of_length, assert_refused_body, gated_client, make_admin, parse_utc,
+    pin_login_policy, request_code, sign_in_by_email, unique_email)
 
 ADMIN_FIELDS = {"id", "email", "display_name", "role", "is_active", "created_at",
                 "last_login_at"}
@@ -322,12 +322,13 @@ class ActivationTests(OwnerTestCase):
     def test_is_active_must_be_a_json_boolean(self):
         before = admins_snapshot()
         for body in ({}, {"is_active": None}, {"is_active": 1}, {"is_active": 0},
-                     {"is_active": "false"}, {"is_active": "true"}, {"active": False},
-                     [False]):
+                     {"is_active": "false"}, {"is_active": "true"}, {"active": False}):
             with self.subTest(body=body):
                 response = self.patch(self.target["id"], body)
                 self.assertEqual((response.status_code, response.json),
                                  (400, {"error": "is_active must be true or false"}))
+        with self.subTest(body=[False]):
+            assert_refused_body(self, self.patch(self.target["id"], [False]))
         self.assertEqual(admins_snapshot(), before)
 
     def test_a_body_that_isnt_json_changes_nothing(self):
@@ -340,18 +341,16 @@ class ActivationTests(OwnerTestCase):
             "JSON sent as text/plain": ("text/plain", '{"is_active": false, "email": "%s", '
                                         '"display_name": "Csrf"}' % fields["email"]),
         }
-        routes = (("PATCH", "/api/admins/%s" % self.target["id"],
-                   "is_active must be true or false"),
-                  ("POST", "/api/admins", "Please enter a valid email address"))
+        routes = (("PATCH", "/api/admins/%s" % self.target["id"]),
+                  ("POST", "/api/admins"))
         before = admins_snapshot()
         for label, (content_type, data) in forms.items():
-            for method, path, error in routes:
+            for method, path in routes:
                 with self.subTest(label, route=method):
                     response = self.client.open(
                         path, method=method, content_type=content_type,
                         data=data if isinstance(data, str) else dict(data))
-                    self.assertEqual((response.status_code, response.json),
-                                     (400, {"error": error}))
+                    assert_refused_body(self, response)
         self.assertEqual(admins_snapshot(), before)
 
     def test_admins_are_never_deleted(self):
