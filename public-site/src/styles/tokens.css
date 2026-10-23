@@ -1,0 +1,53 @@
+/* ==========================================================================
+   Farmers Forward (public site) - design tokens
+   Brand: black, dark blue, white. Blue appears in two dark shades for
+   surfaces and one bright blue used ONLY for glows, focus and the field
+   outline. Score colours (red → amber → green) are data, not brand: they
+   appear only on map squares, points and score badges (tool/soilColor.js).
+   ========================================================================== */
+
+:root {
+  /* Surfaces */
+  --ink: #05070d;          /* page black */
+  --ink-2: #090d18;        /* raised black */
+  --navy-900: #0a1630;     /* dark blue panel */
+  --navy-800: #0f2148;     /* dark blue, hover / active */
+  --navy-700: #163066;     /* dark blue, borders that need to show */
+
+  /* Accent (glows, focus, links) */
+  --blue: #4d8dff;
+  --blue-bright: #7aaaff;
+  --blue-glow: rgba(77, 141, 255, 0.35);
+  --blue-glow-soft: rgba(77, 141, 255, 0.14);
+
+  /* Text */
+  --white: #ffffff;
+  --text: #eef2fa;
+  --text-muted: #a8b4cc;   /* 9.3:1 on --ink, 7.6:1 on --navy-900 */
+  --text-faint: #7f8ba6;   /* 5.6:1 on --ink: captions only */
+
+  /* Lines */
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.2);
+
+  /* Feedback (UI messages; distinct from score colours) */
+  --warn-text: #ffd27a;
+  --error-text: #ff9b94;
+
+  /* Type */
+  --font-display: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Inter Tight', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Shape + motion */
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --shadow-glow: 0 0 0 1px var(--blue-glow-soft), 0 10px 40px -10px var(--blue-glow);
+
+  --page-max: 1240px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --header-h: 64px;
+}

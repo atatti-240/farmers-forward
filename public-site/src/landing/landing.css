@@ -1,0 +1,199 @@
+/* ==========================================================================
+   Farmers Forward (public site) - landing page styles
+   ========================================================================== */
+
+.page--landing {
+  overflow-x: clip;
+}
+
+.wrap {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.display {
+  max-width: 18ch;
+  margin-top: 14px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.4rem, 6vw, 4.6rem);
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+
+.lead {
+  max-width: 60ch;
+  margin-top: 20px;
+  color: var(--text-muted);
+  font-size: clamp(1.02rem, 1.6vw, 1.2rem);
+}
+
+/* ---------------------------------------------------------------- hero */
+
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: calc(100svh - var(--header-h));
+  padding: 80px 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero__glow {
+  position: absolute;
+  inset: auto -20% -40% -20%;
+  z-index: -1;
+  height: 80%;
+  background:
+    radial-gradient(50% 60% at 50% 100%, rgba(77, 141, 255, 0.35), transparent 70%),
+    radial-gradient(70% 70% at 50% 100%, rgba(22, 48, 102, 0.8), transparent 75%);
+}
+
+.hero__inner {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.hero__title {
+  max-width: 13ch;
+  margin-top: 18px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(3.2rem, 10vw, 8.5rem);
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+}
+
+.hero__title em {
+  color: var(--blue-bright);
+  font-style: italic;
+}
+
+.hero__lead {
+  max-width: 54ch;
+  margin-top: 28px;
+  color: var(--text-muted);
+  font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+}
+
+.hero__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 36px;
+}
+
+/* ------------------------------------------------------------ sections */
+
+.problem,
+.how,
+.cred,
+.cta {
+  padding: clamp(72px, 12vw, 140px) 0;
+  border-top: 1px solid var(--line);
+}
+
+.how {
+  background: linear-gradient(180deg, var(--ink), var(--navy-900) 120%);
+}
+
+.how__steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 48px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 860px) {
+  .how__steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+.how__step {
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(10, 22, 48, 0.55);
+}
+
+.how__step p {
+  margin-top: 10px;
+  color: var(--text-muted);
+}
+
+.how__num {
+  color: var(--blue-bright);
+  font-size: 0.85rem;
+}
+
+.how__title {
+  margin-top: 24px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 2rem;
+}
+
+.cred__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 860px) {
+  .cred__list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cred__list li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-strong);
+}
+
+.cred__list b {
+  color: var(--white);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.cred__list span {
+  color: var(--text-muted);
+}
+
+.cta {
+  text-align: center;
+  background:
+    radial-gradient(60% 80% at 50% 100%, rgba(77, 141, 255, 0.22), transparent 70%),
+    var(--ink);
+}
+
+.cta__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cta .display {
+  max-width: none;
+}
+
+.cta .lead {
+  margin-bottom: 32px;
+}
+
+.page--landing .site-footer {
+  margin-top: 0;
+}

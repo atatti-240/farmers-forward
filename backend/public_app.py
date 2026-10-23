@@ -52,8 +52,11 @@ def create_app() -> Flask:
 
     origins = allowed_origins()
     # No credentials: the public site never sends or receives cookies.
+    # The PDF's filename and a 429's wait time are read by the page, so those
+    # headers are exposed to it.
     CORS(app, resources={r"/api/public/*": {"origins": origins}},
-         supports_credentials=False, max_age=600)
+         supports_credentials=False, max_age=600,
+         expose_headers=["Content-Disposition", "Retry-After"])
     print("Public API: PUBLIC_ONLY mode, CORS for %s" % ", ".join(origins), flush=True)
     print("Database: %s" % database.describe_backend(), flush=True)
 
