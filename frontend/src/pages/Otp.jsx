@@ -6,6 +6,7 @@ import './auth.css'
 
 const OTP_LENGTH = 6
 const COUNTDOWN_SECONDS = 300 // 5 minutes, informational (server enforces expiry)
+const RESEND_COOLDOWN_SECONDS = 60 // the server issues at most one code a minute
 const EMPTY = ['', '', '', '', '', '']
 
 function formatTime(total) {
@@ -14,11 +15,25 @@ function formatTime(total) {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
+// When a code was last requested (ms), as stored by the login page; now if unset.
+function storedRequestedAt() {
+  const at = Number(sessionStorage.getItem('ff_code_requested_at'))
+  return Number.isFinite(at) && at > 0 ? at : Date.now()
+}
+
+// Whole seconds left of a `total`-second window that opened at `since` (ms).
+function secondsRemaining(total, since, now) {
+  const elapsed = Math.floor((now - since) / 1000)
+  return Math.min(total, Math.max(0, total - elapsed))
+}
+
 export default function Otp() {
   const navigate = useNavigate()
   // Capture the gate once at mount: on success we clear ff_otp_pending before
   // navigating, and this prevents a stale re-guard from bouncing us to /login.
   const allowed = useRef(sessionStorage.getItem('ff_otp_pending') === '1').current
+  // The address typed on /login, read once at mount for the same reason.
+  const email = useRef(sessionStorage.getItem('ff_login_email') || '').current
   const inputsRef = useRef([])
   const redirectTimer = useRef(null)
   const submittingRef = useRef(false)
@@ -26,15 +41,21 @@ export default function Otp() {
 
   const [digits, setDigits] = useState(EMPTY)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [shake, setShake] = useState(false)
   const [pending, setPending] = useState(false)
-  const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS)
+  const [resending, setResending] = useState(false)
+  const [requestedAt, setRequestedAt] = useState(storedRequestedAt)
+  const [now, setNow] = useState(() => Date.now())
 
-  // Countdown timer (informational).
+  const busy = pending || resending
+  const secondsLeft = secondsRemaining(COUNTDOWN_SECONDS, requestedAt, now)
+  const cooldownLeft = secondsRemaining(RESEND_COOLDOWN_SECONDS, requestedAt, now)
+
+  // One clock drives both countdowns (informational). Counting from when the
+  // code was requested keeps them right across reloads and throttled tabs.
   useEffect(() => {
-    const t = setInterval(() => {
-      setSecondsLeft((s) => (s <= 0 ? 0 : s - 1))
-    }, 1000)
+    const t = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(t)
   }, [])
 
@@ -46,14 +67,14 @@ export default function Otp() {
     }
   }, [])
 
-  // Re-focus the first box after a failed attempt, but only once the inputs are
-  // re-enabled - focusing a still-disabled input is a no-op.
+  // Re-focus the first box after a failed attempt or a new code, but only once
+  // the inputs are re-enabled - focusing a still-disabled input is a no-op.
   useEffect(() => {
-    if (!pending && wantFocus.current) {
+    if (!busy && wantFocus.current) {
       wantFocus.current = false
       inputsRef.current[0]?.focus()
     }
-  }, [pending])
+  }, [busy])
 
   function scheduleRedirect(to) {
     if (redirectTimer.current) clearTimeout(redirectTimer.current)
@@ -62,7 +83,7 @@ export default function Otp() {
 
   function clearBoxes() {
     setDigits(EMPTY)
-    // Focus is restored by the [pending] effect once the boxes are re-enabled.
+    // Focus is restored by the [busy] effect once the boxes are re-enabled.
     wantFocus.current = true
   }
 
@@ -71,10 +92,13 @@ export default function Otp() {
     submittingRef.current = true
     setPending(true)
     setError('')
+    setNotice('')
     try {
       await api.verifyOtp(code)
       sessionStorage.removeItem('ff_secret_ok')
       sessionStorage.removeItem('ff_otp_pending')
+      sessionStorage.removeItem('ff_login_email')
+      sessionStorage.removeItem('ff_code_requested_at')
       navigate('/dashboard')
     } catch (err) {
       const status = err && err.status
@@ -85,6 +109,18 @@ export default function Otp() {
         sessionStorage.removeItem('ff_otp_pending')
         setError('Too many attempts. Please log in again')
         scheduleRedirect('/login')
+      } else if (kind === 'no pending login') {
+        // The server no longer has this sign-in (logged out or signed in in
+        // another tab, cookies cleared): retrying here can never work.
+        sessionStorage.removeItem('ff_otp_pending')
+        setError('This sign-in has ended. Please enter your email again')
+        scheduleRedirect('/login')
+      } else if (kind === 'expired' && email) {
+        // The "Send a new code" button below is the way forward.
+        setError('That code has expired. Send a new code below')
+        clearBoxes()
+        setPending(false)
+        submittingRef.current = false
       } else if (kind === 'expired') {
         setError('Code expired. Log in again')
         scheduleRedirect('/login')
@@ -107,6 +143,39 @@ export default function Otp() {
         submittingRef.current = false
       }
     }
+  }
+
+  // Ask for a fresh code for the same address. The server answers the same
+  // way whether or not it is registered, so the notice stays conditional too.
+  async function resend() {
+    if (busy || cooldownLeft > 0 || !email) return
+    setResending(true)
+    setError('')
+    setNotice('')
+    try {
+      await api.login(email)
+      const at = Date.now()
+      sessionStorage.setItem('ff_code_requested_at', String(at))
+      setRequestedAt(at)
+      setNow(at)
+      clearBoxes()
+      setNotice('If that email is registered, a new code is on its way.')
+    } catch (err) {
+      if (err && err.status === 403) {
+        // The secret gate expired server-side: start over, as /login does.
+        sessionStorage.removeItem('ff_secret_ok')
+        navigate('/')
+        return
+      }
+      setError('Something went wrong. Please try again.')
+    }
+    setResending(false)
+  }
+
+  // Back to the email form; ff_secret_ok stays so /login still lets us in.
+  function changeEmail() {
+    sessionStorage.removeItem('ff_otp_pending')
+    navigate('/login')
   }
 
   function handleChange(index, rawValue) {
@@ -171,6 +240,10 @@ export default function Otp() {
 
   const expired = secondsLeft <= 0
 
+  let resendLabel = 'Send a new code'
+  if (resending) resendLabel = 'Sending…'
+  else if (cooldownLeft > 0) resendLabel = `Send a new code in ${formatTime(cooldownLeft)}`
+
   return (
     <div className="ff-brand ff-admin ff-auth">
       <div className="ff-auth__card">
@@ -181,12 +254,18 @@ export default function Otp() {
         <p className="ff-eyebrow ff-auth__eyebrow">One more little step.</p>
         <h1 className="ff-auth__title">Verify your identity</h1>
         <p className="ff-auth__subtitle">
-          Enter the 6-digit code we sent to your email.
+          If {email ? <strong>{email}</strong> : 'that email'} is registered, we&apos;ve
+          sent a 6-digit code to it.
         </p>
 
         {error && (
           <div className="ff-auth__error" role="alert">
             {error}
+          </div>
+        )}
+        {notice && (
+          <div className="ff-auth__error ff-auth__error--notice" role="status">
+            {notice}
           </div>
         )}
 
@@ -205,7 +284,7 @@ export default function Otp() {
               autoComplete={i === 0 ? 'one-time-code' : 'off'}
               maxLength={1}
               value={d}
-              disabled={pending}
+              disabled={busy}
               aria-label={`Digit ${i + 1}`}
               onChange={(e) => handleChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
@@ -216,7 +295,11 @@ export default function Otp() {
 
         <div className={'ff-otp__timer' + (expired ? ' ff-otp__timer--warn' : '')}>
           {expired ? (
-            <span>Code expired. Request a new one by logging in again.</span>
+            <span>
+              {email
+                ? 'Code expired. Send a new code below.'
+                : 'Code expired. Request a new one by logging in again.'}
+            </span>
           ) : (
             <span>
               Code expires in <strong>{formatTime(secondsLeft)}</strong>
@@ -224,11 +307,32 @@ export default function Otp() {
           )}
         </div>
 
+        <div className="ff-otp__resend">
+          {email && (
+            <button
+              type="button"
+              className="ff-btn ff-btn--ghost ff-btn--sm"
+              disabled={busy || cooldownLeft > 0}
+              onClick={resend}
+            >
+              {resendLabel}
+            </button>
+          )}
+          <button
+            type="button"
+            className="ff-btn ff-btn--ghost ff-btn--sm"
+            disabled={busy}
+            onClick={changeEmail}
+          >
+            Use a different email
+          </button>
+        </div>
+
         <div className="ff-auth__actions">
           <button
             type="button"
             className="ff-btn ff-btn--primary"
-            disabled={pending || digits.some((d) => d === '')}
+            disabled={busy || digits.some((d) => d === '')}
             onClick={() => submit(digits.join(''))}
           >
             {pending ? 'Verifying…' : 'Verify code'}

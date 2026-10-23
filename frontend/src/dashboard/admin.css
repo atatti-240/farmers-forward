@@ -1,0 +1,156 @@
+/* ==========================================================================
+   Farmers Forward - admin header + Admins page
+   Its own file so the multi-admin feature adds CSS instead of appending to the
+   shared dashboard.css. Imported right after dashboard.css (Dashboard.jsx,
+   Admins.jsx), so the cascade is the same as if it were appended there.
+   ========================================================================== */
+
+/* The header's right side: who is logged in, the owner's page links and Log
+   out. Only the name gives way (it truncates), so above 900px, where the side
+   panel sticks just below the header, it stays one line. Narrower, an owner's
+   links move under the name, and on phones "Logged in as" is left to screen
+   readers. */
+.ff-dash__nav .ff-dash__brand { flex-shrink: 0; }
+.ff-dash__account { display: flex; align-items: center; gap: 18px; min-width: 0; }
+.ff-dash__account .ff-dash__logout { flex-shrink: 0; }
+.ff-dash__who {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  color: var(--pub-ink-muted);
+}
+.ff-dash__who strong { font-family: var(--pub-serif); font-weight: 600; color: var(--pub-ink); }
+.ff-dash__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 14px;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ff-dash__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  font-family: var(--pub-serif);
+  font-weight: 500;
+  color: var(--pub-ink);
+  white-space: nowrap;
+}
+.ff-dash__link:hover {
+  color: var(--pub-blue-deep);
+  text-decoration: underline wavy var(--pub-blue) 1.5px;
+  text-underline-offset: 5px;
+}
+/* The page you're on gets a swipe of highlighter, like the page headings. */
+.ff-dash__link[aria-current='page'] {
+  font-weight: 600;
+  background: linear-gradient(100deg, transparent 2%, var(--pub-highlight) 5%, var(--pub-highlight) 95%, transparent 98%)
+    center 60% / 100% 0.8em no-repeat;
+}
+
+/* Admins page: the add form on a taped-down card, then every admin in a
+   table. A deactivated admin's row is in pencil, all but its status badge
+   and the Reactivate button. */
+.ff-admins__add { max-width: 720px; margin: 14px 0 44px; padding: 28px; }
+.ff-admins__add::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 76px;
+  height: 22px;
+  background: var(--pub-tape);
+  border-inline: 1px dashed var(--ff-border);
+  transform: translateX(-50%) rotate(-2.5deg);
+}
+.ff-admins__fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
+.ff-admins__submit { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.ff-admins__added { flex: 1 1 240px; margin: 0; color: var(--pub-green); line-height: 1.5; overflow-wrap: anywhere; }
+.ff-admins__msg { margin: 14px 0 0; line-height: 1.5; overflow-wrap: anywhere; }
+.ff-admins__head { margin-bottom: 14px; }
+.ff-admins__head .ff-card__title { margin: 0; }
+.ff-admins__loading { display: flex; justify-content: center; padding: 40px 0; }
+.ff-admins__table { padding: 0; }
+/* Row headers are th, which the shared last-row rule (td only) misses. */
+.ff-admins__table tbody tr:last-child th { border-bottom: 0; }
+.ff-admins__name { min-width: 11ch; font-family: var(--pub-serif); font-weight: 600; }
+.ff-admins__email { min-width: 16ch; overflow-wrap: anywhere; }
+.ff-admins__seen, .ff-admins__act { white-space: nowrap; }
+.ff-admins__time { display: block; font-size: 0.85rem; color: var(--pub-ink-muted); }
+.ff-admins__act { text-align: right; }
+.ff-admins__row--off th,
+.ff-admins__row--off td { color: var(--pub-ink-muted); }
+.ff-admin .ff-badge--muted { background: var(--pub-paper-deep); color: var(--pub-ink-muted); border-style: dashed; }
+/* A hand-circled note beside your own name. */
+.ff-admins__you {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 7px;
+  font-family: var(--pub-hand);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--pub-blue-deep);
+  border: 1.5px solid currentColor;
+  border-radius: 49% 51% 52% 48% / 47% 53% 46% 54%;
+  transform: rotate(-4deg);
+}
+/* Read out, not shown: the action column's header. */
+.ff-admins__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  /* Two lines of name rather than a few characters and an ellipsis. */
+  .ff-dash__who {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.25;
+  }
+  .ff-dash__account--owner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0 14px;
+  }
+  .ff-dash__account--owner .ff-dash__who { text-align: right; }
+  .ff-dash__account--owner .ff-dash__links { grid-column: 1 / -1; grid-row: 2; }
+  .ff-dash__link { min-height: 36px; }
+  .ff-admins__table .ff-table th,
+  .ff-admins__table .ff-table td { padding-inline: 12px; }
+}
+@media (max-width: 640px) {
+  .ff-dash__account { column-gap: 12px; }
+  /* "Logged in as" moves to a small line above the name rather than going. */
+  .ff-dash__who-label { display: block; font-size: 0.78rem; line-height: 1.2; }
+  .ff-admins__add { padding: 22px 20px; }
+  .ff-admins__fields { grid-template-columns: 1fr; }
+  .ff-admins__submit > .ff-btn { flex: 1 1 100%; }
+}
+
+/* A server-side email problem the owner should fix before adding people. */
+.ff-admins__warning {
+  max-width: 720px;
+  margin: 0 0 22px;
+  padding: 12px 16px;
+  border: 1.5px dashed var(--ff-amber);
+  border-radius: var(--ff-radius-sm);
+  background: var(--pub-paper);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}

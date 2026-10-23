@@ -1,4 +1,6 @@
 """Crop selection must survive validation, analysis, storage and report output."""
+import contextlib
+import io
 import os
 import sqlite3
 import sys
@@ -7,7 +9,7 @@ import unittest
 from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _appfixture import app, database
+from _appfixture import app, auth, database, sign_in
 from backend import model_runner, pdf_report
 
 model_runner._ensure_pipeline_path()
@@ -58,10 +60,11 @@ class CropSubmissionTests(unittest.TestCase):
         patch.start()
         self.addCleanup(patch.stop)
         database.init_db()
+        # A fresh database has no admins; seed the owner the fixture configured.
+        with contextlib.redirect_stdout(io.StringIO()):
+            auth.seed_owner()
         self.client = app.test_client()
-        with self.client.session_transaction() as session:
-            session["authed"] = True
-            session["admin_id"] = 1
+        sign_in(self.client)
         for patch in (mock.patch.object(model_runner, "_get_bundle", return_value=object()),
                       mock.patch.object(model, "predict_frame", side_effect=predictions)):
             patch.start()

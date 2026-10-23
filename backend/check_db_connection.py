@@ -15,6 +15,13 @@ Usage (set the variable in your own shell, never in a file that is committed):
 With DATABASE_URL unset it reports on the local SQLite fallback instead, which
 is a quick way to confirm the fallback still works.
 
+It reports on a database from either side of the one-time multi-admin
+migration. One this code has not booted against yet still has the old
+single-admin `admins` table and is reported as such. Only the app's own first
+boot migrates it -- --init never does, so this script can't rewrite a schema an
+older deploy is still serving. Afterwards the old table is listed as
+admins_legacy, kept for rollback.
+
 Exit codes: 0 connected, 1 connected but the schema is missing, 2 cannot connect.
 """
 
@@ -55,11 +62,15 @@ def check_pooler(url: str) -> None:
 
 
 def list_tables(conn) -> list:
-    """Table names in the active database, whichever backend it is."""
+    """Table names in the active database, whichever backend it is.
+
+    On Postgres that is the schema unqualified names resolve to -- the one the
+    app reads and writes -- rather than a hardcoded 'public'.
+    """
     if database.using_postgres():
         rows = conn.execute(
             "SELECT table_name FROM information_schema.tables "
-            "WHERE table_schema = 'public' ORDER BY table_name").fetchall()
+            "WHERE table_schema = current_schema() ORDER BY table_name").fetchall()
     else:
         rows = conn.execute(
             "SELECT name FROM sqlite_master WHERE type = 'table' "
@@ -67,14 +78,35 @@ def list_tables(conn) -> list:
     return [row[0] for row in rows]
 
 
-def main() -> int:
+def admins_table_state(conn=None) -> str:
+    """'current', 'legacy' or 'missing': the shape of the admins table. Read-only.
+
+    'legacy' is the single-admin table from before multi-admin profiles
+    (username + password hash), which init_db() migrates on the next boot. The
+    test is the migration's own, so the two can never disagree. Without
+    `conn` a connection is opened and closed here -- but not to a SQLite file
+    that doesn't exist, because connecting would create it.
+    """
+    if conn is None:
+        if not database.using_postgres() and not os.path.exists(config.DATABASE_PATH):
+            return "missing"
+        conn = database.get_db()
+        try:
+            return admins_table_state(conn)
+        finally:
+            conn.close()
+    return database.admins_shape(conn)
+
+
+def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         prog="python3 -m backend.check_db_connection",
         description="Report connectivity, tables and row counts for the "
                     "configured database.")
     parser.add_argument("--init", action="store_true",
-                        help="create any missing tables before reporting")
-    args = parser.parse_args()
+                        help="create any missing tables before reporting (never "
+                             "runs the one-time admins migration)")
+    args = parser.parse_args(argv)
 
     bar = "-" * 70
     print(bar)
@@ -105,7 +137,15 @@ def main() -> int:
     try:
         if args.init:
             print("--init: creating any missing tables ...")
-            database.init_db()
+            try:
+                # Never the one-time admins migration: only the app's own boot
+                # runs that, so this can't rewrite a schema an older deploy
+                # is still serving.
+                database.init_db(migrate=False)
+            except database.LegacySchemaError:
+                print("--init: nothing created: admins still has the old "
+                      "single-admin shape, which only the app's first boot "
+                      "migrates (see below).")
             print()
         print("connected.")
         tables = list_tables(conn)
@@ -119,7 +159,13 @@ def main() -> int:
                 count = row[0] if row is not None else "?"
             except Exception as exc:  # noqa: BLE001
                 count = "unreadable (%s)" % type(exc).__name__
-            marker = " " if name in database.TABLES else " (not ours)"
+            if name in database.TABLES:
+                marker = ""
+            elif name in database.LEGACY_TABLES:
+                # Left by the one-time admins migration; never read by the app.
+                marker = " (legacy, kept for rollback)"
+            else:
+                marker = " (not ours)"
             print("  %-14s %8s rows%s" % (name, count, marker))
 
         print()
@@ -131,13 +177,20 @@ def main() -> int:
 
         admins = conn.execute("SELECT COUNT(*) AS c FROM admins").fetchone()[0]
         print("All %d expected tables are present." % len(database.TABLES))
-        if admins == 0:
-            print("The admins table is empty, so the next boot will seed one from")
-            print("DEFAULT_ADMIN_USERNAME / DEFAULT_ADMIN_PASSWORD.")
+        if admins_table_state(conn) == "legacy":
+            print("admins still has the old single-admin shape (username + password).")
+            print("The first boot of this version of the app migrates it, keeping the")
+            print("old table as admins_legacy. This script (even with --init) won't.")
+        elif admins == 0:
+            print("The admins table is empty, so the app's next boot seeds the first")
+            print("owner from the SERVER's DEFAULT_ADMIN_EMAIL (in this shell it is %s)."
+                  % ("set" if config.DEFAULT_ADMIN_EMAIL else "unset"))
+            print("Or create one now with:")
+            print("  python3 -m backend.reset_admin --email you@example.com")
         else:
-            print("%d admin row(s) already exist, so seeding is a no-op. Rotate" % admins)
-            print("credentials with: python3 -m backend.reset_admin --yes")
-            print("Inspect them with: python3 -m backend.inspect_admin")
+            print("%d admin row(s) already exist, so seeding is a no-op." % admins)
+            print("Inspect them with:     python3 -m backend.inspect_admin")
+            print("Restore owner access:  python3 -m backend.reset_admin --email you@example.com")
         return 0
     finally:
         conn.close()

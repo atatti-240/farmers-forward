@@ -3,17 +3,30 @@
    All calls go through fetch against the `/api` base path with the session
    cookie included. On a non-2xx response the thrown Error carries `.status`
    and `.payload` so callers can read `err.payload.error`,
-   `err.payload.attempts_remaining`, etc.
+   `err.payload.attempts_remaining`, etc. A 401 from anything outside
+   `/auth/` means the session has ended, so the browser is also sent back to
+   the public home page.
    ========================================================================== */
 
 const BASE = import.meta.env.VITE_API_URL || '/api'
+
+/**
+ * The session is gone (logged out elsewhere, or this admin was deactivated),
+ * so send the browser to the public home page. Never used for `/auth/`
+ * endpoints (they answer 401 for a wrong code) and a no-op on the home page
+ * itself, so it cannot loop.
+ */
+function sessionEnded() {
+  if (window.location.pathname !== '/') window.location.assign('/')
+}
 
 /**
  * Core request helper.
  * @param {string} path - path under `/api` (e.g. '/auth/login').
  * @param {{ method?: string, body?: any }} [opts]
  * @returns {Promise<any>} parsed JSON payload.
- * @throws {Error} with `.status` and `.payload` set on non-2xx responses.
+ * @throws {Error} with `.status` and `.payload` set on non-2xx responses (a
+ *   401 outside `/auth/` also sends the browser home first).
  */
 async function request(path, { method = 'GET', body } = {}) {
   const opts = {
@@ -47,6 +60,7 @@ async function request(path, { method = 'GET', body } = {}) {
     const err = new Error(message)
     err.status = res.status
     err.payload = payload
+    if (res.status === 401 && !path.startsWith('/auth/')) sessionEnded()
     throw err
   }
 
@@ -66,17 +80,15 @@ export function verifyCode(code) {
 }
 
 /**
- * Log in with username + password (requires prior verifyCode success).
- * Throws on non-2xx (e.g. bad credentials, missing secret gate).
- * @param {string} username
- * @param {string} password
- * @returns {Promise<{ ok: boolean, channels: { email: boolean } }>}
+ * Ask for a one-time code by email (requires prior verifyCode success). Every
+ * well-formed email gets the same reply, registered or not, so success never
+ * means an admin exists or that a code was sent. Throws on non-2xx: 400 for a
+ * malformed email, 403 when the secret gate is missing or expired.
+ * @param {string} email
+ * @returns {Promise<{ ok: boolean, message: string }>}
  */
-export function login(username, password) {
-  return request('/auth/login', {
-    method: 'POST',
-    body: { username, password },
-  })
+export function login(email) {
+  return request('/auth/login', { method: 'POST', body: { email } })
 }
 
 /**
@@ -98,8 +110,10 @@ export function logout() {
 }
 
 /**
- * Current auth status.
- * @returns {Promise<{ authed: boolean, username?: string }>}
+ * Current auth status. When authed, `admin` is the signed-in profile and its
+ * `role` is 'owner' or 'admin'.
+ * @returns {Promise<{ authed: boolean, admin?: { id: string, email: string,
+ *   display_name: string, role: string } }>}
  */
 export function me() {
   return request('/auth/me')
@@ -194,7 +208,8 @@ export function reportAllUrl(farmId) {
  *   null/omitted for a report without one.
  * @returns {Promise<void>} Resolves once the download has been handed to the
  *   browser.
- * @throws {Error} with `.status` set when the server rejects the request.
+ * @throws {Error} with `.status` set when the server rejects the request (a
+ *   401 also sends the browser home first, as `request` does).
  */
 export async function downloadReportAll(farmId, mapImage) {
   const res = await fetch(`${BASE}/report/${farmId}/all`, {
@@ -205,6 +220,7 @@ export async function downloadReportAll(farmId, mapImage) {
   })
 
   if (!res.ok) {
+    if (res.status === 401) sessionEnded()
     const err = new Error(`Report download failed with status ${res.status}`)
     err.status = res.status
     throw err

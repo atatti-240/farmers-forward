@@ -43,6 +43,11 @@
   line-height: 1.5;
 }
 
+/* A long email in the OTP subtitle wraps instead of overflowing the card */
+.ff-auth__subtitle strong {
+  overflow-wrap: anywhere;
+}
+
 .ff-auth__form {
   display: flex;
   flex-direction: column;
@@ -180,6 +185,19 @@
 
 .ff-otp__timer--warn strong {
   color: var(--ff-red);
+}
+
+/* "Send a new code" / "Use a different email" row under the timer */
+.ff-otp__resend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 10px;
+  margin: 10px 0 18px;
+}
+
+.ff-otp__resend .ff-btn {
+  font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 460px) {

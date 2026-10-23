@@ -1,10 +1,12 @@
 """Farmers Forward - Flask backend.
 
 All routes live under `/api`. Authentication is a three-stage session state
-machine: a shared secret code (`secret_ok`) gates the login form, valid
-credentials move the session to `pending_admin_id`, and a correct OTP promotes
-it to `authed`. Field submissions are analyzed by the soil model, persisted to
-SQLite, and rendered to branded PDFs on demand.
+machine: a shared secret code (`secret_ok`) gates the login form, an email
+address moves the session to `pending_email` (with the same reply whether or
+not it belongs to an admin), and the code emailed to it promotes the session
+to `authed` with that admin's `admin_id`. Owners manage the other admins under
+`/api/admins`. Field submissions are analyzed by the soil model, persisted to
+the database, and rendered to branded PDFs on demand.
 
 Importable as `wsgi:app` (module-level `app`). Runs on port 5000 in dev.
 """
@@ -38,21 +40,20 @@ from backend import pdf_report  # noqa: E402
 # ---------------------------------------------------------------------------
 # App setup
 # ---------------------------------------------------------------------------
-# Refuse to start in production with insecure defaults; warn loudly in dev.
+# No usable SECRET_KEY, no boot -- before anything else runs. Signing cookies
+# with a guessable or throwaway key fails silently, so this fails loudly.
+_SECRET_KEY = config.require_secret_key()
+
+# The remaining insecure defaults only warn: they must not crash-loop a deploy.
 _insecure = config.assert_secure()
 if _insecure:
     print("!" * 64, flush=True)
-    print("  WARNING: running with insecure defaults (dev only):", flush=True)
+    print("  WARNING: running with insecure defaults:", flush=True)
     for _p in _insecure:
         print("    - %s" % _p, flush=True)
-    print("  Set APP_ENV=production and strong values in .env before deploying.",
+    print("  Set COOKIE_SECURE=true wherever the app is served over HTTPS.",
           flush=True)
     print("!" * 64, flush=True)
-
-# A fixed bcrypt hash of a random password, compared against on the
-# username-not-found path so login timing does not reveal whether a username
-# exists (mitigates account enumeration).
-_DUMMY_HASH = auth.hash_password(secrets.token_urlsafe(16))
 
 # Built React SPA lives here (frontend/dist). We serve it ourselves via the
 # serve_frontend catch-all below, so static_folder is disabled to avoid Flask's
@@ -61,8 +62,12 @@ DIST_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
 
 app = Flask(__name__, static_folder=None)
-app.secret_key = config.SECRET_KEY
+app.secret_key = _SECRET_KEY
 app.config.update(
+    # Not Flask's default "session": the previous version (the rollback target)
+    # would accept this version's cookies -- including a deactivated admin's --
+    # because its login_required only checks authed + admin_id.
+    SESSION_COOKIE_NAME="ff_admin_session",
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=config.SESSION_COOKIE_SECURE,
     SESSION_COOKIE_HTTPONLY=True,
@@ -79,24 +84,25 @@ print("CORS: %d allowed origin(s) from %s: %s"
       % (len(config.ALLOWED_ORIGINS), config.env_source("ALLOWED_ORIGINS"),
          ", ".join(config.ALLOWED_ORIGINS)), flush=True)
 
-# Initialize the database and seed the default admin at import/startup so both
-# `flask run`/gunicorn and `python app.py` are ready to serve immediately.
+# Initialize the database (including the one-time multi-admin migration) and
+# seed the first owner at import/startup so both `flask run`/gunicorn and
+# `python app.py` are ready to serve immediately.
 # Whether the DB file already existed is captured before init_db() creates it --
-# on an ephemeral disk (Render's default) a "NO" here explains a vanished admin.
+# on an ephemeral disk (Render's default) a "NO" here explains vanished admins.
 # On Postgres the data is off-box and survives deploys, so the "did the file
 # exist" question is only meaningful for the SQLite fallback.
 _db_existed_at_boot = (None if database.using_postgres()
                        else os.path.exists(config.DATABASE_PATH))
 print("Database: %s" % database.describe_backend(), flush=True)
-database.init_db()
-# Report where the admin credentials come from on EVERY boot, before seeding.
-# seed_default_admin() is a no-op once the table has rows, so this is the only
-# place that says out loud whether DEFAULT_ADMIN_PASSWORD was picked up from the
-# environment or a throwaway random password is in play.
-auth.log_admin_credential_status(db_existed_at_boot=_db_existed_at_boot)
-auth.seed_default_admin()
+# The app's own boot is the only caller that may run the one-time migration;
+# the CLI scripts pass migrate=False.
+database.init_db(migrate=True)
+# seed_owner() only acts on an EMPTY admins table, so the report after it, on
+# EVERY boot, is what says out loud who can actually sign in.
+auth.seed_owner()
+auth.log_admin_status(db_existed_at_boot=_db_existed_at_boot)
 
-EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+EMAIL_RE = auth.EMAIL_RE
 MEASUREMENT_KEYS = ("ph", "ec", "nitrogen", "phosphorus", "potassium")
 # Auto grids cap at 12 x 12; leave room for manual points on top.
 MAX_SCORE_SECTIONS = 500
@@ -122,11 +128,17 @@ def _pdf_response(pdf_bytes: bytes, filename: str) -> Response:
 
 
 def _clear_pending(keep_secret: bool = False) -> None:
-    keys = ["pending_admin_id", "otp_locked"]
+    keys = ["pending_email"]
     if not keep_secret:
         keys.append("secret_ok")
     for key in keys:
         session.pop(key, None)
+
+
+def _json_object() -> Dict:
+    """The request's JSON body when it is an object, else {} (never raises)."""
+    data = request.get_json(silent=True)
+    return data if isinstance(data, dict) else {}
 
 
 def _clean_crop(sec: Dict, label: str) -> Tuple[str, str]:
@@ -211,11 +223,12 @@ def _validate_sections(payload, require_crop: bool = True,
 # ---------------------------------------------------------------------------
 @app.post("/api/auth/verify-code")
 def verify_code():
-    data = request.get_json(silent=True) or {}
-    code = str(data.get("code", "")).strip()
+    code = str(_json_object().get("code", "")).strip()
     # Constant-time compare so the secret code can't be recovered character by
-    # character via response-timing analysis.
-    if code and secrets.compare_digest(code, config.ADMIN_SECRET_CODE):
+    # character via response-timing analysis. On bytes: compare_digest raises
+    # for a str with non-ASCII characters, which made odd input a 500.
+    if code and secrets.compare_digest(code.encode("utf-8"),
+                                       config.ADMIN_SECRET_CODE.encode("utf-8")):
         session["secret_ok"] = True
         return jsonify({"ok": True})
     return jsonify({"ok": False})
@@ -226,56 +239,43 @@ def login():
     if session.get("secret_ok") is not True:
         return jsonify({"error": "forbidden"}), 403
 
-    data = request.get_json(silent=True) or {}
-    username = str(data.get("username", "")).strip()
-    password = str(data.get("password", ""))
+    email = auth.normalize_email(_json_object().get("email"))
+    if not auth.is_valid_email(email):
+        return jsonify({"error": "Please enter a valid email address"}), 400
 
-    admin = database.query_one(
-        "SELECT * FROM admins WHERE username = ?", (username,))
-    # Always run a bcrypt comparison (against a dummy hash when the username is
-    # unknown) so response timing does not reveal whether the account exists.
-    ok = auth.check_password(password, admin["password_hash"] if admin else _DUMMY_HASH)
-    if admin is None or not ok:
-        return jsonify({"error": "Invalid credentials"}), 401
-
-    channels = auth.create_and_send_otp(admin)
-    session["pending_admin_id"] = admin["id"]
-    session["otp_locked"] = False
-    return jsonify({"ok": True, "channels": channels})
+    # From here on everything is identical for every well-formed email,
+    # registered or not: the reply, the session keys (the cookie is readable by
+    # the client), and the work done (see auth.request_login_code).
+    auth.request_login_code(email)
+    _clear_pending(keep_secret=True)
+    session["pending_email"] = email
+    return jsonify({"ok": True, "message": auth.LOGIN_SENT_MESSAGE})
 
 
 @app.post("/api/auth/otp")
 def otp():
-    admin_id = session.get("pending_admin_id")
-    if not admin_id:
+    email = session.get("pending_email")
+    if not isinstance(email, str) or not email:
         return jsonify({"error": "no pending login"}), 401
 
-    data = request.get_json(silent=True) or {}
-    code = str(data.get("code", "")).strip()
+    code = str(_json_object().get("code", "")).strip()
 
-    result = auth.verify_otp(admin_id, code)
+    result, admin_id = auth.verify_login_code(email, code)
     if result == "ok":
-        admin = database.query_one(
-            "SELECT username FROM admins WHERE id = ?", (admin_id,))
-        _clear_pending()
-        session["authed"] = True
-        session["admin_id"] = admin_id
-        if admin is not None:
-            session["username"] = admin["username"]
+        auth.start_session(admin_id)
         return jsonify({"ok": True})
 
     if result == "invalid":
         return jsonify({
             "error": "invalid",
-            "attempts_remaining": auth.attempts_remaining(admin_id),
+            "attempts_remaining": auth.attempts_remaining(email),
         }), 401
 
     if result == "expired":
         return jsonify({"error": "expired"}), 401
 
-    # locked: drop the pending login but KEEP secret_ok so the admin can log in
-    # again (a fresh password entry mints a new OTP) without re-entering the
-    # hidden secret code.
+    # locked: drop the pending login but KEEP secret_ok so the admin can ask for
+    # a new code without re-entering the hidden secret code.
     _clear_pending(keep_secret=True)
     return jsonify({"error": "locked"}), 423
 
@@ -288,15 +288,58 @@ def logout():
 
 @app.get("/api/auth/me")
 def me():
-    if session.get("authed") is True and session.get("admin_id"):
-        username = session.get("username")
-        if not username:
-            admin = database.query_one(
-                "SELECT username FROM admins WHERE id = ?",
-                (session.get("admin_id"),))
-            username = admin["username"] if admin is not None else None
-        return jsonify({"authed": True, "username": username})
-    return jsonify({"authed": False})
+    admin = auth.current_admin()
+    if admin is None:
+        return jsonify({"authed": False})
+    return jsonify({"authed": True, "admin": admin})
+
+
+# ---------------------------------------------------------------------------
+# Admin management (owners only). Admins are deactivated, never deleted, so
+# everything that references one keeps a valid target.
+# ---------------------------------------------------------------------------
+@app.get("/api/admins")
+@auth.owner_required
+def list_admins():
+    # The owner adding admins is the one who needs to know their codes can't be
+    # delivered (e.g. RESEND_FROM still Resend's test sender).
+    return jsonify({"admins": auth.list_admins(), "warnings": auth.delivery_warnings()})
+
+
+@app.post("/api/admins")
+@auth.owner_required
+def create_admin():
+    data = _json_object()
+    try:
+        admin = auth.create_admin(data.get("email"), data.get("display_name"))
+    except auth.AdminExists:
+        return jsonify({"error": "An admin with that email already exists"}), 409
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify({"admin": admin}), 201
+
+
+@app.patch("/api/admins/<admin_id>")
+@auth.owner_required
+def update_admin(admin_id: str):
+    target = auth.get_admin(admin_id)
+    if target is None:
+        return jsonify({"error": "not found"}), 404
+
+    is_active = _json_object().get("is_active")
+    if not isinstance(is_active, bool):
+        return jsonify({"error": "is_active must be true or false"}), 400
+    # Also guarantees an active owner always remains: the one asking.
+    if not is_active and target["id"] == auth.current_admin()["id"]:
+        return jsonify({"error": "You can't deactivate yourself"}), 400
+
+    try:
+        admin = auth.set_admin_active(target["id"], is_active)
+    except auth.LastOwnerError:
+        return jsonify({"error": "That would leave no active owner"}), 400
+    if admin is None:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"admin": admin})
 
 
 # ---------------------------------------------------------------------------
