@@ -207,6 +207,31 @@ def _validate_sections(payload, require_crop: bool = True,
 
 
 # ---------------------------------------------------------------------------
+# Request bodies
+# ---------------------------------------------------------------------------
+# Every route reads its body as a JSON object (`request.get_json(...) or {}`,
+# then `.get(...)`), so a body that is valid JSON but not an object -- a list, a
+# string, a number -- reached that `.get` and came back as a 500, on the public
+# /api/contact too. Checking once here, before any route (and before any login
+# check), covers every /api endpoint, including ones added later, without
+# touching each handler. A request with no body at all is left alone: the
+# routes treat that as {} (logout, the report download's optional map image).
+JSON_OBJECT_REQUIRED = "Please send the request body as a JSON object."
+
+
+@app.before_request
+def require_json_object_body():
+    if request.method not in ("POST", "PUT", "PATCH") or not request.path.startswith("/api/"):
+        return None
+    if not request.get_data(cache=True).strip():
+        return None
+    data = request.get_json(silent=True) if request.is_json else None
+    if not isinstance(data, dict):
+        return jsonify({"error": JSON_OBJECT_REQUIRED}), 400
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Auth endpoints
 # ---------------------------------------------------------------------------
 @app.post("/api/auth/verify-code")
