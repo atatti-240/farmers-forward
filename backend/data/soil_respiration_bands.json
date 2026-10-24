@@ -1,0 +1,32 @@
+{
+  "metric": "Soil respiration (24-hour CO2 burst)",
+  "units": "ppm CO2-C",
+  "units_long": "mg of CO2-C released per kg of dried soil in the 24 hours after it is rewetted",
+  "placeholder": false,
+  "confidence": "medium",
+  "basis": "Published lab guideline based on the author's observations; not field-calibrated and not specific to Texas soils.",
+  "source": {
+    "title": "Haney Test Interpretation Guide v1.0, Soil Respiration Ranking Table",
+    "publisher": "Ward Laboratories, Inc., Kearney, Nebraska",
+    "year": 2019,
+    "url": "https://www.wardlab.com/wp-content/uploads/2020/02/Haney-Rev-1.0-Interpretation-Guide-PDF-1.pdf",
+    "also_in": "WardGuide (Raymond C. Ward, 2021), Table 66"
+  },
+  "corroboration": "Texas A&M AgriLife Organic (2024) and the Noble Research Institute (2023) give the same end points: below 10 ppm is very low and above 200 ppm is very high.",
+  "caveats": [
+    "The guide's author says the middle rankings are a sliding scale that depends on soil type and climate; only below 10 (very low) and above 200 (very high) hold regardless.",
+    "Other published scales differ: Ward's 2023 Soil Health Assessment guide uses Low 0-60, Marginal 60-120, Optimum above 120.",
+    "AHDB warns that soils above pH 7.5 can give artificially low values."
+  ],
+  "band_rule": "The value is first rounded to one decimal, as it is shown, then falls in the first band whose max it does not exceed. The published ranges are whole numbers, so a value between two ranges (for example 10.5) goes to the higher band, and anything above 200 is Very High (the table prints '>201'; the text says 'above 200').",
+  "bands": [
+    {"label": "Very Low", "min": 0, "max": 10, "meaning": "Very little potential for microbial activity; slow nutrient cycling and residue decomposition."},
+    {"label": "Low", "min": 11, "max": 20, "meaning": "Minimal potential for nutrient cycling."},
+    {"label": "Below Average", "min": 21, "max": 30, "meaning": "Some potential for nutrient cycling."},
+    {"label": "Slightly Below Average", "min": 31, "max": 50, "meaning": "Low to moderate potential for microbial activity."},
+    {"label": "Slightly Above Average", "min": 51, "max": 70, "meaning": "Moderate potential for microbial activity."},
+    {"label": "Above Average", "min": 71, "max": 100, "meaning": "Good potential for microbial activity."},
+    {"label": "High", "min": 101, "max": 200, "meaning": "High potential for microbial activity."},
+    {"label": "Very High", "min": 201, "max": null, "meaning": "High to very high potential for microbial activity and nitrogen mineralization."}
+  ]
+}

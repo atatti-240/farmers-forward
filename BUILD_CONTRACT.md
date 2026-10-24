@@ -654,3 +654,247 @@ label. Unknown crops remain valid custom input and explicitly use general
 guidance; do not fabricate a profile or add a crop class to the trained model.
 Show the assigned crop, its profile assessment, and recommendation notes in
 results and PDF reports.
+
+## 9. Soil profile (roadmap #9, organic matter for #8)
+
+DISPLAY ONLY. For one point per field the app looks up mapped USDA soil-survey
+data and shows it in Step 1 (compact "Soil at this spot" preview), Step 4 (a
+card after the results map) and the combined PDF. Crop scoring, `run_analysis`
+and the model inputs (pH/EC/N/P/K) are unchanged; there is no manual
+organic-matter input. Every surface labels it as **mapped survey data for this
+soil type, not a measurement of this field** (`source_note`, always shown).
+
+Files: `backend/soil_info.py` (lookup + cache), `backend/soil_report.py` (PDF
+page), `frontend/src/dashboard/soil.js` (`soilPointFor`, `soilKey`,
+`useSoilInfo`), `SoilProfile.jsx`, `soil.css` (`ff-soil*`); small call sites in
+`app.py`, `pdf_report.build_combined_pdf`, `client.js` (`getSoilInfo`,
+`submitField` sends `soil_point`) and Steps 1, 3, 4.
+
+Point (`soilPointFor`): polygon centroid (`polygonCentroid`, >= 3 vertices;
+for a concave field whose centroid falls outside the boundary, the middle of
+the widest east-west stretch inside the field at the centroid's latitude, else
+the first sample point that is inside), else the LAST Farm Finder
+pin (the most recently added one: re-searching an existing pin does not move
+it to the end, and DashboardProvider/FarmFinder are out of scope), else the
+first sample point. The lookup runs AT the point rounded to 4 decimals;
+`point_key` = `"%.4f,%.4f"` (`-0.0000` → `0.0000`), so the cache key is exact.
+
+Sources (stdlib `urllib`; every request sends `soil_info.USER_AGENT`,
+`FarmersForward/1.0 (soil-profile lookup; +https://github.com/atatti-240/farmers-forward)`,
+because urllib's default UA gets Cloudflare-flagged from Render):
+- UC Davis SoilWeb landPKS (`GET .../api/landPKS.php?q=spn&lat=&lon=&r=1`):
+  the soil series name (dominant `which=='a'` component, title-cased). It has
+  NO organic-matter field, so it only names the series, plus texture/sand/
+  silt/clay/CEC when SDA is down.
+- USDA NRCS Soil Data Access (`POST .../Tabular/post.rest`, `SDA_SQL`):
+  organic matter (`om_l/om_r/om_h`, top non-O horizon), texture, sand/silt/
+  clay, CEC, drainage, hydrologic group, map unit, survey area. SDA decides
+  the status, and every property comes from its one selected component.
+- Both run concurrently under ONE 10 s wall-clock deadline (`TIMEOUT_SECONDS`,
+  enforced by waiting on the workers; urlopen's timeout is per socket read). A
+  source still running at the deadline counts as failed. `_http_json` reads
+  the body in pieces and stops at its own deadline, so an abandoned worker
+  does not linger on a server that trickles bytes. Each live lookup holds a
+  sync gunicorn worker for up to 10 s (`--workers 3`); if that ever matters,
+  add `--threads` or cap concurrent lookups.
+
+| Method | Path | Auth | Request JSON | Success (200) | Errors |
+|---|---|---|---|---|---|
+| GET | `/api/soil-info?lat=&lon=` | login_required | query `lat`, `lon` | soil payload, for EVERY status incl. `unavailable` | 400 `{error}` if lat/lon missing, non-numeric, non-finite or out of range |
+| POST | `/api/submit` | login_required | adds optional `soil_point:{lat,lon}` | analysis + `soil_point` (rounded) + `soil_profile` (cached payload or null) | bad `soil_point` is silently ignored, never a 400 |
+
+Payload (same keys in every status; numbers or null):
+```
+{ status: "ok"|"partial"|"no_data"|"unavailable",
+  reason_code: null|"no_survey_coverage"|"non_soil_map_unit"|"no_components"|
+               "om_not_in_survey"|"properties_unavailable"|"unavailable",
+  reason: null | one plain-English sentence,
+  lat, lon, point_key, series, component_pct, component_kind,
+  map_unit, map_unit_symbol, survey_area, texture, sand_pct, silt_pct, clay_pct,
+  cec,                                   # meq/100 g at pH 7
+  drainage, hydrologic_group,
+  organic_matter_pct, organic_matter_low, organic_matter_high,  # 1 dp, HALF_UP
+  layer_top_cm, layer_bottom_cm,
+  sources: [...], source_note, fetched_at, cached }   # sources that contributed
+```
+
+Status (SDA `data_status` first):
+- `dominant`/`fallback` → `ok` (series = SDA's component name, spelled as SDA
+  has it; SoilWeb is credited in `sources` when its name matches, and a
+  mismatch is logged). A real soil with no OM recorded → `ok` /
+  `om_not_in_survey`, `organic_matter_pct` null.
+- No-data cases: open water or a survey gap (`no_mukey`) → `no_data` /
+  `no_survey_coverage`; a "Water", "Urban land" or other miscellaneous map unit
+  → `no_data` / `non_soil_map_unit` (reason names the map unit); no components
+  → `no_data` / `no_components`.
+- SDA failed: SoilWeb has a component → `partial` / `properties_unavailable`
+  (OM, drainage, hydrologic group null); SoilWeb empty → `no_data` /
+  `no_survey_coverage`; both failed → `unavailable`.
+
+Cache: table `soil_info_cache` (`id`, `point_key TEXT NOT NULL UNIQUE`,
+`payload TEXT NOT NULL`, `fetched_at TEXT NOT NULL`), created lazily by
+`soil_info` itself (`CREATE TABLE IF NOT EXISTS`, once per process and
+database), NOT by `init_db()`. `id` is `INTEGER PRIMARY KEY` on SQLite and
+`GENERATED ALWAYS AS IDENTITY` on Postgres. Upsert on `point_key`; a row is
+fresh for 365 days. Only answers SDA gave definitively are cached (`ok`, and
+the `no_data` cases SDA decided); `partial`, `unavailable` and SoilWeb-only
+`no_data` are never cached, so the next lookup retries. Cache and network
+errors are logged and swallowed: only bad coordinates raise. The write runs
+on its own thread and the lookup waits for it at most 0.5 s
+(`CACHE_WRITE_WAIT_SECONDS`), so SQLite's 5 s busy timeout behind another
+request's write lock cannot stretch a lookup; the write still lands once the
+lock is free.
+
+Never blocks: a slow, failed or empty lookup never holds up drawing, gridding,
+navigation, submission or the assessment. The UI shows the reason (Retry for
+`partial`, `unavailable`, a SoilWeb-only `no_data` or a failed request); the
+browser gives up on a request after 20 s so a stalled connection gets Retry
+too. In Step 1 the preview sits below the grid controls, so its height
+changing never moves Apply.
+
+Submit and PDF: `/api/submit` reads the cache only (`cached_soil_info`, before
+the write transaction opens). Without a valid `soil_point` the stored analysis
+is unchanged. Step 4 re-fetches `/api/soil-info` when the stored profile is
+missing, `partial` or `unavailable` (even when the tab already knows the
+answer, showing it meanwhile), which also warms the cache.
+`/api/report/<id>/all` adds a "Soil Profile" page after the field map when the
+analysis has a `soil_point`, swapping a missing/`partial`/`unavailable` profile
+for a cached one; with no profile at all it prints a "had not loaded" note.
+PDF routes NEVER call the network. No `soil_point` (older reports) → no page
+and the same page count as before. The single-section PDF is unchanged.
+
+### 9.1 Microbial activity (roadmap #8 placeholder)
+
+DISPLAY ONLY. One optional lab value for the whole field: soil respiration,
+the 24-hour CO2 burst (`ppm CO2-C`: mg of CO2-C released per kg of dried soil
+in the 24 hours after it is rewetted, e.g. a Haney or Solvita CO2-burst
+result). When a value is entered, the server rates it against a cited band
+table and Step 4 and the combined PDF show the rating. When none is entered,
+both show exactly `Microbial activity: in-house test in development` (no
+error, no zero score, no rating). Health scores, `run_analysis`, the crop
+assessment and the recommendations are identical with or without a value.
+
+Files: `backend/microbial.py` (`parse_respiration`, `rate`, `load_config`,
+`range_text`), `backend/data/soil_respiration_bands.json` (the bands and their
+citation), and a "Soil biology" block at the end of `soil_report.py`'s page.
+Frontend: `frontend/src/dashboard/microbial.js` (`parseRespiration`,
+`RESPIRATION_UNITS`, `NOT_PROVIDED_MESSAGE`, `MAX_RESPIRATION`),
+`MicrobialInput.jsx` (Step 2), `MicrobialReview.jsx` (Step 3),
+`MicrobialActivity.jsx` and `microbial.css` (`ff-microbial*`, Step 4). Small
+call sites in `app.py`, `client.js` (`submitField` sends `soil_respiration`),
+`DashboardProvider.jsx` (`respiration`, `setRespiration`), `SoilProfile.jsx`
+and Steps 2, 3 and 4. Tests: `backend/tests/test_microbial.py`.
+
+| Method | Path | Auth | Request JSON | Success (200) | Errors |
+|---|---|---|---|---|---|
+| POST | `/api/submit` | login_required | adds optional `soil_respiration` (number or numeric string, ppm CO2-C) | analysis + `microbial` (rating payload) when a value was given; NO `microbial` key when it is missing, `null`, `""` or blank | 400 `{error: "soil_respiration must be a number from 0 to 5000 (ppm CO2-C)"}` for anything else (non-numeric text, true/false, lists/objects, NaN/inf, < 0, > 5000), returned before any DB write |
+
+Validation (`parse_respiration`): `None`, a missing key, `""` and whitespace
+mean "not provided". Numbers and plain ASCII decimal strings (`45`, `45.5`,
+`.5`, `1e2`, the same pattern as the browser's) become a float; `4_5` and
+non-ASCII digits, which `float()` alone would read, do not. Everything
+else raises `ValueError`, which submit turns into the 400. `MAX_RESPIRATION =
+5000` is a typo guard (the guide says readings run from near 0 to about 1000),
+not a soil limit. The browser's `parseRespiration` applies the same 0-5000
+rule. An invalid entry gets an inline error in Step 2 and a warning line in
+Step 3, and is sent as `null`, so the field is still submitted, just without
+the value.
+
+Payload (`analysis.microbial`, built by `rate()` after `run_analysis`):
+```
+{ status: "rated",
+  value,                                 # 1 dp, ROUND_HALF_UP via Decimal(str(v))
+  units: "ppm CO2-C", metric: "Soil respiration (24-hour CO2 burst)",
+  band, band_index,                      # 0-based
+  band_count: 8, band_min, band_max,     # band_max null for the top band
+  range_text: "31-50" | "above 200",
+  meaning, placeholder, confidence, basis,
+  source: {title, publisher, year, url}, caveats: [...],
+  bands: [{label, min, max}, ...] }      # for drawing the 8-step scale
+# config missing or invalid (logged; the submission still succeeds):
+{ status: "unrated", value, units: "ppm CO2-C",
+  message: "Microbial activity rating is unavailable right now." }
+```
+
+Config (`backend/data/soil_respiration_bands.json`): read on first use (never
+at import), validated, and cached under a lock. Validation requires non-empty
+`bands`, a first `min` of 0, ascending `max`, a `null` max on the last band
+only, non-empty labels, and a source title and url; a bad file raises
+`ValueError`, which `rate()` logs before returning the "unrated" payload. The
+cache is keyed by the file's path, mtime and size, so an edited file is
+re-read without a restart. Source: Ward Laboratories, Inc. (Kearney,
+Nebraska), *Haney Test Interpretation Guide v1.0* (2019), Soil Respiration
+Ranking Table,
+<https://www.wardlab.com/wp-content/uploads/2020/02/Haney-Rev-1.0-Interpretation-Guide-PDF-1.pdf>;
+also in WardGuide (Raymond C. Ward, 2021), Table 66. Texas A&M AgriLife
+Organic (2024) and the Noble Research Institute (2023) give the same end
+points (below 10 very low, above 200 very high). `confidence: "medium"`,
+`placeholder: false`: a published lab guideline based on the author's
+observations, not field-calibrated and not specific to Texas soils. The file's
+caveats ship with every rating and are printed under it:
+- the middle rankings are a sliding scale that depends on soil type and
+  climate; only below 10 and above 200 hold regardless;
+- other published scales differ (Ward's 2023 Soil Health Assessment guide:
+  Low 0-60, Marginal 60-120, Optimum above 120);
+- AHDB warns that soils above pH 7.5 can give artificially low values.
+
+| Band | ppm CO2-C | Meaning (shortened from the guide's "Implications") |
+|---|---|---|
+| Very Low | 0-10 | Very little potential for microbial activity; slow nutrient cycling and residue decomposition. |
+| Low | 11-20 | Minimal potential for nutrient cycling. |
+| Below Average | 21-30 | Some potential for nutrient cycling. |
+| Slightly Below Average | 31-50 | Low to moderate potential for microbial activity. |
+| Slightly Above Average | 51-70 | Moderate potential for microbial activity. |
+| Above Average | 71-100 | Good potential for microbial activity. |
+| High | 101-200 | High potential for microbial activity. |
+| Very High | above 200 | High to very high potential for microbial activity and nitrogen mineralization. |
+
+Band rule: a value falls in the first band whose max it does not exceed. The
+published ranges are whole numbers, so a value between two of them goes to
+the higher band (10.5 is Low), and anything above 200 is Very High (the table
+prints ">201", the text says "above 200"). The band is found from the rounded
+value that is shown, so the number and its band always agree (10.04 shows as
+10.0, Very Low). `range_text` is `"min-max"`, and `"above <previous max>"` for
+the top band. Change these numbers only from a cited source:
+`test_microbial` pins them to the published table. If un-sourced thresholds
+are ever swapped in, set `placeholder: true`. Every label then gets the
+`PLACEHOLDER ` prefix, and the results page and the PDF show a prominent
+"PLACEHOLDER thresholds: not from a published source" warning; their citation
+line then reads "Rating bands: placeholder values, not taken from <source>."
+with no link, and the guideline's caveats are left out.
+
+Display of a value in a gap: 10.1 is Low, whose published range is 11-20, so
+the results page and the PDF print its range from the band below's max
+("Rating: Low (above 10 to 20 ppm, step 2 of 8)"). `range_text` itself is
+unchanged.
+
+Where it shows:
+- Step 2: a "Soil biology (optional)" side-panel section once there are sample
+  points. It has a "Soil respiration (24h CO₂ burst)" input with the unit
+  (ppm CO₂-C) beside it, a one-line hint and an inline error for a bad value.
+  It is a text input with a decimal keypad (`inputMode="decimal"`), not
+  `type="number"`, which would blank text it cannot read ("45 ppm") so the
+  draft and Step 3 never saw it. The text is kept as `respiration` in the
+  dashboard draft, like `data` (cleared by "Start a new field"; like `data`, it
+  stays in memory after a submit).
+- Step 3: one line in the review card: the value, "not entered (optional)",
+  or the invalid-value warning ("isn't a valid number" for text, "isn't a
+  number from 0 to 5000 ppm CO₂-C" for 6000 or -5).
+- Step 4: the full Soil Profile card ends with a "Soil biology" sub-block
+  (`MicrobialActivity`) showing the value and units, the band, "range ppm,
+  step N of 8", the meaning, an 8-step scale (aria-hidden: the text carries
+  the information) captioned "Ranges in ppm CO₂-C" (two rows of four at
+  560px and below), the citation with a link, "A published lab guideline, not
+  calibrated for Texas soils." and the caveats. The card renders when the
+  analysis has a `soil_point` OR a `microbial` rating. With a rating but no
+  point it shows only the biology block and makes no survey lookup. The
+  compact Step 1 preview never shows it.
+- Combined PDF: the Soil Profile page ends with an h2 "Soil biology" block:
+  "Microbial activity (soil respiration, 24-hour CO2 burst): 45.0 ppm CO2-C",
+  "Rating: Slightly Below Average (31-50 ppm, step 4 of 8)", the meaning, a
+  2-row x 8-column band scale with the matched band filled in, then the muted
+  citation line and the caveats, kept together (KeepTogether) so a long
+  survey moves the whole block to the next page. Without a `soil_point` the
+  page has only its title and this block (no "had not loaded" note). An analysis with neither
+  gets no page, so older reports keep their page count. The single-section
+  PDF is unchanged.

@@ -480,6 +480,14 @@ def build_combined_pdf(analysis: Dict, map_image: Optional[str] = None) -> bytes
         flow.append(Spacer(1, 8))
         flow += map_flow
 
+    # --- soil profile: mapped survey data, not a field measurement -------
+    from backend import soil_report  # imported here so pdf_report stays import-light
+    soil_flow = soil_report.soil_profile_flowables(analysis, styles, avail_width)
+    if soil_flow:
+        flow.append(PageBreak())
+        flow += _header_block(styles)
+        flow += soil_flow
+
     # --- one section per page --------------------------------------------
     for section in results:
         flow.append(PageBreak())

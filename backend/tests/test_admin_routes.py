@@ -27,6 +27,7 @@ EXPECTED_RULES = {
     "/api/results/<int:farm_id>",
     "/api/history",
     "/api/contact",
+    "/api/soil-info",
     "/api/report/<int:farm_id>/section/<path:section_label>",
     "/api/report/<int:farm_id>/all",
     "/",                 # SPA entry

@@ -1,0 +1,125 @@
+/* ==========================================================================
+   Farmers Forward - microbial.css
+   Soil biology: the optional soil respiration entry in the Step 2 side panel
+   (MicrobialInput.jsx), its Step 3 summary line (MicrobialReview.jsx) and the
+   rating block at the end of the results Soil Profile card
+   (MicrobialActivity.jsx). Brand tokens only, in the same idiom as soil.css.
+   ========================================================================== */
+
+/* Step 2: the number field with its unit beside it. */
+.ff-microbial-entry__row { display: flex; align-items: center; gap: 10px; }
+.ff-microbial-entry__row .ff-input { flex: 1 1 auto; min-width: 0; }
+.ff-microbial-entry__unit {
+  flex: 0 0 auto;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ff-text-muted);
+  white-space: nowrap;
+}
+.ff-microbial-entry__error { margin: 8px 0 0; }
+
+/* Step 3: one line under the field name and date. p. so it outweighs .ff-hint's
+   margin, which loads later: the line keeps its place whichever state it is in. */
+p.ff-microbial-review { margin: 12px 0 0; }
+
+/* Results: a sub-block under the soil survey part of the card. */
+.ff-microbial {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding-top: 16px;
+  border-top: 1px dashed var(--ff-border);
+}
+/* Alone in the card (no soil survey point): no rule under the card title. */
+.ff-soil__head + .ff-microbial { padding-top: 0; border-top: 0; }
+.ff-microbial p { margin: 0; }
+.ff-microbial .ff-microbial__meaning { margin-top: 4px; }
+.ff-microbial__title { margin: 0; font-family: var(--pub-serif); font-size: 1.1rem; }
+
+.ff-microbial__reading { font-family: var(--pub-serif); font-size: 1.05rem; line-height: 1.4; }
+.ff-microbial__reading strong { font-weight: 700; white-space: nowrap; }
+
+/* The rating, marked like the organic matter headline above it. */
+.ff-microbial__rating {
+  padding: 12px 14px;
+  background: var(--pub-paper-deep);
+  border: 1px solid var(--ff-border);
+  border-left: 3px solid var(--pub-green);
+  border-radius: var(--ff-radius-sm);
+}
+.ff-microbial__band { line-height: 1.45; }
+.ff-microbial__band strong { font-family: var(--pub-serif); font-size: 1.2rem; font-weight: 700; }
+.ff-microbial__meaning { font-size: 0.88rem; color: var(--ff-text-muted); }
+
+/* Eight steps, low to high, with the matched one marked. */
+.ff-microbial__scale {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ff-microbial__step {
+  padding: 6px 2px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ff-text-muted);
+  background: var(--pub-paper);
+  border: 1px solid var(--ff-border);
+  border-radius: 4px;
+}
+.ff-microbial__step--on {
+  color: var(--pub-ink);
+  font-weight: 700;
+  background: var(--pub-highlight);
+  border-color: var(--pub-ink-line);
+}
+/* The steps' unit, tucked under them (the block's gap would push it away). */
+.ff-microbial .ff-microbial__scale-unit {
+  margin-top: -8px;
+  font-size: 0.72rem;
+  color: var(--ff-text-muted);
+}
+
+/* Thresholds that are not from a published source. */
+.ff-microbial__warn {
+  padding: 10px 12px;
+  background: var(--pub-paper);
+  border: 1px solid var(--pub-red);
+  border-left: 4px solid var(--pub-red);
+  border-radius: var(--ff-radius-sm);
+  color: var(--pub-red-deep);
+  font-weight: 700;
+}
+/* The rating could not be worked out. */
+.ff-microbial__notice {
+  padding: 10px 12px;
+  background: var(--pub-paper);
+  border: 1px dashed var(--ff-border);
+  border-radius: var(--ff-radius-sm);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+/* No value entered. */
+.ff-microbial__pending { font-size: 0.9rem; color: var(--ff-text-muted); }
+
+.ff-microbial__note { font-size: 0.78rem; line-height: 1.55; color: var(--ff-text-muted); }
+.ff-microbial__note a { color: inherit; text-decoration: underline; }
+.ff-microbial__caveats {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ff-text-muted);
+}
+.ff-microbial__caveats li + li { margin-top: 2px; }
+
+/* Phones and narrow windows: two rows of four steps. Eight in a row are too
+   narrow for "101–200" until the window is about 520px wide. */
+@media (max-width: 560px) {
+  .ff-microbial__scale { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
