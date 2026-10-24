@@ -38,6 +38,7 @@ function Stepper() {
               <button
                 type="button"
                 className="stepper__btn"
+                aria-label={`Step ${s.n}: ${s.label}`}
                 aria-current={active ? 'step' : undefined}
                 disabled={!canGo}
                 onClick={() => goStep(s.n)}
