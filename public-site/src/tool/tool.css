@@ -207,6 +207,13 @@
   box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.9);
 }
 
+/* Leaflet's panes and controls use z-index 400-1000. Keep them inside the
+   map so they can't paint over the sticky header, the waking notice or the
+   analyzing overlay. */
+.leaflet-container {
+  isolation: isolate;
+}
+
 .map .leaflet-container {
   width: 100%;
   height: 100%;
