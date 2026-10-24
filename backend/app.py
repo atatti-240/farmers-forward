@@ -40,6 +40,13 @@ from backend import microbial  # noqa: E402
 # ---------------------------------------------------------------------------
 # App setup
 # ---------------------------------------------------------------------------
+# Fail closed: a PUBLIC_ONLY process must never build the admin app, which would
+# create the admin tables, seed an admin and register every admin route. The
+# public deployment starts backend.wsgi:app, which picks backend.public_app.
+if config.PUBLIC_ONLY:
+    raise RuntimeError("PUBLIC_ONLY is set: start backend.wsgi:app (or "
+                       "backend.public_app), not the admin app")
+
 # Refuse to start in production with insecure defaults; warn loudly in dev.
 _insecure = config.assert_secure()
 if _insecure:

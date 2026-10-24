@@ -1,0 +1,89 @@
+/* ==========================================================================
+   Farmers Forward (public site) - design tokens
+   Brand: black, dark blue, white. One bright blue (#3D7BFF) is the only
+   accent, kept for focus rings, the field outline and a few key highlights so
+   it lands hard when it appears. Score colours (red → amber → green) are data,
+   not brand: they appear only on map squares, points and score readouts
+   (tool/soilColor.js).
+   ========================================================================== */
+
+:root {
+  /* Surfaces, darkest to lightest */
+  --ink: #05070d;          /* page black */
+  --ink-2: #080b14;        /* raised black */
+  --navy-950: #070e1f;     /* deepest panel */
+  --navy-900: #0a1630;     /* panel */
+  --navy-800: #0f2148;     /* panel hover / selected */
+  --navy-700: #163066;     /* strong border, track */
+  --navy-600: #1d3c7d;
+
+  /* Accent */
+  --blue: #3d7bff;
+  --blue-soft: #8fb3ff;    /* accent text on black: 8.6:1 */
+  --blue-glow: rgba(61, 123, 255, 0.4);
+  --blue-wash: rgba(61, 123, 255, 0.12);
+
+  /* Text */
+  --white: #ffffff;
+  --text: #e9eef8;
+  --text-2: #a9b5cc;       /* 9.4:1 on --ink, 7.7:1 on --navy-900 */
+  --text-3: #7d89a4;       /* 5.7:1 on --ink: captions and labels only */
+
+  /* Hairlines */
+  --line: rgba(233, 238, 248, 0.08);
+  --line-2: rgba(233, 238, 248, 0.14);
+  --line-3: rgba(233, 238, 248, 0.24);
+
+  /* UI feedback (not score colours) */
+  --warn: #ffd27a;
+  --error: #ff9b94;
+
+  /* Type */
+  --font-display: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Inter Tight', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --fs-display: clamp(3.4rem, 1.6rem + 7.4vw, 9.5rem);
+  --fs-h1: clamp(2.75rem, 1.7rem + 4.2vw, 5.75rem);
+  --fs-h2: clamp(2.25rem, 1.5rem + 2.8vw, 4.25rem);
+  --fs-h3: clamp(1.5rem, 1.2rem + 1.1vw, 2.125rem);
+  --fs-lead: clamp(1.0625rem, 0.98rem + 0.4vw, 1.3125rem);
+  --fs-body: 1rem;
+  --fs-sm: 0.875rem;
+  --fs-xs: 0.75rem;
+  --fs-micro: 0.6875rem;
+
+  --lh-tight: 0.92;
+  --lh-head: 1.04;
+  --lh-body: 1.6;
+
+  /* 8px spacing system */
+  --s-1: 8px;
+  --s-2: 16px;
+  --s-3: 24px;
+  --s-4: 32px;
+  --s-5: 40px;
+  --s-6: 48px;
+  --s-8: 64px;
+  --s-10: 80px;
+  --s-12: 96px;
+  --s-16: 128px;
+  --s-20: 160px;
+
+  /* Shape */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r: 16px;
+  --r-lg: 24px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Layout */
+  --page-max: 1360px;
+  --text-max: 62ch;
+  --gutter: clamp(16px, 4.2vw, 56px);
+  --header-h: 68px;
+}

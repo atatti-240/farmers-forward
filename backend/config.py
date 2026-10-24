@@ -96,6 +96,12 @@ ADMIN_SECRET_CODE = _get("ADMIN_SECRET_CODE", "202611")
 APP_ENV = (_get("APP_ENV", "development") or "development").lower()
 IS_PRODUCTION = APP_ENV == "production"
 
+# The public, no-login deployment (the public-site branch only). When on, the
+# process serves backend.public_app -- /api/public/* and nothing else: no admin,
+# auth, history or report routes, no admin/otp tables, no admin seeding. See
+# backend/public_app.py. Off (the default), the app is exactly the admin app.
+PUBLIC_ONLY = _get_bool("PUBLIC_ONLY", False)
+
 # ---------------------------------------------------------------------------
 # Resend (email) -- the only OTP delivery channel.
 # ---------------------------------------------------------------------------
