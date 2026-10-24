@@ -654,3 +654,111 @@ label. Unknown crops remain valid custom input and explicitly use general
 guidance; do not fabricate a profile or add a crop class to the trained model.
 Show the assigned crop, its profile assessment, and recommendation notes in
 results and PDF reports.
+
+## 9. Soil profile (roadmap #9, organic matter for #8)
+
+DISPLAY ONLY. For one point per field the app looks up mapped USDA soil-survey
+data and shows it in Step 1 (compact "Soil at this spot" preview), Step 4 (a
+card after the results map) and the combined PDF. Crop scoring, `run_analysis`
+and the model inputs (pH/EC/N/P/K) are unchanged; there is no manual
+organic-matter input. Every surface labels it as **mapped survey data for this
+soil type, not a measurement of this field** (`source_note`, always shown).
+
+Files: `backend/soil_info.py` (lookup + cache), `backend/soil_report.py` (PDF
+page), `frontend/src/dashboard/soil.js` (`soilPointFor`, `soilKey`,
+`useSoilInfo`), `SoilProfile.jsx`, `soil.css` (`ff-soil*`); small call sites in
+`app.py`, `pdf_report.build_combined_pdf`, `client.js` (`getSoilInfo`,
+`submitField` sends `soil_point`) and Steps 1, 3, 4.
+
+Point (`soilPointFor`): polygon centroid (`polygonCentroid`, >= 3 vertices;
+for a concave field whose centroid falls outside the boundary, the middle of
+the widest east-west stretch inside the field at the centroid's latitude, else
+the first sample point that is inside), else the LAST Farm Finder
+pin (the most recently added one: re-searching an existing pin does not move
+it to the end, and DashboardProvider/FarmFinder are out of scope), else the
+first sample point. The lookup runs AT the point rounded to 4 decimals;
+`point_key` = `"%.4f,%.4f"` (`-0.0000` → `0.0000`), so the cache key is exact.
+
+Sources (stdlib `urllib`; every request sends `soil_info.USER_AGENT`,
+`FarmersForward/1.0 (soil-profile lookup; +https://github.com/atatti-240/farmers-forward)`,
+because urllib's default UA gets Cloudflare-flagged from Render):
+- UC Davis SoilWeb landPKS (`GET .../api/landPKS.php?q=spn&lat=&lon=&r=1`):
+  the soil series name (dominant `which=='a'` component, title-cased). It has
+  NO organic-matter field, so it only names the series, plus texture/sand/
+  silt/clay/CEC when SDA is down.
+- USDA NRCS Soil Data Access (`POST .../Tabular/post.rest`, `SDA_SQL`):
+  organic matter (`om_l/om_r/om_h`, top non-O horizon), texture, sand/silt/
+  clay, CEC, drainage, hydrologic group, map unit, survey area. SDA decides
+  the status, and every property comes from its one selected component.
+- Both run concurrently under ONE 10 s wall-clock deadline (`TIMEOUT_SECONDS`,
+  enforced by waiting on the workers; urlopen's timeout is per socket read). A
+  source still running at the deadline counts as failed. `_http_json` reads
+  the body in pieces and stops at its own deadline, so an abandoned worker
+  does not linger on a server that trickles bytes. Each live lookup holds a
+  sync gunicorn worker for up to 10 s (`--workers 3`); if that ever matters,
+  add `--threads` or cap concurrent lookups.
+
+| Method | Path | Auth | Request JSON | Success (200) | Errors |
+|---|---|---|---|---|---|
+| GET | `/api/soil-info?lat=&lon=` | login_required | query `lat`, `lon` | soil payload, for EVERY status incl. `unavailable` | 400 `{error}` if lat/lon missing, non-numeric, non-finite or out of range |
+| POST | `/api/submit` | login_required | adds optional `soil_point:{lat,lon}` | analysis + `soil_point` (rounded) + `soil_profile` (cached payload or null) | bad `soil_point` is silently ignored, never a 400 |
+
+Payload (same keys in every status; numbers or null):
+```
+{ status: "ok"|"partial"|"no_data"|"unavailable",
+  reason_code: null|"no_survey_coverage"|"non_soil_map_unit"|"no_components"|
+               "om_not_in_survey"|"properties_unavailable"|"unavailable",
+  reason: null | one plain-English sentence,
+  lat, lon, point_key, series, component_pct, component_kind,
+  map_unit, map_unit_symbol, survey_area, texture, sand_pct, silt_pct, clay_pct,
+  cec,                                   # meq/100 g at pH 7
+  drainage, hydrologic_group,
+  organic_matter_pct, organic_matter_low, organic_matter_high,  # 1 dp, HALF_UP
+  layer_top_cm, layer_bottom_cm,
+  sources: [...], source_note, fetched_at, cached }   # sources that contributed
+```
+
+Status (SDA `data_status` first):
+- `dominant`/`fallback` → `ok` (series = SDA's component name, spelled as SDA
+  has it; SoilWeb is credited in `sources` when its name matches, and a
+  mismatch is logged). A real soil with no OM recorded → `ok` /
+  `om_not_in_survey`, `organic_matter_pct` null.
+- No-data cases: open water or a survey gap (`no_mukey`) → `no_data` /
+  `no_survey_coverage`; a "Water", "Urban land" or other miscellaneous map unit
+  → `no_data` / `non_soil_map_unit` (reason names the map unit); no components
+  → `no_data` / `no_components`.
+- SDA failed: SoilWeb has a component → `partial` / `properties_unavailable`
+  (OM, drainage, hydrologic group null); SoilWeb empty → `no_data` /
+  `no_survey_coverage`; both failed → `unavailable`.
+
+Cache: table `soil_info_cache` (`id`, `point_key TEXT NOT NULL UNIQUE`,
+`payload TEXT NOT NULL`, `fetched_at TEXT NOT NULL`), created lazily by
+`soil_info` itself (`CREATE TABLE IF NOT EXISTS`, once per process and
+database), NOT by `init_db()`. `id` is `INTEGER PRIMARY KEY` on SQLite and
+`GENERATED ALWAYS AS IDENTITY` on Postgres. Upsert on `point_key`; a row is
+fresh for 365 days. Only answers SDA gave definitively are cached (`ok`, and
+the `no_data` cases SDA decided); `partial`, `unavailable` and SoilWeb-only
+`no_data` are never cached, so the next lookup retries. Cache and network
+errors are logged and swallowed: only bad coordinates raise. The write runs
+on its own thread and the lookup waits for it at most 0.5 s
+(`CACHE_WRITE_WAIT_SECONDS`), so SQLite's 5 s busy timeout behind another
+request's write lock cannot stretch a lookup; the write still lands once the
+lock is free.
+
+Never blocks: a slow, failed or empty lookup never holds up drawing, gridding,
+navigation, submission or the assessment. The UI shows the reason (Retry for
+`partial`, `unavailable`, a SoilWeb-only `no_data` or a failed request); the
+browser gives up on a request after 20 s so a stalled connection gets Retry
+too. In Step 1 the preview sits below the grid controls, so its height
+changing never moves Apply.
+
+Submit and PDF: `/api/submit` reads the cache only (`cached_soil_info`, before
+the write transaction opens). Without a valid `soil_point` the stored analysis
+is unchanged. Step 4 re-fetches `/api/soil-info` when the stored profile is
+missing, `partial` or `unavailable` (even when the tab already knows the
+answer, showing it meanwhile), which also warms the cache.
+`/api/report/<id>/all` adds a "Soil Profile" page after the field map when the
+analysis has a `soil_point`, swapping a missing/`partial`/`unavailable` profile
+for a cached one; with no profile at all it prints a "had not loaded" note.
+PDF routes NEVER call the network. No `soil_point` (older reports) → no page
+and the same page count as before. The single-section PDF is unchanged.

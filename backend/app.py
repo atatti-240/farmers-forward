@@ -34,6 +34,7 @@ from backend import config  # noqa: E402
 from backend import database  # noqa: E402
 from backend import model_runner  # noqa: E402
 from backend import pdf_report  # noqa: E402
+from backend import soil_info  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -318,6 +319,24 @@ def submit():
     if err:
         return jsonify({"error": err}), 400
 
+    # Optional point for the mapped soil-survey profile (display only, never
+    # scored). A bad point is dropped, not a 400. The profile comes from the
+    # cache only, and is read before the write transaction below opens: the
+    # cache's lazy CREATE TABLE would otherwise wait on this request's own lock.
+    soil_point = None
+    soil_profile = None
+    raw_point = data.get("soil_point")
+    if isinstance(raw_point, dict):
+        try:
+            lat, lon = soil_info.parse_coords(raw_point.get("lat"), raw_point.get("lon"))
+        except (TypeError, ValueError):
+            pass
+        else:
+            # The lookup is made at the rounded point, so store that one.
+            lat_text, lon_text = soil_info.point_key(lat, lon).split(",")
+            soil_point = {"lat": float(lat_text), "lon": float(lon_text)}
+            soil_profile = soil_info.cached_soil_info(lat, lon)
+
     conn = database.get_db()
     try:
         now = database.now_iso()
@@ -330,6 +349,9 @@ def submit():
         farm_id = cur.lastrowid
 
         analysis = model_runner.run_analysis(farm_name, date, sections, farm_id)
+        if soil_point is not None:
+            analysis["soil_point"] = soil_point
+            analysis["soil_profile"] = soil_profile
         mean_score = analysis["field_summary"]["mean_health_score"]
 
         conn.execute(
@@ -433,6 +455,25 @@ def contact():
 
 
 # ---------------------------------------------------------------------------
+# Soil profile
+# ---------------------------------------------------------------------------
+@app.get("/api/soil-info")
+@auth.login_required
+def get_soil_info():
+    """Mapped USDA soil-survey data for one point (display only, never scored).
+
+    Only a bad coordinate is a 400. Every lookup outcome, including the survey
+    services not answering, is a 200 whose `status` says what happened.
+    """
+    try:
+        payload = soil_info.get_soil_info(request.args.get("lat"),
+                                          request.args.get("lon"))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify(payload)
+
+
+# ---------------------------------------------------------------------------
 # PDF reports
 # ---------------------------------------------------------------------------
 def _load_analysis(farm_id: int):
@@ -488,6 +529,18 @@ def report_all(farm_id: int):
         # build_combined_pdf validates the payload itself before decoding.
         if isinstance(candidate, str) and candidate.startswith("data:image/"):
             map_image = candidate
+
+    # A soil profile that had not loaded (or only partly) at submit time may be
+    # cached by now, since the results page fetches it. Cache only: a PDF
+    # download never waits on the soil survey services.
+    soil_point = analysis.get("soil_point")
+    soil_profile = analysis.get("soil_profile")
+    if isinstance(soil_point, dict) and (
+            not isinstance(soil_profile, dict)
+            or soil_profile.get("status") in ("partial", "unavailable")):
+        cached = soil_info.cached_soil_info(soil_point.get("lat"), soil_point.get("lon"))
+        if cached:
+            analysis["soil_profile"] = cached
 
     pdf_bytes = pdf_report.build_combined_pdf(analysis, map_image=map_image)
     filename = "%s_full_report.pdf" % _slug(analysis.get("farm_name"))

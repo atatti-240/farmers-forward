@@ -1,0 +1,106 @@
+/* ==========================================================================
+   Farmers Forward - soil.css
+   Soil Profile panel (SoilProfile.jsx): the compact preview in the Step 1
+   side panel and the full card on the results page. Brand tokens only
+   (theme.css / brand.css), in the same paper-and-ink idiom as dashboard.css.
+   ========================================================================== */
+
+.ff-soil {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ff-soil p { margin: 0; }
+.ff-soil .ff-soil__om-detail,
+.ff-soil .ff-soil__reason { margin-top: 4px; }
+
+/* Results card: sits between the results map and the section cards. */
+.ff-soil--full { margin-bottom: 24px; gap: 16px; }
+.ff-soil__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+}
+.ff-soil__title { margin: 0; font-size: 1.35rem; }
+.ff-soil__where {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  color: var(--ff-text-muted);
+}
+
+.ff-soil__body { display: flex; flex-direction: column; gap: 12px; }
+.ff-soil__body:empty { display: none; }
+
+.ff-soil__loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--ff-text-muted);
+}
+.ff-soil__loading .ff-spinner { flex: 0 0 auto; }
+
+/* Organic matter headline, marked like a recommendation. */
+.ff-soil__om {
+  padding: 12px 14px;
+  background: var(--pub-paper-deep);
+  border: 1px solid var(--ff-border);
+  border-left: 3px solid var(--pub-green);
+  border-radius: var(--ff-radius-sm);
+}
+.ff-soil__om-line { font-family: var(--pub-serif); font-size: 1.05rem; line-height: 1.4; }
+.ff-soil__om-line strong { font-size: 1.3rem; font-weight: 700; white-space: nowrap; }
+.ff-soil__om-detail { font-size: 0.85rem; color: var(--ff-text-muted); }
+
+/* Two-column label / value list. */
+.ff-soil__facts {
+  display: grid;
+  grid-template-columns: minmax(120px, max-content) minmax(0, 1fr);
+  gap: 8px 18px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.ff-soil__fact { display: contents; }
+.ff-soil__facts dt { font-family: var(--pub-serif); color: var(--ff-text-muted); }
+.ff-soil__facts dd { margin: 0; font-weight: 600; }
+
+/* Reason a value is missing; the warning variant sits beside Retry. */
+.ff-soil__notice {
+  padding: 10px 12px;
+  background: var(--pub-paper);
+  border: 1px dashed var(--ff-border);
+  border-radius: var(--ff-radius-sm);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.ff-soil__notice--warn { border-style: solid; border-left: 3px solid var(--pub-amber); }
+.ff-soil__empty-title { font-family: var(--pub-serif); font-weight: 600; }
+.ff-soil__reason { color: var(--ff-text-muted); }
+
+.ff-soil__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+.ff-soil__note { font-size: 0.78rem; line-height: 1.55; color: var(--ff-text-muted); }
+
+/* Step 1 side panel: a few short lines. */
+.ff-soil--compact { gap: 10px; }
+.ff-soil--compact .ff-soil__om { padding: 10px 12px; }
+.ff-soil--compact .ff-soil__om-line { font-size: 0.95rem; }
+.ff-soil--compact .ff-soil__om-line strong { font-size: 1.1rem; }
+.ff-soil--compact .ff-soil__facts {
+  grid-template-columns: minmax(84px, max-content) minmax(0, 1fr);
+  gap: 4px 12px;
+  font-size: 0.85rem;
+}
+.ff-soil--compact .ff-soil__notice { font-size: 0.85rem; }
+
+/* Phones: one column, label above value. The compact selector is repeated so
+   it outranks the side panel's two-column rule above. */
+@media (max-width: 480px) {
+  .ff-soil__facts,
+  .ff-soil--compact .ff-soil__facts { grid-template-columns: 1fr; gap: 2px; }
+  .ff-soil__facts dd { margin-bottom: 8px; }
+}

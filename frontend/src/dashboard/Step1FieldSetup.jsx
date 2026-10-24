@@ -28,6 +28,8 @@ import FarmFinder, { FarmFinderPins } from './FarmFinder.jsx'
 import { autoGrid, gridCells, pointInPolygon } from './geo.js'
 import GridLines from './GridLines.jsx'
 import { InvalidateSizeOnVisible, TrackMapView } from './mapView.js'
+import { soilPointFor } from './soil.js'
+import SoilProfile from './SoilProfile.jsx'
 
 const ESRI_URL =
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -147,6 +149,7 @@ export default function Step1FieldSetup() {
     data,
     mapView,
     setMapView,
+    finderPins,
     goStep,
   } = useDashboard()
 
@@ -155,6 +158,8 @@ export default function Step1FieldSetup() {
   const [copied, setCopied] = useState(false)
 
   const closed = polygon.length >= 3
+  // Field centre once closed, else the latest Farm Finder pin.
+  const soilPoint = soilPointFor({ polygon, finderPins, points })
 
   // Cell outlines for the applied grid (not the unsaved row/col inputs).
   const cells = useMemo(
@@ -592,6 +597,16 @@ export default function Step1FieldSetup() {
                   Clear all points
                 </button>
               )}
+            </div>
+          )}
+
+          {/* Mapped soil survey data for this spot (looked up in the background).
+              Below the grid controls, so its height changing as it loads never
+              moves Apply. */}
+          {soilPoint && (
+            <div className="ff-side__section">
+              <h3 className="ff-side__title">Soil at this spot</h3>
+              <SoilProfile variant="compact" point={soilPoint} />
             </div>
           )}
 
