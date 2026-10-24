@@ -75,24 +75,58 @@ def _get_int(name: str, default: int) -> int:
         return default
 
 
+def _get_bounded_int(name: str, default: int, minimum: int, maximum: int) -> int:
+    """An int setting that must lie in [minimum, maximum].
+
+    Anything else -- '60s', '5.0', 0 read as "unlimited", a huge value that
+    would overflow a timedelta -- is reported and replaced by the default. A
+    loud warning, not a crash: a typo in the dashboard must not take the site
+    down, but it must not silently lock every admin out either.
+    """
+    raw = _get(name, None)
+    if raw is None:
+        return default
+    try:
+        val = int(raw.strip())
+    except ValueError:
+        val = None
+    if val is None or not minimum <= val <= maximum:
+        print("[config] WARNING: %s=%r is not a whole number from %d to %d; "
+              "using the default %d." % (name, raw, minimum, maximum, default), flush=True)
+        return default
+    return val
+
+
 # ---------------------------------------------------------------------------
 # Security / app
 # ---------------------------------------------------------------------------
-# Insecure built-in fallbacks used ONLY for a zero-config local dev run. They are
-# rejected at startup when APP_ENV=production (see assert_secure()).
-_DEV_SECRET_KEY = "dev-insecure-change-me"
+# SECRET_KEY signs every session cookie, so it comes from the environment and
+# nowhere else: there is no built-in fallback, and require_secret_key() stops
+# the app from booting without a usable one. A fallback is worse than a crash.
+# This repo is public, so a hardcoded key is a key anyone can sign an admin
+# session with, and a randomly generated one silently logs everybody out on
+# every restart.
+SECRET_KEY = _get("SECRET_KEY", None)
+# Anyone who knows the passcode can get a signed cookie from verify-code and
+# brute-force a weak key offline, so short keys are refused too, as are
+# degenerate ones ("x" * 40) -- a random 32+ character key never has this few
+# distinct characters.
+SECRET_KEY_MIN_LENGTH = 32
+SECRET_KEY_MIN_DISTINCT = 8
+# The value this file used to fall back to. It is in the public git history,
+# so it is refused like an unset key.
+_OLD_PUBLIC_SECRET_KEY = "dev-insecure-change-me"
 
-SECRET_KEY = _get("SECRET_KEY", _DEV_SECRET_KEY)
 # The hidden staff-access passcode. It is entered invisibly (no input field) on
 # the public page, so it is necessarily embedded in the frontend bundle too --
-# it is an obscurity gate, NOT a real secret. Actual security is the admin
-# password + OTP. If you change it, change SEQ in frontend/src/pages/PublicHome.jsx
-# to match.
+# it is an obscurity gate, NOT a real secret. Actual security is the one-time
+# code emailed to a registered admin. If you change it, change SEQ in
+# frontend/src/pages/PublicHome.jsx to match.
 ADMIN_SECRET_CODE = _get("ADMIN_SECRET_CODE", "202611")
 
-# Deployment environment. Defaults to development so a fresh clone runs locally;
-# production deployments MUST set APP_ENV=production, which turns the insecure
-# built-in defaults below into hard startup errors.
+# Deployment environment. Parsed for completeness, but nothing branches on it:
+# the SECRET_KEY check above applies everywhere, and the remaining insecure
+# defaults (see insecure_defaults()) are logged as warnings in every mode.
 APP_ENV = (_get("APP_ENV", "development") or "development").lower()
 IS_PRODUCTION = APP_ENV == "production"
 
@@ -104,8 +138,10 @@ IS_PRODUCTION = APP_ENV == "production"
 RESEND_API_KEY = _get("RESEND_API_KEY", None)
 # Resend's shared test sender, which needs no domain verification but can only
 # deliver to the address that owns the Resend account. Point this at an address
-# on your own verified domain to send anywhere.
-RESEND_FROM = _get("RESEND_FROM", "onboarding@resend.dev")
+# on your own verified domain to send anywhere -- with more than one admin that
+# is required, or only the account owner ever receives a login code.
+RESEND_TEST_SENDER = "onboarding@resend.dev"
+RESEND_FROM = _get("RESEND_FROM", RESEND_TEST_SENDER)
 
 # ---------------------------------------------------------------------------
 # SMTP (email) -- UNUSED, kept only to make a revert easy
@@ -134,12 +170,17 @@ OUTPUTS_DIR = os.path.join(REPO_ROOT, "outputs")
 MODEL_DIR = os.path.join(HERE, "FarmersForwardModel")
 
 # ---------------------------------------------------------------------------
-# Default admin (seeded on first run)
+# First owner (seeded only into an EMPTY admins table)
 # ---------------------------------------------------------------------------
-DEFAULT_ADMIN_USERNAME = _get("DEFAULT_ADMIN_USERNAME", "admin")
-DEFAULT_ADMIN_PASSWORD = _get("DEFAULT_ADMIN_PASSWORD", None)
-DEFAULT_ADMIN_PHONE = _get("DEFAULT_ADMIN_PHONE", "+10000000000")
-DEFAULT_ADMIN_EMAIL = _get("DEFAULT_ADMIN_EMAIL", "admin@farmersforward.org")
+# Login is by emailed code, so an owner is just an email address. There is no
+# built-in default: a placeholder address would create an owner nobody can sign
+# in as, and block the real seed because the table is no longer empty. Every
+# other admin is added from the Admins page.
+DEFAULT_ADMIN_EMAIL = _get("DEFAULT_ADMIN_EMAIL", None)
+# Display name for that seeded owner, and for the owner created by the one-time
+# migration from the old single-admin table (which otherwise keeps the old
+# username, e.g. "admin").
+DEFAULT_ADMIN_NAME = _get("DEFAULT_ADMIN_NAME", None)
 
 # ---------------------------------------------------------------------------
 # Session / CORS
@@ -172,18 +213,73 @@ if _FRONTEND_ORIGIN_EXPLICIT and _FRONTEND_ORIGIN_EXPLICIT not in ALLOWED_ORIGIN
 # ---------------------------------------------------------------------------
 # OTP policy
 # ---------------------------------------------------------------------------
-OTP_TTL_SECONDS = _get_int("OTP_TTL_SECONDS", 300)
-OTP_MAX_ATTEMPTS = _get_int("OTP_MAX_ATTEMPTS", 3)
+OTP_TTL_SECONDS = _get_bounded_int("OTP_TTL_SECONDS", 300, 60, 3600)
+OTP_MAX_ATTEMPTS = _get_bounded_int("OTP_MAX_ATTEMPTS", 3, 1, 10)
+# Login is passwordless, so the code is the only secret, and without limits a
+# 6-digit code falls to anyone who keeps asking for fresh ones. Per email: at
+# most one new code per cooldown, and no new codes at all once the wrong guesses
+# inside the window reach the limit. The limits apply identically to emails
+# that match no admin, so they reveal nothing about which emails are registered.
+OTP_RESEND_COOLDOWN_SECONDS = _get_bounded_int("OTP_RESEND_COOLDOWN_SECONDS", 60, 10, 3600)
+OTP_FAILURE_LIMIT = _get_bounded_int("OTP_FAILURE_LIMIT", 10, 1, 1000)
+OTP_FAILURE_WINDOW_SECONDS = _get_bounded_int("OTP_FAILURE_WINDOW_SECONDS", 3600, 60, 86400)
+# Wrong guesses per email per day, so a trickle that stays under the hourly
+# limit forever is still capped: about 30 guesses a day instead of ~290, which
+# puts a year-long attack on one 6-digit code space around 1%.
+OTP_FAILURE_LIMIT_PER_DAY = _get_bounded_int("OTP_FAILURE_LIMIT_PER_DAY", 30, 1, 10000)
+# Codes per email per hour: bounds how many emails anyone can make an admin
+# receive (and how much of the shared Resend quota they can burn).
+OTP_ISSUE_LIMIT_PER_HOUR = _get_bounded_int("OTP_ISSUE_LIMIT_PER_HOUR", 5, 1, 1000)
+# Codes per hour across ALL emails. Every request writes a row, including for
+# random addresses, so without a ceiling a flood fills the database.
+OTP_GLOBAL_LIMIT_PER_HOUR = _get_bounded_int("OTP_GLOBAL_LIMIT_PER_HOUR", 500, 1, 100000)
 
 
 # ---------------------------------------------------------------------------
-# Startup safety check
+# Startup safety checks
 # ---------------------------------------------------------------------------
+def secret_key_problem(value=None):
+    """Why `value` (default: the configured SECRET_KEY) can't be used, or None."""
+    key = SECRET_KEY if value is None else value
+    if not key:
+        if value is None and os.environ.get("SECRET_KEY") == "":
+            # Set in the dashboard with no value: a different fix than "unset".
+            return "SECRET_KEY is set but empty"
+        return "SECRET_KEY is not set"
+    if key == _OLD_PUBLIC_SECRET_KEY:
+        return ("SECRET_KEY is the old built-in development value, which is "
+                "published in this repository")
+    if len(key) < SECRET_KEY_MIN_LENGTH:
+        return ("SECRET_KEY is only %d characters; at least %d are required"
+                % (len(key), SECRET_KEY_MIN_LENGTH))
+    if len(set(key)) < SECRET_KEY_MIN_DISTINCT:
+        return ("SECRET_KEY uses only %d distinct characters, so it is not a "
+                "random value" % len(set(key)))
+    return None
+
+
+def require_secret_key() -> str:
+    """Return SECRET_KEY, or raise if it is missing or unusable.
+
+    Deliberately FATAL, unlike insecure_defaults(): booting without a real key
+    means either forgeable admin sessions or, with a random one, everybody
+    logged out on every restart -- both silent. A crashed boot is loud, and
+    Render keeps the previous deploy serving while this one fails.
+    """
+    problem = secret_key_problem()
+    if problem:
+        raise RuntimeError(
+            "%s. It signs every admin session cookie and must be set in the "
+            "environment (on Render: the service's Environment tab). Generate "
+            "one with:\n"
+            "  python3 -c \"import secrets; print(secrets.token_hex(32))\""
+            % problem)
+    return SECRET_KEY
+
+
 def insecure_defaults():
     """List of insecure built-in defaults currently in effect (empty if none)."""
     problems = []
-    if SECRET_KEY == _DEV_SECRET_KEY:
-        problems.append("SECRET_KEY is unset (using the insecure built-in default)")
     if not SESSION_COOKIE_SECURE:
         problems.append("COOKIE_SECURE is off (session cookies may travel over HTTP)")
     return problems
@@ -194,8 +290,7 @@ def assert_secure():
 
     This is intentionally NON-fatal: it never aborts startup. A misconfigured
     env var (e.g. COOKIE_SECURE unset) must not crash-loop the deploy -- the
-    caller logs these as loud warnings instead. Harden by setting a strong
-    SECRET_KEY and COOKIE_SECURE=true in production; generate a key with:
-      python3 -c "import secrets; print(secrets.token_hex(32))"
+    caller logs these as loud warnings instead. SECRET_KEY is the exception and
+    is checked by require_secret_key(), which IS fatal.
     """
     return insecure_defaults()

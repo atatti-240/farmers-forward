@@ -11,7 +11,7 @@ import unittest
 from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _appfixture import app
+from _appfixture import app, sign_in
 from backend import model_runner
 
 
@@ -28,9 +28,7 @@ def predictions(sections, _prefix):
 class ScoreEndpointTests(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
-        with self.client.session_transaction() as session:
-            session["authed"] = True
-            session["admin_id"] = 1
+        sign_in(self.client)
         patch = mock.patch.object(model_runner, "_predict", side_effect=predictions)
         patch.start()
         self.addCleanup(patch.stop)

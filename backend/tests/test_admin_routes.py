@@ -11,7 +11,14 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _appfixture import app, auth, database  # noqa: E402
+from _appfixture import app, auth, database, owner_id, sign_in  # noqa: E402
+
+
+def admins_snapshot():
+    return [tuple(row) for row in database.query_all(
+        "SELECT id, email, display_name, role, is_active, last_login_at "
+        "FROM admins ORDER BY id")]
+
 
 # The complete intended HTTP surface. A new route has to be added here
 # deliberately, which is the point: it forces a look at whether it needs a
@@ -22,6 +29,8 @@ EXPECTED_RULES = {
     "/api/auth/otp",
     "/api/auth/logout",
     "/api/auth/me",
+    "/api/admins",               # owner only
+    "/api/admins/<admin_id>",    # owner only
     "/api/submit",
     "/api/score",
     "/api/results/<int:farm_id>",
@@ -47,23 +56,43 @@ class AdminRouteSurfaceTests(unittest.TestCase):
                          "unreviewed route(s) exposed: %s" % sorted(unexpected))
         self.assertEqual(EXPECTED_RULES - actual, set(), "route(s) disappeared")
 
-    def test_no_recovery_route_resets_admin_credentials(self):
-        """The exact hatch that shipped, plus the obvious renamings of it."""
-        row = database.query_one("SELECT username, password_hash FROM admins")
-        self.assertIsNotNone(row, "seeding should have produced an admin to protect")
-        before = row["password_hash"]
+    def test_no_recovery_route_changes_the_admins_table(self):
+        """The exact hatch that shipped, plus the obvious renamings of it.
+
+        Login is passwordless now, so the admins rows themselves are the
+        credentials: no anonymous request may add, alter or reactivate one.
+        """
+        before = admins_snapshot()
+        self.assertTrue(before, "seeding should have produced an admin to protect")
 
         for path in ("/create-temp-admin", "/create_temp_admin", "/temp-admin",
-                     "/reset-admin", "/admin/reset"):
-            for method in ("GET", "POST"):
-                self.client.open(path, method=method)
+                     "/reset-admin", "/admin/reset", "/api/admins",
+                     "/api/admins/%s" % before[0][0]):
+            for method in ("GET", "POST", "PATCH", "PUT", "DELETE"):
+                self.client.open(path, method=method, json={
+                    "email": "intruder@example.com", "display_name": "Intruder",
+                    "is_active": False, "role": "owner"})
 
-        after = database.query_one(
-            "SELECT password_hash FROM admins WHERE username = ?", (row["username"],))
-        self.assertEqual(after["password_hash"], before,
-                         "an unauthenticated request changed the admin password")
-        self.assertFalse(auth.check_password("TempPass123!", after["password_hash"]),
-                         "the hardcoded recovery password is live again")
+        self.assertEqual(admins_snapshot(), before,
+                         "an unauthenticated request changed the admins table")
+
+    def test_a_body_that_is_not_a_json_object_is_never_a_500(self):
+        """The auth and admin routes read their JSON body through
+        _json_object(); a list, a string or a number used to raise
+        AttributeError on .get (a 500). (submit, score, contact and the report
+        route still have that pre-existing bug; they belong to other work.)"""
+        signed_in = app.test_client()
+        sign_in(signed_in)
+        posts = ("/api/auth/verify-code", "/api/auth/login", "/api/auth/otp",
+                 "/api/admins")
+        for body in (["x"], "x", 7, None):
+            for path in posts:
+                for client in (self.client, signed_in):
+                    with self.subTest(path=path, body=body):
+                        self.assertLess(client.post(path, json=body).status_code, 500)
+            with self.subTest(path="/api/admins/<id>", body=body):
+                response = signed_in.patch("/api/admins/%s" % owner_id(), json=body)
+                self.assertEqual(response.status_code, 400)
 
     def test_admin_count_is_not_changed_by_anonymous_requests(self):
         before = auth.admin_count()

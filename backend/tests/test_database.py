@@ -82,13 +82,16 @@ class SchemaTests(unittest.TestCase):
     def test_postgres_schema_uses_identity_not_autoincrement(self):
         self.assertNotIn("AUTOINCREMENT", database.SCHEMA_POSTGRES)
         self.assertNotIn("REAL", database.SCHEMA_POSTGRES)
+        # admins and otps are keyed by uuid; every other table by identity.
+        uuid_keyed = ("admins", "otps")
+        self.assertEqual(database.SCHEMA_POSTGRES.count("UUID PRIMARY KEY"), len(uuid_keyed))
         self.assertEqual(database.SCHEMA_POSTGRES.count("GENERATED ALWAYS AS IDENTITY"),
-                         len(database.TABLES))
+                         len(database.TABLES) - len(uuid_keyed))
 
     def test_creation_is_idempotent_on_sqlite(self):
         """init_db runs on every boot, so a second pass must not raise."""
         path = os.path.join(tempfile.mkdtemp(), "idempotent.db")
-        with mock.patch.object(database.config, "DATABASE_PATH", path):
+        with mock.patch.multiple(database.config, DATABASE_URL=None, DATABASE_PATH=path):
             database.init_db()
             database.init_db()
             conn = sqlite3.connect(path)
@@ -145,7 +148,9 @@ class SqliteRoundTripTests(unittest.TestCase):
 
     def setUp(self):
         self.path = os.path.join(tempfile.mkdtemp(), "roundtrip.db")
-        self.patcher = mock.patch.object(database.config, "DATABASE_PATH", self.path)
+        # Pinned to SQLite even when the suite runs against Postgres.
+        self.patcher = mock.patch.multiple(database.config, DATABASE_URL=None,
+                                           DATABASE_PATH=self.path)
         self.patcher.start()
         self.addCleanup(self.patcher.stop)
         database.init_db()

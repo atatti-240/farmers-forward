@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import api from '../api/client.js'
 import Logo from '../components/Logo.jsx'
@@ -10,27 +10,45 @@ export default function Login() {
   // away) never causes a stale re-guard mid-transition.
   const allowed = useRef(sessionStorage.getItem('ff_secret_ok') === '1').current
 
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
+  const inputRef = useRef(null)
+
+  // After an error the field is enabled again; put the cursor back in it
+  // (focusing it while it is still disabled would be a no-op).
+  useEffect(() => {
+    if (error && !pending) inputRef.current?.focus()
+  }, [error, pending])
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (pending) return
-    if (!username.trim() || !password) {
-      setError('Invalid credentials')
-      return
-    }
+    const address = email.trim()
+    if (pending || !address) return
     setPending(true)
     setError('')
     try {
-      await api.login(username.trim(), password)
+      // Same reply whether or not the email is registered; /otp words its
+      // copy so it never claims a code was definitely sent.
+      await api.login(address)
       sessionStorage.setItem('ff_otp_pending', '1')
+      sessionStorage.setItem('ff_login_email', address)
+      sessionStorage.setItem('ff_code_requested_at', String(Date.now()))
       navigate('/otp')
     } catch (err) {
-      // Never disclose which field was wrong.
-      setError('Invalid credentials')
+      const status = err && err.status
+      const payload = (err && err.payload) || {}
+      if (status === 403) {
+        // The secret gate expired server-side: start over from the home page.
+        sessionStorage.removeItem('ff_secret_ok')
+        navigate('/')
+        return
+      }
+      setError(
+        status === 400 && payload.error
+          ? payload.error
+          : 'Something went wrong. Please try again.'
+      )
       setPending(false)
     }
   }
@@ -47,7 +65,7 @@ export default function Login() {
         <p className="ff-eyebrow ff-auth__eyebrow">Welcome back.</p>
         <h1 className="ff-auth__title">Admin sign in</h1>
         <p className="ff-auth__subtitle">
-          Enter your credentials to receive a one-time verification code by email.
+          Enter your admin email and we&apos;ll send you a one-time code.
         </p>
 
         <form className="ff-auth__form" onSubmit={handleSubmit} noValidate>
@@ -58,36 +76,22 @@ export default function Login() {
           )}
 
           <div className="ff-field">
-            <label className="ff-label" htmlFor="ff-login-username">
-              Username
+            <label className="ff-label" htmlFor="ff-login-email">
+              Email
             </label>
             <input
-              id="ff-login-username"
+              id="ff-login-email"
+              ref={inputRef}
               className="ff-input"
-              type="text"
-              autoComplete="username"
+              type="email"
+              autoComplete="email"
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
-              value={username}
+              value={email}
               disabled={pending}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               autoFocus
-            />
-          </div>
-
-          <div className="ff-field">
-            <label className="ff-label" htmlFor="ff-login-password">
-              Password
-            </label>
-            <input
-              id="ff-login-password"
-              className="ff-input"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              disabled={pending}
-              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
@@ -95,9 +99,9 @@ export default function Login() {
             <button
               type="submit"
               className="ff-btn ff-btn--primary"
-              disabled={pending || !username.trim() || !password}
+              disabled={pending || !email.trim()}
             >
-              {pending ? 'Signing in…' : 'Continue'}
+              {pending ? 'Sending…' : 'Send code'}
             </button>
           </div>
         </form>

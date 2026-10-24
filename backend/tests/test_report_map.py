@@ -15,7 +15,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _appfixture import app, database
+from _appfixture import app, database, sign_in
 from backend import pdf_report
 
 from PIL import Image
@@ -104,9 +104,7 @@ class ReportAllRouteTests(unittest.TestCase):
 
     def setUp(self):
         self.client = app.test_client()
-        with self.client.session_transaction() as session:
-            session["authed"] = True
-            session["admin_id"] = 1
+        sign_in(self.client)
         self.farm_id = database.execute(
             "INSERT INTO farms (farm_name, date, n_sections, mean_health_score,"
             " result_json, created_at) VALUES (?, ?, ?, ?, ?, ?)",

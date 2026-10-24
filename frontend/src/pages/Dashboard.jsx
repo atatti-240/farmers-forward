@@ -1,13 +1,10 @@
 /* ==========================================================================
    Farmers Forward - Dashboard shell (BUILD_CONTRACT §5)
-   Sticky brand nav (logo → home, logout) + a 4-step stepper, wrapping the
+   The shared sticky admin header (AdminNav) + a 4-step stepper, wrapping the
    whole flow in the DashboardProvider store and rendering the active step.
    ========================================================================== */
 
-import { Link, useNavigate } from 'react-router-dom'
-
-import api from '../api/client.js'
-import Logo from '../components/Logo.jsx'
+import AdminNav from '../components/AdminNav.jsx'
 import DashboardProvider, {
   useDashboard,
 } from '../dashboard/DashboardProvider.jsx'
@@ -16,6 +13,7 @@ import Step2DataEntry from '../dashboard/Step2DataEntry.jsx'
 import Step3Review from '../dashboard/Step3Review.jsx'
 import Step4Results from '../dashboard/Step4Results.jsx'
 import '../dashboard/dashboard.css'
+import '../dashboard/admin.css'
 
 const STEPS = [
   { n: 1, label: 'Field setup' },
@@ -25,19 +23,7 @@ const STEPS = [
 ]
 
 function DashboardShell() {
-  const navigate = useNavigate()
   const { step, points, analysis, goStep } = useDashboard()
-
-  async function handleLogout() {
-    try {
-      await api.logout()
-    } catch {
-      /* clear local session regardless of network result */
-    }
-    sessionStorage.removeItem('ff_secret_ok')
-    sessionStorage.removeItem('ff_otp_pending')
-    navigate('/')
-  }
 
   function canGoTo(n) {
     if (n === 1) return true
@@ -54,21 +40,7 @@ function DashboardShell() {
 
   return (
     <div className="ff-brand ff-admin ff-dash">
-      <nav className="ff-nav" aria-label="Admin navigation">
-        <div className="ff-nav__inner">
-          <div className="ff-dash__brand">
-            <Link to="/" aria-label="Farmers Forward home"><Logo variant="dashboard" /></Link>
-            <span className="ff-dash__brand-note">The field notebook</span>
-          </div>
-          <button
-            type="button"
-            className="ff-btn ff-btn--ghost ff-dash__logout"
-            onClick={handleLogout}
-          >
-            Log out
-          </button>
-        </div>
-      </nav>
+      <AdminNav />
 
       <div className="ff-dash__stepbar">
         <div className="ff-dash__stepbar-inner">

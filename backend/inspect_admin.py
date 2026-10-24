@@ -1,23 +1,35 @@
 #!/usr/bin/env python3
-"""Report what is actually in the admins table, and why a login is failing.
+"""Report who can sign in to Farmers Forward, and why a sign-in might fail.
 
-Read-only: this script never writes to the database. It answers the question
-`seed_default_admin()` cannot, because seeding is a no-op once a row exists --
-namely whether the credentials currently in the environment are the ones the
-stored row was created with.
+Read-only: this script never writes to the database -- no init_db(), no
+seeding -- so it is safe to run against production at any time, even against
+a database this code has not booted against yet.
 
-Usage (from the repo root, or a Render shell):
+The login page gives the same answer for every well-formed email, so a failing
+sign-in has to be diagnosed from here. It takes an address registered as an
+ACTIVE admin and a code that can actually reach that inbox, and managing
+admins takes an active owner. The report lists every admin (role, active or
+deactivated, created, last login), counts the active owners, and shows the
+settings that decide the rest: DEFAULT_ADMIN_EMAIL, which only ever seeds an
+EMPTY admins table (so changing it later does nothing), and how login codes
+are emailed.
+
+Usage (from the repo root; Render's free tier has no shell, so run it on your
+machine with DATABASE_URL set to the Supabase pooler URL):
 
     python3 -m backend.inspect_admin
 
-Nothing secret is printed: no password, no password hash. Only the bcrypt
-algorithm and cost prefix, the username, and whether a verification succeeds.
+Nothing secret is printed: every email is masked (ow***@example.com), and no
+API key, passcode or database password appears.
 
-Exit codes: 0 the env credentials would log in, 1 they would not, 2 error.
+Exit codes: 0 at least one active owner exists, 1 none does (the report says
+how to fix it), 2 the database or its admins table can't be read.
 """
 
 from __future__ import annotations
 
+import argparse
+import datetime
 import os
 import sys
 
@@ -30,116 +42,125 @@ if _REPO_ROOT not in sys.path:
 from backend import auth  # noqa: E402
 from backend import config  # noqa: E402
 from backend import database  # noqa: E402
+from backend.check_db_connection import admins_table_state  # noqa: E402
 
 
-def mask(value: str, keep: int = 2) -> str:
-    """Show enough of a contact field to recognize it, not enough to reuse it."""
-    text = str(value or "")
-    if "@" in text:
-        local, _, domain = text.partition("@")
-        return "%s%s@%s" % (local[:keep], "*" * max(0, len(local) - keep), domain)
-    if len(text) <= keep:
-        return "*" * len(text)
-    return "%s%s" % ("*" * (len(text) - keep), text[-keep:])
+def default_email_status() -> str:
+    """DEFAULT_ADMIN_EMAIL's state and source, with the address masked."""
+    if not config.DEFAULT_ADMIN_EMAIL:
+        return "unset"
+    email = auth.normalize_email(config.DEFAULT_ADMIN_EMAIL)
+    status = "set (from %s): %s" % (config.env_source("DEFAULT_ADMIN_EMAIL"),
+                                    auth.mask_email(email))
+    if not auth.is_valid_email(email):
+        status += " -- NOT a valid email address, so it is ignored"
+    return status
 
 
-def hash_scheme(stored: str) -> str:
-    """The bcrypt algorithm and cost prefix, e.g. '$2b$12$'. Never the digest."""
-    parts = str(stored or "").split("$")
-    if len(parts) < 4:
-        return "unrecognized (not a bcrypt hash)"
-    return "$%s$%s$ (bcrypt, cost %s)" % (parts[1], parts[2], parts[2])
+def _modified(path: str) -> str:
+    """A file's modification time as ISO8601 UTC, like the timestamps in the tables."""
+    return datetime.datetime.fromtimestamp(
+        os.stat(path).st_mtime, datetime.timezone.utc).isoformat(timespec="seconds")
 
 
-def main() -> int:
+def main(argv=None) -> int:
+    argparse.ArgumentParser(
+        prog="python3 -m backend.inspect_admin",
+        description="Read-only report of every admin and of the email settings in "
+                    "this shell. Exit 0: an active owner exists; 1: none does; 2: "
+                    "the database can't be read.").parse_args(argv)
     bar = "-" * 70
     print(bar)
-    print("admins table report (read-only)")
+    print("admins report (read-only)")
     print(bar)
 
     print("database: %s" % database.describe_backend())
+    sqlite_missing = False
     if not database.using_postgres():
         path = config.DATABASE_PATH
-        if not os.path.exists(path):
+        if os.path.exists(path):
+            print("  exists: yes, %d bytes, last modified %s"
+                  % (os.path.getsize(path), _modified(path)))
+        else:
+            # Checked first because connecting would create the file.
+            sqlite_missing = True
             print("  exists: NO")
             print("  -> Nothing has been written here yet. On a host with an")
             print("     ephemeral filesystem this is what every restart looks")
             print("     like; set DATABASE_URL so the data persists.")
-            return 2
-        stat = os.stat(path)
-        print("  exists: yes, %d bytes, last modified %s"
-              % (stat.st_size, __import__("datetime").datetime.fromtimestamp(
-                  stat.st_mtime).isoformat(timespec="seconds")))
 
     print(".env file: %s" % (config.DOTENV_PATH if config.DOTENV_LOADED
                              else "not found (process environment only)"))
     print()
-    print("environment:")
-    print("  DEFAULT_ADMIN_USERNAME: %r (from %s)"
-          % (config.DEFAULT_ADMIN_USERNAME, config.env_source("DEFAULT_ADMIN_USERNAME")))
-    print("  DEFAULT_ADMIN_PASSWORD: %s" % auth.describe_admin_password_source())
+    print("settings in THIS shell (the deployed app's own are in its startup log,")
+    print("'[admin-auth] startup admin report'):")
+    print("  DEFAULT_ADMIN_EMAIL: %s" % default_email_status())
+    print("  OTP email: %s" % auth.describe_delivery())
+    for warning in auth.delivery_warnings():
+        print("  WARNING: %s" % warning)
     print()
 
+    if sqlite_missing:
+        return 2
     try:
-        rows = database.query_all(
-            "SELECT id, username, password_hash, phone, email, created_at "
-            "FROM admins ORDER BY id")
+        state = admins_table_state()
+        admins = auth.list_admins() if state == "current" else []
     except Exception as exc:  # noqa: BLE001 - report, do not traceback
-        print("could not read the admins table: %s" % exc)
+        print("could not read the admins table: %s: %s" % (type(exc).__name__, exc))
         return 2
 
-    print("admins table: %d row(s)" % len(rows))
-    for row in rows:
-        print("  id=%s username=%r created_at=%s" % (row["id"], row["username"], row["created_at"]))
-        print("     email=%s phone=%s" % (mask(row["email"]), mask(row["phone"])))
-        print("     password hash: %s" % hash_scheme(row["password_hash"]))
+    if state == "missing":
+        print("admins table: does not exist yet. The app creates it on its next")
+        print("  boot (seeding the first owner from DEFAULT_ADMIN_EMAIL), or create")
+        print("  the tables now with:")
+        print("    python3 -m backend.check_db_connection --init")
+        return 2
+    if state == "legacy":
+        print("admins table: still the old single-admin shape (username + password),")
+        print("  from before multi-admin profiles. Only the first boot of this")
+        print("  version of the app migrates it (keeping the old table as")
+        print("  admins_legacy); deploy it, then run this again.")
+        return 2
+
+    active = [admin for admin in admins if admin["is_active"]]
+    owners = [admin for admin in active if admin["role"] == auth.ROLE_OWNER]
+    print("admins table: %d row(s), %d active, %d active owner(s)"
+          % (len(admins), len(active), len(owners)))
+    for admin in admins:
+        # %r: a name typed into the Supabase table editor could hold anything.
+        print("  %s  %r" % (auth.mask_email(admin["email"]), admin["display_name"]))
+        print("     %s, %s, created %s, last login %s"
+              % (admin["role"], "active" if admin["is_active"] else "deactivated",
+                 admin["created_at"], admin["last_login_at"] or "never"))
     print()
 
-    if not rows:
-        print("VERDICT: the table is empty, so the next boot will seed it.")
-        print("  If login still fails after that, the row is being created and")
-        print("  then lost again, which means the disk is not persistent.")
-        return 1
+    default = auth.normalize_email(config.DEFAULT_ADMIN_EMAIL)
+    if admins and auth.is_valid_email(default) and \
+            not any(admin["email"] == default for admin in admins):
+        print("note: DEFAULT_ADMIN_EMAIL matches no admin. It only seeds an EMPTY")
+        print("  admins table, so changing it now has no effect: add admins on the")
+        print("  Admins page, or restore an owner with python3 -m backend.reset_admin.")
+        print()
 
-    # The decisive check: would the configured credentials actually log in?
-    match = next((r for r in rows if r["username"] == config.DEFAULT_ADMIN_USERNAME), None)
     print("VERDICT:")
-    if match is None:
-        print("  DEFAULT_ADMIN_USERNAME %r matches NO row."
-              % config.DEFAULT_ADMIN_USERNAME)
-        print("  Stored username(s): %s" % ", ".join(repr(r["username"]) for r in rows))
-        print("  /api/auth/login answers 401 'Invalid credentials' for an unknown")
-        print("  username, the same reply a wrong password gets.")
-        print("  Fix: set DEFAULT_ADMIN_USERNAME to a stored value, or rotate with")
-        print("       python3 -m backend.reset_admin --yes")
-        return 1
-
-    if not config.DEFAULT_ADMIN_PASSWORD:
-        print("  Username %r exists, but DEFAULT_ADMIN_PASSWORD is not set, so the"
-              % match["username"])
-        print("  stored hash cannot be checked. The row was almost certainly")
-        print("  seeded with a random password, printed once at its first boot.")
-        print("  Fix: set DEFAULT_ADMIN_PASSWORD, then")
-        print("       python3 -m backend.reset_admin --yes")
-        return 1
-
-    if auth.check_password(config.DEFAULT_ADMIN_PASSWORD, match["password_hash"]):
-        print("  Username %r exists and DEFAULT_ADMIN_PASSWORD verifies against"
-              % match["username"])
-        print("  its stored hash. These credentials WOULD log in.")
-        print("  If the browser still fails, the cause is later in the flow:")
-        print("    - the secret-code gate (ADMIN_SECRET_CODE) answers 403")
-        print("      'forbidden', not 401, so check which status you actually get")
-        print("    - the OTP step after login, or the session cookie")
-        print("    - a different database than this one on the serving host")
+    if owners:
+        print("  %d active owner(s) can sign in and manage admins: %s."
+              % (len(owners), ", ".join(auth.mask_email(owner["email"]) for owner in owners)))
+        print("  If a sign-in still fails, check that:")
+        print("    - the address is an ACTIVE admin above; any other address gets")
+        print("      the same reply on the login page, but no code")
+        print("    - OTP email above can deliver to that inbox")
+        print("    - the app log has no '[auth] login code ...' line for it saying")
+        print("      the code was not issued (one per %ds per email; none after %d"
+              % (config.OTP_RESEND_COOLDOWN_SECONDS, config.OTP_FAILURE_LIMIT))
+        print("      wrong guesses within %ds)" % config.OTP_FAILURE_WINDOW_SECONDS)
         return 0
 
-    print("  Username %r exists, but DEFAULT_ADMIN_PASSWORD does NOT match its"
-          % match["username"])
-    print("  stored hash. This is the expected result when the password was")
-    print("  changed in the environment after the row was created: seeding is")
-    print("  create-only and never rewrites an existing row.")
-    print("  Fix: python3 -m backend.reset_admin --yes")
+    print("  No active owner, so nobody can add, deactivate or reactivate admins.")
+    print("  Fix: python3 -m backend.reset_admin --email you@example.com")
+    if not admins:
+        print("  (or set DEFAULT_ADMIN_EMAIL and restart the app: an empty admins")
+        print("  table is seeded from it)")
     return 1
 
 

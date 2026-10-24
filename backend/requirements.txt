@@ -1,7 +1,6 @@
 # Farmers Forward - all dependencies
 flask>=3.0
 flask-cors>=4.0
-bcrypt>=4.0
 reportlab>=4.0
 python-dotenv>=1.0
 # Postgres driver. Only used when DATABASE_URL is set; the SQLite fallback
