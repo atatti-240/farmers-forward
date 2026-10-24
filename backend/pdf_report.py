@@ -131,10 +131,12 @@ def _styles() -> Dict[str, ParagraphStyle]:
     styles = {
         "brand": ParagraphStyle(
             "ffBrand", parent=base["Title"], fontName="Helvetica-Bold",
-            fontSize=22, textColor=FF_BLUE, spaceAfter=2, alignment=TA_LEFT),
+            fontSize=22, leading=27, textColor=FF_BLUE, spaceAfter=2,
+            alignment=TA_LEFT),
         "tagline": ParagraphStyle(
             "ffTagline", parent=base["Normal"], fontName="Helvetica",
-            fontSize=9, textColor=FF_TEXT_MUTED, spaceAfter=6, alignment=TA_LEFT),
+            fontSize=9, leading=12, textColor=FF_TEXT_MUTED, spaceAfter=6,
+            alignment=TA_LEFT),
         "h1": ParagraphStyle(
             "ffH1", parent=base["Heading1"], fontName="Helvetica-Bold",
             fontSize=16, textColor=FF_TEXT, spaceBefore=10, spaceAfter=6),
@@ -152,19 +154,20 @@ def _styles() -> Dict[str, ParagraphStyle]:
             fontSize=10, textColor=FF_TEXT, leading=15),
         "score": ParagraphStyle(
             "ffScore", parent=base["Normal"], fontName="Helvetica-Bold",
-            fontSize=40, leading=44, alignment=TA_CENTER),
+            fontSize=40, leading=48, alignment=TA_CENTER),
         "scoreCat": ParagraphStyle(
             "ffScoreCat", parent=base["Normal"], fontName="Helvetica-Bold",
-            fontSize=13, alignment=TA_CENTER),
+            fontSize=13, leading=16, alignment=TA_CENTER),
         "recTitle": ParagraphStyle(
             "ffRecTitle", parent=base["Normal"], fontName="Helvetica-Bold",
-            fontSize=11, textColor=FF_TEXT, spaceBefore=6, spaceAfter=2),
+            fontSize=11, leading=14, textColor=FF_TEXT, spaceBefore=6, spaceAfter=2),
         "coverTitle": ParagraphStyle(
             "ffCoverTitle", parent=base["Title"], fontName="Helvetica-Bold",
-            fontSize=28, textColor=FF_BLUE, alignment=TA_CENTER, spaceAfter=4),
+            fontSize=28, leading=34, textColor=FF_BLUE, alignment=TA_CENTER,
+            spaceAfter=4),
         "coverSub": ParagraphStyle(
             "ffCoverSub", parent=base["Normal"], fontName="Helvetica",
-            fontSize=12, textColor=FF_TEXT_MUTED, alignment=TA_CENTER,
+            fontSize=12, leading=16, textColor=FF_TEXT_MUTED, alignment=TA_CENTER,
             spaceAfter=2),
     }
     return styles
