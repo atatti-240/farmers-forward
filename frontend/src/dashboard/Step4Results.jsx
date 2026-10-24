@@ -24,6 +24,7 @@ import { InvalidateSizeOnVisible } from './mapView.js'
 import ScoreLegend from './ScoreLegend.jsx'
 import ScoreMarkers from './ScoreMarkers.jsx'
 import { scoreColor } from './soilColor.js'
+import SoilProfile from './SoilProfile.jsx'
 
 const ESRI_URL =
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -211,6 +212,11 @@ export default function Step4Results() {
           />
         </MapContainer>
       </div>
+
+      {/* Mapped soil survey data and soil biology for the field (display only, not scored). */}
+      {(analysis.soil_point || analysis.microbial) && (
+        <SoilProfile variant="full" point={analysis.soil_point} profile={analysis.soil_profile} microbial={analysis.microbial} />
+      )}
 
       {/* Per-section cards */}
       <div className="ff-results-grid">

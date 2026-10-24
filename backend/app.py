@@ -34,6 +34,8 @@ from backend import config  # noqa: E402
 from backend import database  # noqa: E402
 from backend import model_runner  # noqa: E402
 from backend import pdf_report  # noqa: E402
+from backend import soil_info  # noqa: E402
+from backend import microbial  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -219,6 +221,31 @@ def _validate_sections(payload, require_crop: bool = True,
 
 
 # ---------------------------------------------------------------------------
+# Request bodies
+# ---------------------------------------------------------------------------
+# Every route reads its body as a JSON object (`request.get_json(...) or {}`,
+# then `.get(...)`), so a body that is valid JSON but not an object -- a list, a
+# string, a number -- reached that `.get` and came back as a 500, on the public
+# /api/contact too. Checking once here, before any route (and before any login
+# check), covers every /api endpoint, including ones added later, without
+# touching each handler. A request with no body at all is left alone: the
+# routes treat that as {} (logout, the report download's optional map image).
+JSON_OBJECT_REQUIRED = "Please send the request body as a JSON object."
+
+
+@app.before_request
+def require_json_object_body():
+    if request.method not in ("POST", "PUT", "PATCH") or not request.path.startswith("/api/"):
+        return None
+    if not request.get_data(cache=True).strip():
+        return None
+    data = request.get_json(silent=True) if request.is_json else None
+    if not isinstance(data, dict):
+        return jsonify({"error": JSON_OBJECT_REQUIRED}), 400
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Auth endpoints
 # ---------------------------------------------------------------------------
 @app.post("/api/auth/verify-code")
@@ -330,6 +357,32 @@ def submit():
     if err:
         return jsonify({"error": err}), 400
 
+    # Optional point for the mapped soil-survey profile (display only, never
+    # scored). A bad point is dropped, not a 400. The profile comes from the
+    # cache only, and is read before the write transaction below opens: the
+    # cache's lazy CREATE TABLE would otherwise wait on this request's own lock.
+    soil_point = None
+    soil_profile = None
+    raw_point = data.get("soil_point")
+    if isinstance(raw_point, dict):
+        try:
+            lat, lon = soil_info.parse_coords(raw_point.get("lat"), raw_point.get("lon"))
+        except (TypeError, ValueError):
+            pass
+        else:
+            # The lookup is made at the rounded point, so store that one.
+            lat_text, lon_text = soil_info.point_key(lat, lon).split(",")
+            soil_point = {"lat": float(lat_text), "lon": float(lon_text)}
+            soil_profile = soil_info.cached_soil_info(lat, lon)
+
+    # Optional soil respiration lab value, one for the whole field (display
+    # only, never scored). Unlike the point, a value that is not a usable
+    # number is a 400; blank or missing just means none was entered.
+    try:
+        soil_respiration = microbial.parse_respiration(data.get("soil_respiration"))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
     conn = database.get_db()
     try:
         now = database.now_iso()
@@ -342,6 +395,11 @@ def submit():
         farm_id = cur.lastrowid
 
         analysis = model_runner.run_analysis(farm_name, date, sections, farm_id)
+        if soil_point is not None:
+            analysis["soil_point"] = soil_point
+            analysis["soil_profile"] = soil_profile
+        if soil_respiration is not None:
+            analysis["microbial"] = microbial.rate(soil_respiration)
         mean_score = analysis["field_summary"]["mean_health_score"]
 
         conn.execute(
@@ -445,6 +503,25 @@ def contact():
 
 
 # ---------------------------------------------------------------------------
+# Soil profile
+# ---------------------------------------------------------------------------
+@app.get("/api/soil-info")
+@auth.login_required
+def get_soil_info():
+    """Mapped USDA soil-survey data for one point (display only, never scored).
+
+    Only a bad coordinate is a 400. Every lookup outcome, including the survey
+    services not answering, is a 200 whose `status` says what happened.
+    """
+    try:
+        payload = soil_info.get_soil_info(request.args.get("lat"),
+                                          request.args.get("lon"))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify(payload)
+
+
+# ---------------------------------------------------------------------------
 # PDF reports
 # ---------------------------------------------------------------------------
 def _load_analysis(farm_id: int):
@@ -500,6 +577,18 @@ def report_all(farm_id: int):
         # build_combined_pdf validates the payload itself before decoding.
         if isinstance(candidate, str) and candidate.startswith("data:image/"):
             map_image = candidate
+
+    # A soil profile that had not loaded (or only partly) at submit time may be
+    # cached by now, since the results page fetches it. Cache only: a PDF
+    # download never waits on the soil survey services.
+    soil_point = analysis.get("soil_point")
+    soil_profile = analysis.get("soil_profile")
+    if isinstance(soil_point, dict) and (
+            not isinstance(soil_profile, dict)
+            or soil_profile.get("status") in ("partial", "unavailable")):
+        cached = soil_info.cached_soil_info(soil_point.get("lat"), soil_point.get("lon"))
+        if cached:
+            analysis["soil_profile"] = cached
 
     pdf_bytes = pdf_report.build_combined_pdf(analysis, map_image=map_image)
     filename = "%s_full_report.pdf" % _slug(analysis.get("farm_name"))

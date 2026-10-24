@@ -21,6 +21,7 @@ import CropPicker from '../components/CropPicker.jsx'
 import { useDashboard } from './DashboardProvider.jsx'
 import { gridCellRing } from './geo.js'
 import { InvalidateSizeOnVisible, TrackMapView } from './mapView.js'
+import MicrobialInput from './MicrobialInput.jsx'
 import ScoreLegend from './ScoreLegend.jsx'
 import { scoreColor } from './soilColor.js'
 
@@ -287,6 +288,9 @@ export default function Step2DataEntry() {
               </p>
             </div>
           )}
+
+          {/* Optional lab value for the whole field (display only, not scored). */}
+          {points.length > 0 && <MicrobialInput />}
         </div>
       </div>
 

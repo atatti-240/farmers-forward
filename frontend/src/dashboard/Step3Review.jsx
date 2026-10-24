@@ -12,6 +12,9 @@ import api from '../api/client.js'
 import Spinner from '../components/Spinner.jsx'
 import { useDashboard } from './DashboardProvider.jsx'
 import { sampleAcres } from './fieldArea.js'
+import MicrobialReview from './MicrobialReview.jsx'
+import { parseRespiration } from './microbial.js'
+import { soilPointFor } from './soil.js'
 
 const FIELDS = ['ph', 'ec', 'nitrogen', 'phosphorus', 'potassium']
 
@@ -28,7 +31,9 @@ export default function Step3Review() {
     date,
     points,
     polygon,
+    finderPins,
     data,
+    respiration,
     sectionComplete,
     allComplete,
     submitSuccess,
@@ -70,6 +75,8 @@ export default function Step3Review() {
         farm_name: farmName.trim(),
         date,
         sections,
+        soil_point: soilPointFor({ polygon, finderPins, points }),
+        soil_respiration: parseRespiration(respiration).value,
       })
       submitSuccess(analysis, analysis.farm_id)
       // Component unmounts as the flow advances to step 4.
@@ -115,6 +122,7 @@ export default function Step3Review() {
             <div style={{ fontWeight: 700 }}>{date}</div>
           </div>
         </div>
+        <MicrobialReview />
       </div>
 
       <div

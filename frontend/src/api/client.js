@@ -110,12 +110,17 @@ export function me() {
 /**
  * Submit a field for analysis.
  * @param {{ farm_name: string, date: string, sections: Array<Object> }} field
+ * @param {{ lat: number, lon: number }|null} [field.soil_point] - where the
+ *   Soil Profile was looked up; the server attaches its cached profile
+ *   (display only, never scored).
+ * @param {number|null} [field.soil_respiration] - the field's soil respiration
+ *   (24h CO2 burst) in ppm CO2-C, or null; rated for display, never scored.
  * @returns {Promise<Object>} the analysis result.
  */
-export function submitField({ farm_name, date, sections }) {
+export function submitField({ farm_name, date, sections, soil_point, soil_respiration }) {
   return request('/submit', {
     method: 'POST',
-    body: { farm_name, date, sections },
+    body: { farm_name, date, sections, soil_point, soil_respiration },
   })
 }
 
@@ -145,6 +150,19 @@ export function getResults(farmId) {
  */
 export function getHistory() {
   return request('/history')
+}
+
+/**
+ * Mapped USDA soil survey data for one point (typical values for the soil
+ * type there, not a measurement). Every lookup outcome is a 200 whose
+ * `status` is 'ok' | 'partial' | 'no_data' | 'unavailable'; throws on 400
+ * (invalid coordinates).
+ * @param {number|string} lat
+ * @param {number|string} lon
+ * @returns {Promise<Object>} the soil profile payload.
+ */
+export function getSoilInfo(lat, lon) {
+  return request('/soil-info?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon))
 }
 
 /**
@@ -245,6 +263,7 @@ const api = {
   reportSectionUrl,
   reportAllUrl,
   downloadReportAll,
+  getSoilInfo,
 }
 
 export default api
