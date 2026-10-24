@@ -35,6 +35,7 @@ from backend import database  # noqa: E402
 from backend import model_runner  # noqa: E402
 from backend import pdf_report  # noqa: E402
 from backend import soil_info  # noqa: E402
+from backend import microbial  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -337,6 +338,14 @@ def submit():
             soil_point = {"lat": float(lat_text), "lon": float(lon_text)}
             soil_profile = soil_info.cached_soil_info(lat, lon)
 
+    # Optional soil respiration lab value, one for the whole field (display
+    # only, never scored). Unlike the point, a value that is not a usable
+    # number is a 400; blank or missing just means none was entered.
+    try:
+        soil_respiration = microbial.parse_respiration(data.get("soil_respiration"))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
     conn = database.get_db()
     try:
         now = database.now_iso()
@@ -352,6 +361,8 @@ def submit():
         if soil_point is not None:
             analysis["soil_point"] = soil_point
             analysis["soil_profile"] = soil_profile
+        if soil_respiration is not None:
+            analysis["microbial"] = microbial.rate(soil_respiration)
         mean_score = analysis["field_summary"]["mean_health_score"]
 
         conn.execute(

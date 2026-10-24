@@ -5,11 +5,12 @@
    typical values for the soil type mapped there, not a measurement of the
    field, and they never change the soil health scores.
    `compact` is the few-line preview in the Step 1 side panel; `full` is the
-   card on the results page.
+   card on the results page, which ends with the soil biology block.
    ========================================================================== */
 
 import { useId, useState } from 'react'
 
+import MicrobialActivity from './MicrobialActivity.jsx'
 import { isFinalProfile, soilKey, useSoilInfo } from './soil.js'
 import './soil.css'
 
@@ -156,8 +157,10 @@ function SoilData({ profile, compact }) {
  * @param {Object|null} [props.profile] - Profile saved with the analysis; a
  *   missing, partial or unavailable one is fetched again.
  * @param {'compact'|'full'} [props.variant='full']
+ * @param {Object|null} [props.microbial] - `analysis.microbial`, for the soil
+ *   biology block at the end of the full card (see MicrobialActivity).
  */
-export default function SoilProfile({ point, profile: savedProfile = null, variant = 'full' }) {
+export default function SoilProfile({ point, profile: savedProfile = null, variant = 'full', microbial = null }) {
   const titleId = useId()
   const compact = variant === 'compact'
   // The full card shows a saved analysis; the Step 1 preview has none.
@@ -169,7 +172,9 @@ export default function SoilProfile({ point, profile: savedProfile = null, varia
   const [retriedKey, setRetriedKey] = useState(null)
 
   const key = (profile && text(profile.point_key)) || soilKey(point)
-  if (!key && !profile) return null
+  // No point (so no lookup): the full card still carries the soil biology block.
+  const surveyed = !!key || !!profile
+  if (!surveyed && compact) return null
   const where = key ? key.replace(',', ', ') : null
 
   const loading = status === 'loading'
@@ -258,8 +263,9 @@ export default function SoilProfile({ point, profile: savedProfile = null, varia
         </h2>
         {where && <span className="ff-soil__where">USDA soil survey at {where}</span>}
       </div>
-      {body}
-      {caption}
+      {surveyed && body}
+      {surveyed && caption}
+      <MicrobialActivity microbial={microbial} />
     </section>
   )
 }

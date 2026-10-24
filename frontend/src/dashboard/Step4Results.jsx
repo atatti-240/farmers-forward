@@ -232,9 +232,9 @@ export default function Step4Results() {
         </MapContainer>
       </div>
 
-      {/* Mapped soil survey data for the field (display only, not scored). */}
-      {analysis.soil_point && (
-        <SoilProfile variant="full" point={analysis.soil_point} profile={analysis.soil_profile} />
+      {/* Mapped soil survey data and soil biology for the field (display only, not scored). */}
+      {(analysis.soil_point || analysis.microbial) && (
+        <SoilProfile variant="full" point={analysis.soil_point} profile={analysis.soil_profile} microbial={analysis.microbial} />
       )}
 
       {/* Per-section cards */}

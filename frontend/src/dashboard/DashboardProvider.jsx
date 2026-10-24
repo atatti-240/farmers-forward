@@ -59,6 +59,8 @@ function defaultState() {
     // Farm Finder search pins: { id, lat, lng, title, name }.
     finderPins: [],
     data: {},
+    // Optional soil respiration lab value for the whole field, as typed.
+    respiration: '',
     analysis: null,
     farmId: null,
   }
@@ -85,6 +87,7 @@ function loadState() {
           merged.data && typeof merged.data === 'object' && !Array.isArray(merged.data)
             ? merged.data
             : {}
+        merged.respiration = typeof merged.respiration === 'string' ? merged.respiration : ''
         merged.mapView = isMapView(merged.mapView) ? merged.mapView : null
         merged.finderPins = Array.isArray(merged.finderPins)
           ? merged.finderPins.filter(isFinderPin)
@@ -287,6 +290,7 @@ export default function DashboardProvider({ children }) {
   const setTweakMode = useCallback((tweakMode) => patch({ tweakMode }), [patch])
   const goStep = useCallback((step) => patch({ step }), [patch])
   const setMapView = useCallback((mapView) => patch({ mapView }), [patch])
+  const setRespiration = useCallback((respiration) => patch({ respiration }), [patch])
 
   /* -------------------------------------------------------- point helpers */
 
@@ -433,6 +437,7 @@ export default function DashboardProvider({ children }) {
     mapView: state.mapView,
     finderPins: state.finderPins,
     data: state.data,
+    respiration: state.respiration,
     analysis: state.analysis,
     farmId: state.farmId,
     // derived
@@ -459,6 +464,7 @@ export default function DashboardProvider({ children }) {
     removeFinderPin,
     clearFinderPins,
     setSectionData,
+    setRespiration,
     // helpers
     sectionComplete,
     goStep,

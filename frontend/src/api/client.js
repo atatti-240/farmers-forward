@@ -113,12 +113,14 @@ export function me() {
  * @param {{ lat: number, lon: number }|null} [field.soil_point] - where the
  *   Soil Profile was looked up; the server attaches its cached profile
  *   (display only, never scored).
+ * @param {number|null} [field.soil_respiration] - the field's soil respiration
+ *   (24h CO2 burst) in ppm CO2-C, or null; rated for display, never scored.
  * @returns {Promise<Object>} the analysis result.
  */
-export function submitField({ farm_name, date, sections, soil_point }) {
+export function submitField({ farm_name, date, sections, soil_point, soil_respiration }) {
   return request('/submit', {
     method: 'POST',
-    body: { farm_name, date, sections, soil_point },
+    body: { farm_name, date, sections, soil_point, soil_respiration },
   })
 }
 

@@ -762,3 +762,139 @@ analysis has a `soil_point`, swapping a missing/`partial`/`unavailable` profile
 for a cached one; with no profile at all it prints a "had not loaded" note.
 PDF routes NEVER call the network. No `soil_point` (older reports) → no page
 and the same page count as before. The single-section PDF is unchanged.
+
+### 9.1 Microbial activity (roadmap #8 placeholder)
+
+DISPLAY ONLY. One optional lab value for the whole field: soil respiration,
+the 24-hour CO2 burst (`ppm CO2-C`: mg of CO2-C released per kg of dried soil
+in the 24 hours after it is rewetted, e.g. a Haney or Solvita CO2-burst
+result). When a value is entered, the server rates it against a cited band
+table and Step 4 and the combined PDF show the rating. When none is entered,
+both show exactly `Microbial activity: in-house test in development` (no
+error, no zero score, no rating). Health scores, `run_analysis`, the crop
+assessment and the recommendations are identical with or without a value.
+
+Files: `backend/microbial.py` (`parse_respiration`, `rate`, `load_config`,
+`range_text`), `backend/data/soil_respiration_bands.json` (the bands and their
+citation), and a "Soil biology" block at the end of `soil_report.py`'s page.
+Frontend: `frontend/src/dashboard/microbial.js` (`parseRespiration`,
+`RESPIRATION_UNITS`, `NOT_PROVIDED_MESSAGE`, `MAX_RESPIRATION`),
+`MicrobialInput.jsx` (Step 2), `MicrobialReview.jsx` (Step 3),
+`MicrobialActivity.jsx` and `microbial.css` (`ff-microbial*`, Step 4). Small
+call sites in `app.py`, `client.js` (`submitField` sends `soil_respiration`),
+`DashboardProvider.jsx` (`respiration`, `setRespiration`), `SoilProfile.jsx`
+and Steps 2, 3 and 4. Tests: `backend/tests/test_microbial.py`.
+
+| Method | Path | Auth | Request JSON | Success (200) | Errors |
+|---|---|---|---|---|---|
+| POST | `/api/submit` | login_required | adds optional `soil_respiration` (number or numeric string, ppm CO2-C) | analysis + `microbial` (rating payload) when a value was given; NO `microbial` key when it is missing, `null`, `""` or blank | 400 `{error: "soil_respiration must be a number from 0 to 5000 (ppm CO2-C)"}` for anything else (non-numeric text, true/false, lists/objects, NaN/inf, < 0, > 5000), returned before any DB write |
+
+Validation (`parse_respiration`): `None`, a missing key, `""` and whitespace
+mean "not provided". Numbers and plain ASCII decimal strings (`45`, `45.5`,
+`.5`, `1e2`, the same pattern as the browser's) become a float; `4_5` and
+non-ASCII digits, which `float()` alone would read, do not. Everything
+else raises `ValueError`, which submit turns into the 400. `MAX_RESPIRATION =
+5000` is a typo guard (the guide says readings run from near 0 to about 1000),
+not a soil limit. The browser's `parseRespiration` applies the same 0-5000
+rule. An invalid entry gets an inline error in Step 2 and a warning line in
+Step 3, and is sent as `null`, so the field is still submitted, just without
+the value.
+
+Payload (`analysis.microbial`, built by `rate()` after `run_analysis`):
+```
+{ status: "rated",
+  value,                                 # 1 dp, ROUND_HALF_UP via Decimal(str(v))
+  units: "ppm CO2-C", metric: "Soil respiration (24-hour CO2 burst)",
+  band, band_index,                      # 0-based
+  band_count: 8, band_min, band_max,     # band_max null for the top band
+  range_text: "31-50" | "above 200",
+  meaning, placeholder, confidence, basis,
+  source: {title, publisher, year, url}, caveats: [...],
+  bands: [{label, min, max}, ...] }      # for drawing the 8-step scale
+# config missing or invalid (logged; the submission still succeeds):
+{ status: "unrated", value, units: "ppm CO2-C",
+  message: "Microbial activity rating is unavailable right now." }
+```
+
+Config (`backend/data/soil_respiration_bands.json`): read on first use (never
+at import), validated, and cached under a lock. Validation requires non-empty
+`bands`, a first `min` of 0, ascending `max`, a `null` max on the last band
+only, non-empty labels, and a source title and url; a bad file raises
+`ValueError`, which `rate()` logs before returning the "unrated" payload. The
+cache is keyed by the file's path, mtime and size, so an edited file is
+re-read without a restart. Source: Ward Laboratories, Inc. (Kearney,
+Nebraska), *Haney Test Interpretation Guide v1.0* (2019), Soil Respiration
+Ranking Table,
+<https://www.wardlab.com/wp-content/uploads/2020/02/Haney-Rev-1.0-Interpretation-Guide-PDF-1.pdf>;
+also in WardGuide (Raymond C. Ward, 2021), Table 66. Texas A&M AgriLife
+Organic (2024) and the Noble Research Institute (2023) give the same end
+points (below 10 very low, above 200 very high). `confidence: "medium"`,
+`placeholder: false`: a published lab guideline based on the author's
+observations, not field-calibrated and not specific to Texas soils. The file's
+caveats ship with every rating and are printed under it:
+- the middle rankings are a sliding scale that depends on soil type and
+  climate; only below 10 and above 200 hold regardless;
+- other published scales differ (Ward's 2023 Soil Health Assessment guide:
+  Low 0-60, Marginal 60-120, Optimum above 120);
+- AHDB warns that soils above pH 7.5 can give artificially low values.
+
+| Band | ppm CO2-C | Meaning (shortened from the guide's "Implications") |
+|---|---|---|
+| Very Low | 0-10 | Very little potential for microbial activity; slow nutrient cycling and residue decomposition. |
+| Low | 11-20 | Minimal potential for nutrient cycling. |
+| Below Average | 21-30 | Some potential for nutrient cycling. |
+| Slightly Below Average | 31-50 | Low to moderate potential for microbial activity. |
+| Slightly Above Average | 51-70 | Moderate potential for microbial activity. |
+| Above Average | 71-100 | Good potential for microbial activity. |
+| High | 101-200 | High potential for microbial activity. |
+| Very High | above 200 | High to very high potential for microbial activity and nitrogen mineralization. |
+
+Band rule: a value falls in the first band whose max it does not exceed. The
+published ranges are whole numbers, so a value between two of them goes to
+the higher band (10.5 is Low), and anything above 200 is Very High (the table
+prints ">201", the text says "above 200"). The band is found from the rounded
+value that is shown, so the number and its band always agree (10.04 shows as
+10.0, Very Low). `range_text` is `"min-max"`, and `"above <previous max>"` for
+the top band. Change these numbers only from a cited source:
+`test_microbial` pins them to the published table. If un-sourced thresholds
+are ever swapped in, set `placeholder: true`. Every label then gets the
+`PLACEHOLDER ` prefix, and the results page and the PDF show a prominent
+"PLACEHOLDER thresholds: not from a published source" warning; their citation
+line then reads "Rating bands: placeholder values, not taken from <source>."
+with no link, and the guideline's caveats are left out.
+
+Display of a value in a gap: 10.1 is Low, whose published range is 11-20, so
+the results page and the PDF print its range from the band below's max
+("Rating: Low (above 10 to 20 ppm, step 2 of 8)"). `range_text` itself is
+unchanged.
+
+Where it shows:
+- Step 2: a "Soil biology (optional)" side-panel section once there are sample
+  points. It has a "Soil respiration (24h CO₂ burst)" input with the unit
+  (ppm CO₂-C) beside it, a one-line hint and an inline error for a bad value.
+  It is a text input with a decimal keypad (`inputMode="decimal"`), not
+  `type="number"`, which would blank text it cannot read ("45 ppm") so the
+  draft and Step 3 never saw it. The text is kept as `respiration` in the
+  dashboard draft, like `data` (cleared by "Start a new field"; like `data`, it
+  stays in memory after a submit).
+- Step 3: one line in the review card: the value, "not entered (optional)",
+  or the invalid-value warning ("isn't a valid number" for text, "isn't a
+  number from 0 to 5000 ppm CO₂-C" for 6000 or -5).
+- Step 4: the full Soil Profile card ends with a "Soil biology" sub-block
+  (`MicrobialActivity`) showing the value and units, the band, "range ppm,
+  step N of 8", the meaning, an 8-step scale (aria-hidden: the text carries
+  the information) captioned "Ranges in ppm CO₂-C" (two rows of four at
+  560px and below), the citation with a link, "A published lab guideline, not
+  calibrated for Texas soils." and the caveats. The card renders when the
+  analysis has a `soil_point` OR a `microbial` rating. With a rating but no
+  point it shows only the biology block and makes no survey lookup. The
+  compact Step 1 preview never shows it.
+- Combined PDF: the Soil Profile page ends with an h2 "Soil biology" block:
+  "Microbial activity (soil respiration, 24-hour CO2 burst): 45.0 ppm CO2-C",
+  "Rating: Slightly Below Average (31-50 ppm, step 4 of 8)", the meaning, a
+  2-row x 8-column band scale with the matched band filled in, then the muted
+  citation line and the caveats, kept together (KeepTogether) so a long
+  survey moves the whole block to the next page. Without a `soil_point` the
+  page has only its title and this block (no "had not loaded" note). An analysis with neither
+  gets no page, so older reports keep their page count. The single-section
+  PDF is unchanged.

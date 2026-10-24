@@ -6,9 +6,16 @@ display only and never feeds the health score. The lookup itself lives in
 soil_info; this module only lays out what /api/submit stored in the analysis
 as `soil_point` and `soil_profile`.
 
+The page ends with a "Soil biology" block for the optional soil respiration
+(24-hour CO2 burst) lab value: the rating microbial.rate() stored as
+`microbial`, or a note that the in-house test is in development. Also display
+only. An analysis with a rating but no soil_point gets the page with just
+this block.
+
 One public builder:
   * soil_profile_flowables(analysis, styles, avail_width) -> List
-    ([] when the analysis has no soil_point, so older reports are unchanged)
+    ([] when the analysis has neither a soil_point nor a microbial rating, so
+    older reports are unchanged)
 """
 
 from __future__ import annotations
@@ -20,11 +27,12 @@ from html import escape
 from typing import Dict, List, Optional, Tuple
 
 from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import KeepTogether, Paragraph, Spacer, Table, TableStyle
 
-from backend import pdf_report
+from backend import microbial, pdf_report
 
 log = logging.getLogger(__name__)
 
@@ -34,6 +42,8 @@ _LAB_NOTE = "Send a sample to a soil lab to measure this field's actual organic 
 _NOT_LOADED = ("Soil survey data had not loaded for this field when this report "
                "was made. Open the results page and download the report again.")
 _RETRY_NOTE = "To fill in the gaps, open the results page and download the report again."
+_BANDS_NOTE = "A published lab guideline, not calibrated for Texas soils."
+_PLACEHOLDER_NOTE = "PLACEHOLDER thresholds: not from a published source"
 
 # Hydrologic soil groups: how readily water soaks in once the soil is wet.
 _HYDRO_HINTS = {
@@ -231,15 +241,10 @@ def _headline(profile: Optional[Dict], styles: Dict[str, ParagraphStyle],
     return _callout(lines, avail_width, border), False
 
 
-def _build(analysis: Dict, styles: Dict[str, ParagraphStyle],
-           avail_width: float) -> List:
-    coords = _point(analysis.get("soil_point"))
-    if coords is None:
-        return []
-    profile = analysis.get("soil_profile")
-
+def _survey(coords: Tuple[float, float], profile: Optional[Dict],
+            styles: Dict[str, ParagraphStyle], avail_width: float) -> List:
+    """The soil-survey part of the page: the point, the headline and the details."""
     flow: List = [
-        Paragraph("Soil Profile", styles["h1"]),
         Paragraph(
             "USDA soil survey at %.4f, %.4f (the field centre when a boundary was "
             "drawn, otherwise the farm pin or first sample point)." % coords,
@@ -266,6 +271,204 @@ def _build(analysis: Dict, styles: Dict[str, ParagraphStyle],
     return flow
 
 
+def _span(rating: Dict) -> Optional[str]:
+    """The matched band's range: "31-50", "above 200", or "above 10 to 20".
+
+    The published ranges are whole numbers, so 10.1 is past Very Low's 10 but
+    short of Low's 11 and is counted as Low; "11-20" beside it would seem to
+    leave it out, so a value in such a gap reads from the band below's max.
+    """
+    span = _text(rating.get("range_text"))
+    bands, index = rating.get("bands"), rating.get("band_index")
+    try:
+        value, low = float(rating["value"]), float(rating["band_min"])
+        previous = bands[index - 1]["max"] if index > 0 else None
+        high = rating["band_max"]
+    except (KeyError, IndexError, TypeError, ValueError):
+        return span
+    if value < low and previous is not None and high is not None:
+        return "above %s to %s" % (previous, high)
+    return span
+
+
+def _rating_line(rating: Dict, band: str) -> str:
+    """'Rating: Slightly Below Average (31-50 ppm, step 4 of 8)'."""
+    detail = []
+    span = _span(rating)
+    if span:
+        detail.append("%s ppm" % span)
+    index, count = rating.get("band_index"), rating.get("band_count")
+    if (isinstance(index, int) and isinstance(count, int)
+            and not isinstance(index, bool) and not isinstance(count, bool)
+            and 0 <= index < count):
+        detail.append("step %d of %d" % (index + 1, count))
+    if not detail:
+        return "Rating: %s" % band
+    return "Rating: %s (%s)" % (band, ", ".join(detail))
+
+
+def _band_scale(rating: Dict, styles: Dict[str, ParagraphStyle],
+                avail_width: float) -> Optional[Table]:
+    """Every band in one row with its range below it, the matched one filled in."""
+    bands = rating.get("bands")
+    if not isinstance(bands, list) or not bands or not all(
+            isinstance(band, dict) for band in bands):
+        return None
+    index = rating.get("band_index")
+    if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < len(bands):
+        index = None
+    cell = ParagraphStyle("ffBioScale", parent=styles["muted"], fontSize=7.5,
+                          leading=9, alignment=TA_CENTER)
+    matched = ParagraphStyle("ffBioScaleMatch", parent=cell, fontName="Helvetica-Bold",
+                             textColor=colors.white)
+    labels, spans = [], []
+    for i, band in enumerate(bands):
+        style = matched if i == index else cell
+        labels.append(Paragraph(escape(_text(band.get("label")) or ""), style))
+        spans.append(Paragraph(escape("%s ppm" % microbial.range_text(bands, i)), style))
+    width = avail_width / len(bands)
+    tbl = Table([labels, spans], colWidths=[width] * len(bands))
+    commands = [
+        ("VALIGN", (0, 0), (-1, 0), "MIDDLE"),
+        ("GRID", (0, 0), (-1, -1), 0.5, pdf_report.FF_BORDER),
+        ("BACKGROUND", (0, 0), (-1, -1), colors.white),
+        ("TOPPADDING", (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ("LEFTPADDING", (0, 0), (-1, -1), 2),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+    ]
+    if index is not None:
+        commands.append(("BACKGROUND", (index, 0), (index, -1), pdf_report.FF_BLUE_DARK))
+    tbl.setStyle(TableStyle(commands))
+    return tbl
+
+
+def _citation(rating: Dict, placeholder: bool) -> str:
+    """The muted source line as Paragraph markup, every value escaped.
+
+    'Rating bands: Ward Laboratories, Haney Test Interpretation Guide v1.0
+    (2019), <url>.' The publisher and title are cut at their first comma (the
+    config's full forms add the town and the table's name). Placeholder bands
+    are not that guideline, so the line says so and leaves out the link.
+    """
+    source = rating.get("source")
+    source = source if isinstance(source, dict) else {}
+    publisher = _text(source.get("publisher"))
+    title = _text(source.get("title"))
+    year = _text(source.get("year"))
+    url = _text(source.get("url"))
+
+    names = [part.split(",")[0].strip() for part in (publisher, title) if part]
+    text = escape(", ".join(name for name in names if name))
+    if year:
+        text += escape(" (%s)" % year)
+    if placeholder:
+        if text:
+            return "Rating bands: placeholder values, not taken from %s." % text
+        return "Rating bands: placeholder values."
+    if url:
+        link = escape(url)
+        if url.startswith(("https://", "http://")):
+            link = '<a href="%s" color="%s">%s</a>' % (
+                link, pdf_report.FF_BLUE_DARK.hexval(), link)
+        text = "%s, %s" % (text, link) if text else link
+    line = "Rating bands: %s." % text if text else "Rating bands: source not recorded."
+    if not placeholder:
+        line += " " + escape(_BANDS_NOTE)
+    return line
+
+
+def _rated(rating: Dict, styles: Dict[str, ParagraphStyle],
+           avail_width: float) -> Optional[List]:
+    """The rated block, or None when the stored rating lacks its value or band."""
+    value = _num(rating.get("value"), 1)
+    band = _text(rating.get("band"))
+    if value is None or band is None:
+        return None
+    units = _text(rating.get("units")) or microbial.UNITS
+    placeholder = rating.get("placeholder") is True
+    head = ParagraphStyle("ffBioRating", parent=styles["body"],
+                          fontName="Helvetica-Bold", fontSize=12, leading=16,
+                          textColor=pdf_report.FF_BLUE_DARK, spaceAfter=2)
+
+    flow: List = []
+    if placeholder:
+        warn = ParagraphStyle("ffBioPlaceholder", parent=styles["body"],
+                              fontName="Helvetica-Bold", textColor=pdf_report.FF_RED)
+        flow.append(Paragraph(escape(_PLACEHOLDER_NOTE), warn))
+
+    lines = [
+        Paragraph(escape("Microbial activity (soil respiration, 24-hour CO2 burst): "
+                         "%s %s" % (value, units)), styles["body"]),
+        Paragraph(escape(_rating_line(rating, band)), head),
+    ]
+    meaning = _text(rating.get("meaning"))
+    if meaning:
+        lines.append(Paragraph(escape(meaning), styles["body"]))
+    flow.append(_callout(lines, avail_width, pdf_report.FF_AMBER if placeholder
+                         else pdf_report.FF_BLUE))
+
+    try:
+        scale = _band_scale(rating, styles, avail_width)
+    except Exception:  # noqa: BLE001 - the scale only repeats the text above
+        log.warning("soil respiration band scale skipped", exc_info=True)
+        scale = None
+    if scale is not None:
+        flow.append(Spacer(1, 4))
+        flow.append(scale)
+
+    # Footnote-sized, so the block still fits under a full survey table.
+    fine = ParagraphStyle("ffBioFine", parent=styles["muted"], fontSize=8, leading=10)
+    flow.append(Spacer(1, 4))
+    flow.append(Paragraph(_citation(rating, placeholder), fine))
+    # The caveats are about the published guideline; placeholder bands are not it.
+    caveats = rating.get("caveats") if not placeholder else None
+    for caveat in caveats if isinstance(caveats, list) else []:
+        text = _text(caveat)
+        if text:
+            flow.append(Paragraph("&#8226; " + escape(text), fine))
+    return flow
+
+
+def _biology(rating: Optional[Dict], styles: Dict[str, ParagraphStyle],
+             avail_width: float) -> List:
+    """The "Soil biology" block: the respiration rating, or why there is none."""
+    flow: List = [Paragraph("Soil biology", styles["h2"])]
+    if rating is None:
+        flow.append(Paragraph(escape(microbial.NOT_PROVIDED_MESSAGE), styles["muted"]))
+        return flow
+    rated = None
+    if rating.get("status") == "rated":
+        try:
+            rated = _rated(rating, styles, avail_width)
+        except Exception:  # noqa: BLE001 - a bad stored rating loses the rating, not the page
+            log.exception("soil respiration rating skipped")
+    if rated:
+        return flow + rated
+    message = _text(rating.get("message")) if rating.get("status") == "unrated" else None
+    flow.append(Paragraph(escape(message or microbial.UNRATED_MESSAGE), styles["body"]))
+    return flow
+
+
+def _build(analysis: Dict, styles: Dict[str, ParagraphStyle],
+           avail_width: float) -> List:
+    coords = _point(analysis.get("soil_point"))
+    rating = analysis.get("microbial")
+    if not isinstance(rating, dict):
+        rating = None
+    if coords is None and rating is None:
+        return []
+
+    flow: List = [Paragraph("Soil Profile", styles["h1"])]
+    # Without a point there is no survey to describe, only the biology block.
+    if coords is not None:
+        flow += _survey(coords, analysis.get("soil_profile"), styles, avail_width)
+    # One unit: if a long survey leaves too little room, the whole block moves
+    # to the next page rather than leaving its last caveats there on their own.
+    flow.append(KeepTogether(_biology(rating, styles, avail_width)))
+    return flow
+
+
 # ---------------------------------------------------------------------------
 # Public builder
 # ---------------------------------------------------------------------------
@@ -273,10 +476,11 @@ def soil_profile_flowables(analysis: Dict, styles: Dict[str, ParagraphStyle],
                            avail_width: float) -> List:
     """The Soil Profile page's flowables, or [] when there is nothing to show.
 
-    [] when the analysis has no soil_point: reports saved before this feature
-    (and submissions without a mapped point) keep their exact page count. The
-    stored profile is display data from outside services, so anything odd in it
-    costs the report this page, never the whole download.
+    [] when the analysis has neither a soil_point nor a microbial rating:
+    reports saved before these features (and submissions without either) keep
+    their exact page count. The stored profile is display data from outside
+    services, so anything odd in it costs the report this page, never the
+    whole download.
     """
     if not isinstance(analysis, dict):
         return []
