@@ -24,10 +24,10 @@ import L from 'leaflet'
 import Arrow from '../components/Arrow.jsx'
 import { DEMO_CAPTION, demoField } from './demo.js'
 import FarmFinder, { FarmFinderPins } from './FarmFinder.jsx'
-import { autoGrid, gridCells, pointInPolygon } from './geo.js'
+import { autoGrid, fieldAngle, gridCells, pointInPolygon } from './geo.js'
 import GridLines from './GridLines.jsx'
-import { ESRI_ATTR, ESRI_URL, FIELD_BLUE, START_CENTER, START_ZOOM } from './mapConfig.js'
-import { InvalidateSizeOnVisible, TrackMapView } from './mapView.js'
+import { ESRI_ATTR, ESRI_URL, FIELD_BLUE, ROTATE_OPTIONS, START_CENTER, START_ZOOM } from './mapConfig.js'
+import { InvalidateSizeOnVisible, MapBearing, TrackMapView, fitTurned } from './mapView.js'
 import StepHead from './StepHead.jsx'
 import { MAX_POINTS, useTool } from './ToolProvider.jsx'
 
@@ -79,7 +79,7 @@ function FitPolygon({ polygon, hasSavedView }) {
   useEffect(() => {
     const key = JSON.stringify(polygon)
     if (polygon.length >= 3 && key !== prevKey.current) {
-      try { map.fitBounds(polygon, { padding: [30, 30], maxZoom: 17 }) } catch { /* ignore */ }
+      try { fitTurned(map, polygon, { padding: 30, maxZoom: 17 }) } catch { /* ignore */ }
     }
     prevKey.current = key
   }, [map, polygon])
@@ -97,7 +97,7 @@ export default function Step1Field({ onFieldStarted }) {
     farmName, setFarmName, polygon, setPolygon, grid, setGrid, baselinePoints,
     setBaselinePoints, rows, setRows, cols, setCols, points, setGridPoints, addPoint,
     updatePoint, removePoint, clearPoints, tweakMode, setTweakMode, data, mapView,
-    setMapView, goStep, loadDemoField,
+    setMapView, goStep, loadDemoField, mapTurn, setMapTurn, bearing,
   } = useTool()
 
   const [map, setMap] = useState(null)
@@ -109,7 +109,7 @@ export default function Step1Field({ onFieldStarted }) {
   }, [onFieldStarted, closed, verts.length])
 
   const cells = useMemo(
-    () => (closed && grid ? gridCells(polygon, grid.rows, grid.cols) : []),
+    () => (closed && grid ? gridCells(polygon, grid.rows, grid.cols, grid.angle) : []),
     [closed, polygon, grid])
 
   function handleMapClick(lat, lng) {
@@ -121,10 +121,11 @@ export default function Step1Field({ onFieldStarted }) {
     if (verts.length < 3) return
     setPolygon(verts)
     setVerts([])
-    // A sensible starting grid straight away; Apply changes it.
-    const next = { rows: rows || 3, cols: cols || 3 }
+    // A sensible starting grid straight away, lined up with the field's
+    // edges; Apply and the direction controls change it.
+    const next = { rows: rows || 3, cols: cols || 3, angle: fieldAngle(verts) }
     setGrid(next)
-    setGridPoints(baselinePoints ? autoGrid(verts, next.rows, next.cols) : [])
+    setGridPoints(baselinePoints ? autoGrid(verts, next.rows, next.cols, next.angle) : [])
   }
 
   function resetBoundary() {
@@ -135,21 +136,36 @@ export default function Step1Field({ onFieldStarted }) {
   }
 
   function applyGrid() {
-    const next = { rows: rows || 3, cols: cols || 3 }
+    const next = { rows: rows || 3, cols: cols || 3, angle: grid ? grid.angle || 0 : fieldAngle(polygon) }
     setGrid(next)
-    setGridPoints(baselinePoints ? autoGrid(polygon, next.rows, next.cols) : [])
+    setGridPoints(baselinePoints ? autoGrid(polygon, next.rows, next.cols, next.angle) : [])
+  }
+
+  /** True when any grid point already has a reading or a crop entered. */
+  function gridHasData() {
+    return points.some((p) => p.cell &&
+      Object.values(data[p.label] || {}).some((v) => String(v ?? '').trim() !== ''))
+  }
+
+  /** Turn the grid; its points move, so readings on them would be lost. */
+  function setGridAngle(angle) {
+    if (!grid) return
+    const a = Math.max(-45, Math.min(45, Math.round(Number(angle) * 10) / 10 || 0))
+    if (a === (grid.angle || 0)) return
+    if (baselinePoints && gridHasData() && !window.confirm(
+      'Turning the grid moves its points and clears the soil readings entered for them. Continue?')) return
+    setGrid({ ...grid, angle: a })
+    if (baselinePoints) setGridPoints(autoGrid(polygon, grid.rows, grid.cols, a))
   }
 
   function toggleBaselinePoints(on) {
     if (!grid) { setBaselinePoints(on); return }
     if (on) {
       setBaselinePoints(true)
-      setGridPoints(autoGrid(polygon, grid.rows, grid.cols))
+      setGridPoints(autoGrid(polygon, grid.rows, grid.cols, grid.angle))
       return
     }
-    const hasData = points.some((p) => p.cell &&
-      Object.values(data[p.label] || {}).some((v) => String(v ?? '').trim() !== ''))
-    if (hasData && !window.confirm(
+    if (gridHasData() && !window.confirm(
       'Turning off grid points also clears the soil readings entered for them. Continue?')) return
     setBaselinePoints(false)
     setGridPoints([])
@@ -200,8 +216,11 @@ export default function Step1Field({ onFieldStarted }) {
               center={mapView ? mapView.center : START_CENTER}
               zoom={mapView ? mapView.zoom : START_ZOOM}
               scrollWheelZoom={false}
+              {...ROTATE_OPTIONS}
+              bearing={bearing}
             >
               <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} />
+              <MapBearing angle={bearing} />
               <TrackMapView onChange={setMapView} />
               <InvalidateSizeOnVisible />
               <MapClicks onClick={handleMapClick} />
@@ -324,7 +343,26 @@ export default function Step1Field({ onFieldStarted }) {
                   </div>
                   <button type="button" className="btn btn--ghost btn--sm" onClick={applyGrid}>Apply</button>
                 </div>
+                <div className="field">
+                  <span className="label" id="grid-dir">Grid direction</span>
+                  <div className="seg" role="group" aria-labelledby="grid-dir">
+                    <button type="button" className={`seg__btn${Math.abs((grid?.angle || 0) - fieldAngle(polygon)) < 0.05 ? ' is-on' : ''}`}
+                      onClick={() => setGridAngle(fieldAngle(polygon))}>Match field</button>
+                    <button type="button" className={`seg__btn${!(grid?.angle) ? ' is-on' : ''}`}
+                      onClick={() => setGridAngle(0)}>North–south</button>
+                  </div>
+                  <div className="angle">
+                    <input type="range" className="angle__range" min="-45" max="45" step="1"
+                      aria-label="Grid angle in degrees" value={Math.round(grid?.angle || 0)}
+                      onChange={(e) => setGridAngle(e.target.value)} />
+                    <span className="angle__val mono" aria-hidden="true">{(grid?.angle || 0).toFixed(0)}°</span>
+                  </div>
+                </div>
                 <div className="sheet__checks">
+                  <label className="check">
+                    <input type="checkbox" checked={mapTurn} onChange={(e) => setMapTurn(e.target.checked)} />
+                    Turn the map so the grid sits square
+                  </label>
                   <label className="check">
                     <input type="checkbox" checked={baselinePoints} onChange={(e) => toggleBaselinePoints(e.target.checked)} />
                     A point in every square

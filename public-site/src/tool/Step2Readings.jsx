@@ -13,8 +13,8 @@ import Arrow from '../components/Arrow.jsx'
 import CropPicker from './CropPicker.jsx'
 import { exampleReadings } from './demo.js'
 import { gridCellRing } from './geo.js'
-import { ESRI_ATTR, ESRI_URL, FIELD_BLUE, START_CENTER, START_ZOOM } from './mapConfig.js'
-import { InvalidateSizeOnVisible, TrackMapView } from './mapView.js'
+import { ESRI_ATTR, ESRI_URL, FIELD_BLUE, ROTATE_OPTIONS, START_CENTER, START_ZOOM } from './mapConfig.js'
+import { InvalidateSizeOnVisible, MapBearing, TrackMapView, fitTurned } from './mapView.js'
 import ScoreLegend from './ScoreLegend.jsx'
 import { scoreColor } from './soilColor.js'
 import StepHead from './StepHead.jsx'
@@ -36,7 +36,7 @@ function FitView({ polygon, points }) {
     const positions = polygon.length >= 2 ? polygon : points.map((p) => [p.lat, p.lng])
     if (positions.length >= 2) {
       try {
-        map.fitBounds(positions, { padding: [30, 30], maxZoom: 17 })
+        fitTurned(map, positions, { padding: 30, maxZoom: 17 })
         done.current = true
       } catch { /* ignore */ }
     }
@@ -47,7 +47,7 @@ function FitView({ polygon, points }) {
 export default function Step2Readings() {
   const {
     polygon, points, data, setSectionData, sectionComplete, scores, completeCount,
-    total, mapView, setMapView, goStep, fillData,
+    total, mapView, setMapView, goStep, fillData, bearing,
   } = useTool()
   const [selected, setSelected] = useState(null)
   const [filledNote, setFilledNote] = useState('')
@@ -110,8 +110,11 @@ export default function Step2Readings() {
               center={mapView ? mapView.center : START_CENTER}
               zoom={mapView ? mapView.zoom : START_ZOOM}
               scrollWheelZoom={false}
+              {...ROTATE_OPTIONS}
+              bearing={bearing}
             >
               <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} />
+              <MapBearing angle={bearing} />
               <TrackMapView onChange={setMapView} />
               <InvalidateSizeOnVisible />
               <ScoreLegend showNoData />
@@ -121,7 +124,7 @@ export default function Step2Readings() {
                   color: FIELD_BLUE, weight: 2, fillColor: FIELD_BLUE, fillOpacity: 0.08, interactive: false,
                 }} />
               )}
-              <Pane name="score-cells" style={{ zIndex: 390 }}>
+              <Pane name="score-cells" pane="rotatePane" style={{ zIndex: 390 }}>
                 {points.map((p) => {
                   if (scores[p.label] === undefined) return null
                   const ring = gridCellRing(polygon, p.cell)

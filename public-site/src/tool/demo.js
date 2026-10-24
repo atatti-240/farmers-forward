@@ -6,7 +6,7 @@
    has something to show. The UI labels them as examples everywhere.
    ========================================================================== */
 
-import { autoGrid } from './geo.js'
+import { autoGrid, fieldAngle } from './geo.js'
 
 export const DEMO_POLYGON = [
   [29.452229, -95.902405],
@@ -15,10 +15,10 @@ export const DEMO_POLYGON = [
   [29.449426, -95.905795],
 ]
 
-export const DEMO_GRID = { rows: 5, cols: 5 }
+export const DEMO_GRID = { rows: 4, cols: 4, angle: fieldAngle(DEMO_POLYGON) }
 
 /** Where the example field is, for the "Load the example field" band. */
-export const DEMO_CAPTION = '29.4492° N · 95.9022° W · 13 sample points'
+export const DEMO_CAPTION = '29.4492° N · 95.9022° W · 16 sample points'
 
 /** The store patch that loads the demo field with baseline points. */
 export function demoField() {
@@ -29,7 +29,8 @@ export function demoField() {
     rows: DEMO_GRID.rows,
     cols: DEMO_GRID.cols,
     baselinePoints: true,
-    points: autoGrid(DEMO_POLYGON, DEMO_GRID.rows, DEMO_GRID.cols).map((p, i) => ({
+    mapTurn: true,
+    points: autoGrid(DEMO_POLYGON, DEMO_GRID.rows, DEMO_GRID.cols, DEMO_GRID.angle).map((p, i) => ({
       ...p,
       label: `A${i + 1}`,
     })),

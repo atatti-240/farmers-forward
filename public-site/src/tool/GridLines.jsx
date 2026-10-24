@@ -32,7 +32,8 @@ export default function GridLines({ cells }) {
 
   useEffect(() => {
     // Below the overlay pane (400) so lines never paint over sample points.
-    if (!map.getPane(PANE)) map.createPane(PANE).style.zIndex = '390'
+    // Inside leaflet-rotate's turning pane, so the lines turn with the map.
+    if (!map.getPane(PANE)) map.createPane(PANE, map.getPane('rotatePane')).style.zIndex = '390'
 
     const group = L.layerGroup()
     group.cellLayers = new Map()

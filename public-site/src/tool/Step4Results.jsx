@@ -16,8 +16,8 @@ import { downloadReport } from '../api/client.js'
 import Arrow from '../components/Arrow.jsx'
 import { gridCellRing, polygonCentroid } from './geo.js'
 import { captureMapImage } from './mapCapture.js'
-import { ESRI_ATTR, ESRI_URL, FIELD_BLUE, START_CENTER } from './mapConfig.js'
-import { InvalidateSizeOnVisible } from './mapView.js'
+import { ESRI_ATTR, ESRI_URL, FIELD_BLUE, ROTATE_OPTIONS, START_CENTER } from './mapConfig.js'
+import { InvalidateSizeOnVisible, MapBearing, fitTurned } from './mapView.js'
 import {
   FertilizerPlan, FieldFertilizerTotal, SoilBiology, SoilProfile, hasFertilizerPlan,
   microbialLine, usableProfile,
@@ -71,7 +71,7 @@ function FitView({ polygon, positions }) {
       }
       map.invalidateSize()
       try {
-        map.fitBounds(pts, { padding: [36, 36], maxZoom: 18 })
+        fitTurned(map, pts, { padding: 36, maxZoom: 18 })
         done.current = true
       } catch { /* ignore */ }
     }
@@ -307,6 +307,7 @@ function RegionCard({ r, highlighted, profile, microbial }) {
 export default function Step4Results() {
   const { result, resetAll, editAgain } = useTool()
   const mapRef = useRef(null)
+  const [leafletMap, setLeafletMap] = useState(null)
   const [download, setDownload] = useState({ state: 'idle', message: '' })
   const [flash, setFlash] = useState(null)
 
@@ -350,7 +351,19 @@ export default function Step4Results() {
   async function handleDownload() {
     setDownload({ state: 'working', message: '' })
     try {
-      const mapImage = await captureMapImage(mapRef.current)
+      // The report's map is always north up: straighten a turned map for the
+      // capture, then turn it back.
+      const turned = leafletMap && result.bearing
+      if (turned) {
+        leafletMap.setBearing(0)
+        await new Promise((resolve) => setTimeout(resolve, 400))
+      }
+      let mapImage
+      try {
+        mapImage = await captureMapImage(mapRef.current)
+      } finally {
+        if (turned) leafletMap.setBearing(result.bearing)
+      }
       await downloadReport(result.pdfToken, mapImage)
       setDownload({ state: 'done', message: 'Your PDF report is downloading.' })
     } catch (err) {
@@ -390,15 +403,17 @@ export default function Step4Results() {
         {/* No wheel zoom: this page is read by scrolling, and a wheel over
             the map would zoom it instead. Buttons, double-click and pinch
             still zoom. Half-step zoom lets the field fill the frame. */}
-        <MapContainer center={center} zoom={15} scrollWheelZoom={false} zoomSnap={0.5}>
+        <MapContainer ref={setLeafletMap} center={center} zoom={15} scrollWheelZoom={false} zoomSnap={0.5}
+          {...ROTATE_OPTIONS} bearing={result.bearing || 0}>
           <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} crossOrigin="anonymous" />
+          <MapBearing angle={result.bearing || 0} />
           <InvalidateSizeOnVisible />
           <ScoreLegend />
           <FitView polygon={polygon} positions={positions} />
           {polygon.length >= 3 && (
             <Polygon positions={polygon} pathOptions={{ color: FIELD_BLUE, weight: 2, fillColor: FIELD_BLUE, fillOpacity: 0.06 }} />
           )}
-          <Pane name="score-cells" style={{ zIndex: 390 }}>
+          <Pane name="score-cells" pane="rotatePane" style={{ zIndex: 390 }}>
             {results.map((r) => {
               const ring = cellRings[r.section_label]
               if (!ring) return null

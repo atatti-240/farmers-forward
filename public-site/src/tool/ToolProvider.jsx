@@ -54,6 +54,8 @@ function defaultState() {
     cols: 3,
     grid: null,
     baselinePoints: true,
+    // Turn every map so the grid sits square on screen (grid.angle).
+    mapTurn: true,
     points: [],
     tweakMode: false,
     mapView: null,
@@ -71,6 +73,13 @@ function isMapView(v) {
 
 function isGrid(g) {
   return !!g && Number.isInteger(g.rows) && Number.isInteger(g.cols) && g.rows >= 1 && g.cols >= 1
+}
+
+/** A saved grid with its angle coerced into -45..45 (older drafts have none). */
+function cleanGrid(g) {
+  if (!isGrid(g)) return null
+  const angle = isNum(g.angle) ? Math.max(-45, Math.min(45, g.angle)) : 0
+  return { rows: g.rows, cols: g.cols, angle }
 }
 
 function isPoint(p) {
@@ -93,8 +102,9 @@ function loadState() {
     s.polygon = Array.isArray(s.polygon)
       ? s.polygon.filter((v) => Array.isArray(v) && v.length === 2 && v.every(isNum))
       : []
-    s.grid = isGrid(s.grid) ? s.grid : null
+    s.grid = cleanGrid(s.grid)
     s.baselinePoints = s.baselinePoints !== false
+    s.mapTurn = s.mapTurn !== false
     s.data = s.data && typeof s.data === 'object' && !Array.isArray(s.data) ? s.data : {}
     s.mapView = isMapView(s.mapView) ? s.mapView : null
     s.finderPins = Array.isArray(s.finderPins) ? s.finderPins.filter(isFinderPin) : []
@@ -150,7 +160,7 @@ function scoreKey(values) {
 
 export default function ToolProvider({ children }) {
   const [state, setState] = useState(loadState)
-  // In memory only: { analysis, pdfToken, pdfExpiresAt, polygon, points }.
+  // In memory only: { analysis, pdfToken, pdfExpiresAt, polygon, points, bearing }.
   const [result, setResult] = useState(null)
   const [scoreCache, setScoreCache] = useState({})
   const pendingScores = useRef(new Set())
@@ -217,6 +227,7 @@ export default function ToolProvider({ children }) {
   const setRows = useCallback(set('rows'), [patch])
   const setCols = useCallback(set('cols'), [patch])
   const setTweakMode = useCallback(set('tweakMode'), [patch])
+  const setMapTurn = useCallback(set('mapTurn'), [patch])
   const setMapView = useCallback(set('mapView'), [patch])
   /* eslint-enable react-hooks/exhaustive-deps */
   const setPolygon = useCallback((polygon) => patch({ polygon: polygon || [] }), [patch])
@@ -300,10 +311,11 @@ export default function ToolProvider({ children }) {
       pdfExpiresAt: response.pdf_token_expires_at,
       polygon: state.polygon,
       points: state.points,
+      bearing: state.mapTurn && state.grid ? state.grid.angle || 0 : 0,
     })
     patch({ step: 4 })
     window.scrollTo({ top: 0 })
-  }, [patch, state.polygon, state.points])
+  }, [patch, state.polygon, state.points, state.mapTurn, state.grid])
 
   const resetAll = useCallback(() => {
     setResult(null)
@@ -320,13 +332,15 @@ export default function ToolProvider({ children }) {
   const value = {
     ...state,
     step: state.step === 4 && !result ? 3 : state.step,
+    // How far to turn the maps (degrees) so the grid sits square on screen.
+    bearing: state.mapTurn && state.grid ? state.grid.angle || 0 : 0,
     result,
     scores,
     completeCount,
     total: state.points.length,
     allComplete,
     setFarmName, setDate, setPolygon, setGrid, setBaselinePoints, setRows, setCols,
-    setTweakMode, setMapView, setGridPoints, addPoint, updatePoint, removePoint,
+    setTweakMode, setMapTurn, setMapView, setGridPoints, addPoint, updatePoint, removePoint,
     clearPoints, addFinderPin, removeFinderPin, clearFinderPins, setSectionData,
     fillData, loadDemoField, sectionComplete, goStep, showResult, resetAll, editAgain,
   }

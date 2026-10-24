@@ -19,14 +19,14 @@ import useMagnetic from './useMagnetic.js'
 export const EXAMPLE_READING = {
   point: 'A7',
   crop: 'Corn',
-  score: 93,
+  score: 96,
   category: 'Excellent',
   readings: [
-    ['pH', '6.2', ''],
+    ['pH', '6.1', ''],
     ['EC', '0.38', 'dS/m'],
-    ['N', '22', 'ppm'],
-    ['P', '33', 'ppm'],
-    ['K', '174', 'ppm'],
+    ['N', '27', 'ppm'],
+    ['P', '37', 'ppm'],
+    ['K', '198', 'ppm'],
   ],
 }
 
