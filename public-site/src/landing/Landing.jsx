@@ -1,17 +1,20 @@
 /* ==========================================================================
    Farmers Forward (public site) - landing page
-   The story (the problem → how it works → try it) and the way into the tool.
-   Pings /health on load so the sleeping free server is awake by the time a
-   visitor reaches the tool.
+   Hero → the problem → how it works → sources → try it. Pings /health on
+   load so the sleeping free server is awake by the time a visitor reaches
+   the tool. Smooth scrolling (Lenis) and scroll-linked motion (GSAP) load
+   after first paint, on this page only, and never under reduced motion.
    ========================================================================== */
 
 import './landing.css'
 
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
 
 import { ping } from '../api/client.js'
+import Arrow from '../components/Arrow.jsx'
 import { SiteFooter, SiteHeader } from '../components/SiteChrome.jsx'
+import { WipeLink } from '../components/Wipe.jsx'
+import Hero from './Hero.jsx'
 
 const STEPS = [
   {
@@ -21,50 +24,61 @@ const STEPS = [
   },
   {
     n: '02',
-    title: 'Score every region',
+    title: 'Score every square',
     body: 'Our model turns each reading into a 0–100 soil health score and checks it against the crop you plan to grow.',
   },
   {
     n: '03',
     title: 'Get the plan',
-    body: 'Each region gets plain-English fixes and nutrient rates from Texas A&M AgriLife’s soil-test tables, plus a PDF to keep.',
+    body: 'Each square gets plain-English fixes and nutrient rates from Texas A&M AgriLife’s soil-test tables, plus a PDF to keep.',
   },
 ]
+
+/** Lenis smooth scroll, linked to GSAP's ticker and ScrollTrigger. */
+function useSmoothScroll() {
+  useEffect(() => {
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined
+    let lenis = null
+    let cancelled = false
+    let tick = null
+    Promise.all([import('lenis'), import('gsap'), import('gsap/ScrollTrigger')]).then(
+      ([{ default: Lenis }, { gsap }, { ScrollTrigger }]) => {
+        if (cancelled) return
+        gsap.registerPlugin(ScrollTrigger)
+        lenis = new Lenis({ lerp: 0.1, anchors: { offset: -72 } })
+        lenis.on('scroll', ScrollTrigger.update)
+        tick = (time) => lenis.raf(time * 1000)
+        gsap.ticker.add(tick)
+        gsap.ticker.lagSmoothing(0)
+      })
+    return () => {
+      cancelled = true
+      if (lenis) {
+        import('gsap').then(({ gsap }) => gsap.ticker.remove(tick))
+        lenis.destroy()
+      }
+    }
+  }, [])
+}
 
 export default function Landing() {
   useEffect(() => {
     document.title = 'Farmers Forward · Know your soil before you fertilize'
     ping()
   }, [])
+  useSmoothScroll()
 
   return (
     <div className="page page--landing">
-      <SiteHeader />
+      <SiteHeader overlay />
       <main id="main">
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero__glow" aria-hidden="true" />
-          <div className="hero__inner">
-            <p className="eyebrow">Free soil health check for small farms</p>
-            <h1 id="hero-title" className="hero__title">
-              Know your soil <em>before</em> you fertilize.
-            </h1>
-            <p className="hero__lead">
-              Map your field, enter soil sensor readings, and get a health
-              score for every part of it, with a fertilizer plan backed by
-              Texas A&amp;M AgriLife. No sign-up.
-            </p>
-            <div className="hero__ctas">
-              <Link to="/tool" className="btn btn--primary btn--lg">Try it on your field</Link>
-              <a href="#how" className="btn btn--secondary btn--lg">How it works</a>
-            </div>
-          </div>
-        </section>
+        <Hero />
 
-        <section className="problem" aria-labelledby="problem-title">
+        <section id="problem" className="lsec problem" aria-labelledby="problem-title">
           <div className="wrap">
-            <p className="eyebrow">The problem</p>
-            <h2 id="problem-title" className="display">
-              Most small farms fertilize by guesswork.
+            <p className="kicker kicker--rule"><span className="kicker__num">01</span> The problem</p>
+            <h2 id="problem-title" className="h2 problem__title">
+              Most small farms fertilize <em>by guesswork.</em>
             </h2>
             <p className="lead">
               One field can hold acidic corners, salty low spots and
@@ -75,25 +89,26 @@ export default function Landing() {
           </div>
         </section>
 
-        <section id="how" className="how" aria-labelledby="how-title">
+        <section id="how" className="lsec how" aria-labelledby="how-title">
           <div className="wrap">
-            <p className="eyebrow">How Farmers Forward works</p>
-            <h2 id="how-title" className="display">Sensor → model → plan.</h2>
+            <p className="kicker kicker--rule"><span className="kicker__num">02</span> How it works</p>
+            <h2 id="how-title" className="h2">Sensor, model, <em>plan.</em></h2>
             <ol className="how__steps">
               {STEPS.map((s) => (
                 <li key={s.n} className="how__step">
                   <span className="how__num mono">{s.n}</span>
-                  <h3 className="how__title">{s.title}</h3>
-                  <p>{s.body}</p>
+                  <h3 className="h3 how__title">{s.title}</h3>
+                  <p className="help">{s.body}</p>
                 </li>
               ))}
             </ol>
           </div>
         </section>
 
-        <section className="cred" aria-labelledby="cred-title">
+        <section id="sources" className="lsec cred" aria-labelledby="cred-title">
           <div className="wrap">
-            <h2 id="cred-title" className="eyebrow">Built on trusted sources</h2>
+            <p className="kicker kicker--rule"><span className="kicker__num">03</span> Sources</p>
+            <h2 id="cred-title" className="h2">Built on <em>public science.</em></h2>
             <ul className="cred__list">
               <li><b>Texas A&amp;M AgriLife</b><span>Soil-test fertilizer recommendation tables</span></li>
               <li><b>USDA NRCS SSURGO</b><span>Soil survey data, via UC Davis SoilWeb</span></li>
@@ -102,14 +117,14 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="cta" aria-labelledby="cta-title">
-          <div className="wrap cta__inner">
-            <h2 id="cta-title" className="display">Try it on your field.</h2>
+        <section className="lsec cta" aria-labelledby="cta-title">
+          <div className="wrap">
+            <h2 id="cta-title" className="display cta__title">Try it on <em>your field.</em></h2>
             <p className="lead">
               Takes about two minutes. No sensor yet? Load our example field
               in Fort Bend County, Texas.
             </p>
-            <Link to="/tool" className="btn btn--primary btn--lg">Start the assessment</Link>
+            <WipeLink to="/tool" className="btn btn--primary btn--lg">Start the assessment <Arrow /></WipeLink>
           </div>
         </section>
       </main>

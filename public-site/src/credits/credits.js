@@ -1,3 +1,68 @@
 /* Photo and video credits, mirrored from public-site/CREDITS.md. */
 
-export const CREDITS = []
+export const CREDITS = [
+  {
+    what: 'Aerial drift over corn rows at dusk (landing hero video)',
+    creator: 'Tom Fisk',
+    profile: 'https://www.pexels.com/@tomfisk/',
+    site: 'Pexels',
+    source: 'https://www.pexels.com/video/the-sun-sets-over-a-field-in-the-middle-of-a-corn-field-19869113/',
+    license: 'Pexels License',
+  },
+  {
+    what: 'Flat crop field in the wind at sunset (video)',
+    creator: 'Kelly',
+    profile: 'https://www.pexels.com/@kelly/',
+    site: 'Pexels',
+    source: 'https://www.pexels.com/video/a-field-with-a-sunset-in-the-background-27114598/',
+    license: 'Pexels License',
+  },
+  {
+    what: 'Cracked, dried-out soil',
+    creator: 'Markus Spiske',
+    profile: 'https://unsplash.com/@markusspiske',
+    site: 'Unsplash',
+    source: 'https://unsplash.com/photos/srwTnERpPv0',
+    license: 'Unsplash License',
+  },
+  {
+    what: 'A hand lifting dark soil',
+    creator: 'Alicia Christin Gerald',
+    profile: 'https://unsplash.com/@allysphotos',
+    site: 'Unsplash',
+    source: 'https://unsplash.com/photos/bQ9y93kdk4c',
+    license: 'Unsplash License',
+  },
+  {
+    what: 'Seedling roots and root hairs, macro',
+    creator: 'David Clode',
+    profile: 'https://unsplash.com/@davidclode',
+    site: 'Unsplash',
+    source: 'https://unsplash.com/photos/B9mSkgUMAZk',
+    license: 'Unsplash License',
+  },
+  {
+    what: 'Plowed furrows to a flat horizon',
+    creator: 'Matt Richmond',
+    profile: 'https://www.pexels.com/@matt-richmond-314917881/',
+    site: 'Pexels',
+    source: 'https://www.pexels.com/photo/expansive-plowed-farmland-in-golden-light-31042245/',
+    license: 'Pexels License',
+  },
+  {
+    what: 'Rain on bare ground',
+    creator: 'Anton Atanasov',
+    profile: 'https://unsplash.com/@blooddrainer',
+    site: 'Unsplash',
+    source: 'https://unsplash.com/photos/Qj77iDjVsX8',
+    license: 'Unsplash License',
+  },
+  {
+    what: 'Dark soil texture (tool page background)',
+    creator: 'Aaron Ghena',
+    profile: 'https://unsplash.com/@aaronghena',
+    site: 'Unsplash',
+    source: 'https://unsplash.com/photos/TOyb9z2IVPQ',
+    license: 'Unsplash License',
+  },
+]
