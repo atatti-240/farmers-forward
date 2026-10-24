@@ -56,7 +56,7 @@ export default function CropPicker({ value = '', onChange }) {
 
   return (
     <div className="field crop-field">
-      <label className="label" htmlFor={id}>Crop type <span className="help">(required)</span></label>
+      <label className="label" htmlFor={id}>Crop <span className="label__opt">(required)</span></label>
       <div className="crop-picker">
         <input
           ref={inputRef}
@@ -84,7 +84,7 @@ export default function CropPicker({ value = '', onChange }) {
           onBlur={() => choose(exact || query)}
           onKeyDown={handleKeyDown}
         />
-        <span className="crop-picker__arrow" aria-hidden="true">⌄</span>
+        <svg className="crop-picker__arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>
         {open && (
           <ul ref={listRef} id={`${id}-list`} className="crop-picker__list" role="listbox" aria-label="Crop suggestions">
             {options.map((option, index) => (

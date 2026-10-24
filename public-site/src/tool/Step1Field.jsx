@@ -21,12 +21,14 @@ import {
 } from 'react-leaflet'
 import L from 'leaflet'
 
-import { demoField } from './demo.js'
+import Arrow from '../components/Arrow.jsx'
+import { DEMO_CAPTION, demoField } from './demo.js'
 import FarmFinder, { FarmFinderPins } from './FarmFinder.jsx'
 import { autoGrid, gridCells, pointInPolygon } from './geo.js'
 import GridLines from './GridLines.jsx'
 import { ESRI_ATTR, ESRI_URL, FIELD_BLUE, START_CENTER, START_ZOOM } from './mapConfig.js'
 import { InvalidateSizeOnVisible, TrackMapView } from './mapView.js'
+import StepHead from './StepHead.jsx'
 import { MAX_POINTS, useTool } from './ToolProvider.jsx'
 
 function dotIcon(label) {
@@ -90,7 +92,7 @@ function clampInt(value) {
   return Math.min(12, Math.max(1, v))
 }
 
-export default function Step1Field() {
+export default function Step1Field({ onFieldStarted }) {
   const {
     farmName, setFarmName, polygon, setPolygon, grid, setGrid, baselinePoints,
     setBaselinePoints, rows, setRows, cols, setCols, points, setGridPoints, addPoint,
@@ -101,6 +103,10 @@ export default function Step1Field() {
   const [map, setMap] = useState(null)
   const [verts, setVerts] = useState([])
   const closed = polygon.length >= 3
+
+  useEffect(() => {
+    onFieldStarted?.(closed || verts.length > 0)
+  }, [onFieldStarted, closed, verts.length])
 
   const cells = useMemo(
     () => (closed && grid ? gridCells(polygon, grid.rows, grid.cols) : []),
@@ -154,35 +160,46 @@ export default function Step1Field() {
     loadDemoField(demoField())
   }
 
+  const hint = !closed
+    ? verts.length === 0
+      ? 'Click the map to place the first corner of your field'
+      : verts.length < 3
+        ? `Corner ${verts.length} placed · add at least ${3 - verts.length} more`
+        : `${verts.length} corners · close the outline when you’re done`
+    : points.length === 0
+      ? 'Click inside the field to add a sample point'
+      : `${points.length} sample point${points.length === 1 ? '' : 's'} · click inside the field to add more`
+
   return (
-    <section aria-labelledby="step1-title">
-      <div className="step-head">
-        <p className="eyebrow">Step 1 of 4</p>
-        <h1 id="step1-title" className="step-head__title">Map your field</h1>
-        <p className="step-head__lead">
-          Find your farm, then click the map to trace the edge of one field.
-          We’ll split it into a grid and put a sample point in each square.
-        </p>
-        <div className="demo-callout">
-          <p>
-            <strong>No field handy?</strong> Load a real field in Fort Bend
-            County, Texas and fill it with example readings in the next step.
-          </p>
-          <button type="button" className="btn btn--glow" onClick={useDemo}>
-            Try an example field
+    <section className="step" aria-labelledby="step1-title">
+      <StepHead id="step1-title" num={closed ? '02' : '01'} kicker={closed ? 'Field' : 'Find'}
+        title={closed ? <>Lay out your <em>samples.</em></> : <>Find your field, then <em>trace it.</em></>}>
+        {closed
+          ? 'Each square of the grid gets one sample point. Change the grid, drag points to where you actually sampled, or click inside the field to add your own.'
+          : 'Search an address or coordinates, then click each corner of one field on the satellite map. We’ll split it into a grid with a sample point in every square.'}
+      </StepHead>
+
+      {!closed && (
+        <div className="demo">
+          <div className="demo__text">
+            <p className="kicker">No field handy?</p>
+            <p className="demo__title">Use a real field near Needville, Fort Bend County.</p>
+            <p className="demo__meta mono">{DEMO_CAPTION}</p>
+          </div>
+          <button type="button" className="btn btn--accent btn--lg demo__btn" onClick={useDemo}>
+            Load the example field <Arrow />
           </button>
         </div>
-      </div>
+      )}
 
-      <div className="split">
-        <div className="map-col">
-          <FarmFinder map={map} />
-          <div className="map" role="region" aria-label="Satellite map. Click to place field corners and sample points.">
+      <div className="workspace">
+        <div className="workspace__map">
+          <div className="map map--tall" role="region" aria-label="Satellite map. Click to place field corners and sample points.">
             <MapContainer
               ref={setMap}
               center={mapView ? mapView.center : START_CENTER}
               zoom={mapView ? mapView.zoom : START_ZOOM}
-              scrollWheelZoom
+              scrollWheelZoom={false}
             >
               <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} />
               <TrackMapView onChange={setMapView} />
@@ -243,106 +260,119 @@ export default function Step1Field() {
               )))}
             </MapContainer>
           </div>
+          <div className="map-float map-float--top">
+            <FarmFinder map={map} />
+          </div>
+          <p className="map-hint mono" aria-live="polite">
+            <span className="map-hint__dot" aria-hidden="true" />{hint}
+          </p>
         </div>
 
-        <div className="side">
-          <div className="panel">
+        <aside className="sheet" aria-label="Field setup">
+          <div className={`sheet__sec${closed ? ' is-done' : ' is-current'}`}>
+            <h2 className="sheet__head">
+              <span className="sheet__num mono" aria-hidden="true">{closed ? '✓' : '01'}</span>
+              Trace the outline
+            </h2>
+            {!closed ? (
+              <>
+                <p className="help">
+                  {verts.length === 0
+                    ? 'Click each corner of your field on the map, in order.'
+                    : `${verts.length} corner${verts.length === 1 ? '' : 's'} placed. Add at least 3, then close the outline.`}
+                </p>
+                <div className="sheet__row">
+                  <button type="button" className="btn btn--primary btn--sm" onClick={closeBoundary} disabled={verts.length < 3}>
+                    Close outline
+                  </button>
+                  <button type="button" className="btn btn--quiet btn--sm" onClick={() => setVerts((prev) => prev.slice(0, -1))} disabled={verts.length === 0}>
+                    Undo corner
+                  </button>
+                  <button type="button" className="btn btn--quiet btn--sm" onClick={() => setVerts([])} disabled={verts.length === 0}>
+                    Clear
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="sheet__row sheet__row--between">
+                <p className="help">Outline closed · <span className="mono">{polygon.length}</span> corners</p>
+                <button type="button" className="btn btn--quiet btn--sm" onClick={resetBoundary}>
+                  Redraw
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className={`sheet__sec${!closed ? ' is-waiting' : points.length ? ' is-done' : ' is-current'}`}>
+            <h2 className="sheet__head">
+              <span className="sheet__num mono" aria-hidden="true">{closed && points.length ? '✓' : '02'}</span>
+              Sampling grid
+            </h2>
+            {closed ? (
+              <>
+                <div className="grid-set">
+                  <div className="field">
+                    <label className="label" htmlFor="grid-rows">Rows</label>
+                    <input id="grid-rows" className="input input--num mono" type="number" min="1" max="12" value={rows}
+                      onChange={(e) => setRows(clampInt(e.target.value))} />
+                  </div>
+                  <span className="grid-set__x mono" aria-hidden="true">×</span>
+                  <div className="field">
+                    <label className="label" htmlFor="grid-cols">Columns</label>
+                    <input id="grid-cols" className="input input--num mono" type="number" min="1" max="12" value={cols}
+                      onChange={(e) => setCols(clampInt(e.target.value))} />
+                  </div>
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={applyGrid}>Apply</button>
+                </div>
+                <div className="sheet__checks">
+                  <label className="check">
+                    <input type="checkbox" checked={baselinePoints} onChange={(e) => toggleBaselinePoints(e.target.checked)} />
+                    A point in every square
+                  </label>
+                  <label className="check">
+                    <input type="checkbox" checked={tweakMode} disabled={points.length === 0} onChange={(e) => setTweakMode(e.target.checked)} />
+                    Drag points to adjust
+                  </label>
+                </div>
+                <p className="help">
+                  Click inside the field to add a point; click a point to remove it.
+                  {points.length >= MAX_POINTS && ` That’s the maximum of ${MAX_POINTS} points.`}
+                </p>
+              </>
+            ) : (
+              <p className="help">Close the outline first.</p>
+            )}
+          </div>
+
+          <div className="sheet__sec">
             <div className="field">
-              <label className="label" htmlFor="farm-name">Field name <span className="help">(optional)</span></label>
+              <label className="label" htmlFor="farm-name">Field name <span className="label__opt">(optional)</span></label>
               <input
                 id="farm-name"
                 className="input"
                 type="text"
                 maxLength={100}
                 value={farmName}
-                placeholder="e.g. North pasture"
+                placeholder="North pasture"
                 onChange={(e) => setFarmName(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="panel">
-            <h2 className="panel__title">
-              <span className={`panel__num${closed ? ' panel__num--done' : ''}`} aria-hidden="true">{closed ? '✓' : '1'}</span>
-              Trace the field
-            </h2>
-            {!closed ? (
-              <>
-                <p className="help">
-                  {verts.length === 0
-                    ? 'Click each corner of your field on the map.'
-                    : `${verts.length} corner${verts.length === 1 ? '' : 's'} placed. Add at least 3, then close the outline.`}
-                </p>
-                <div className="inline">
-                  <button type="button" className="btn btn--primary btn--sm" onClick={closeBoundary} disabled={verts.length < 3}>
-                    Close outline
-                  </button>
-                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => setVerts((prev) => prev.slice(0, -1))} disabled={verts.length === 0}>
-                    Undo corner
-                  </button>
-                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => setVerts([])} disabled={verts.length === 0}>
-                    Clear
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="help">Outline closed ({polygon.length} corners).</p>
-                <button type="button" className="btn btn--secondary btn--sm" onClick={resetBoundary}>
-                  Redraw outline
-                </button>
-              </>
-            )}
-          </div>
-
-          {closed && (
-            <div className="panel">
-              <h2 className="panel__title">
-                <span className={`panel__num${points.length ? ' panel__num--done' : ''}`} aria-hidden="true">{points.length ? '✓' : '2'}</span>
-                Sampling grid
-              </h2>
-              <div className="num-group">
-                <div className="field">
-                  <label className="label" htmlFor="grid-rows">Rows</label>
-                  <input id="grid-rows" className="input input--num" type="number" min="1" max="12" value={rows}
-                    onChange={(e) => setRows(clampInt(e.target.value))} />
-                </div>
-                <span className="num-group__x" aria-hidden="true">×</span>
-                <div className="field">
-                  <label className="label" htmlFor="grid-cols">Columns</label>
-                  <input id="grid-cols" className="input input--num" type="number" min="1" max="12" value={cols}
-                    onChange={(e) => setCols(clampInt(e.target.value))} />
-                </div>
-                <button type="button" className="btn btn--secondary btn--sm" onClick={applyGrid}>Apply grid</button>
-              </div>
-              <div className="inline inline--checks">
-                <label className="check">
-                  <input type="checkbox" checked={baselinePoints} onChange={(e) => toggleBaselinePoints(e.target.checked)} />
-                  A point in every square
-                </label>
-                <label className="check">
-                  <input type="checkbox" checked={tweakMode} disabled={points.length === 0} onChange={(e) => setTweakMode(e.target.checked)} />
-                  Drag points to adjust
-                </label>
-              </div>
-              <p className="help">
-                Click inside the field to add your own point. Click a point to remove it.
-                {points.length >= MAX_POINTS && ` That’s the maximum of ${MAX_POINTS} points.`}
-              </p>
-            </div>
-          )}
-
-          <div className="side__foot">
-            <p className="help" aria-live="polite">
-              {points.length > 0
-                ? `${points.length} sample point${points.length === 1 ? '' : 's'} ready.`
-                : closed ? 'Add at least one sample point to continue.' : 'Trace a field to continue.'}
+          <div className="sheet__foot">
+            <p className="sheet__count" aria-live="polite">
+              <span className="sheet__big mono">{points.length}</span>
+              <span className="help">
+                {points.length > 0
+                  ? `sample point${points.length === 1 ? '' : 's'} ready`
+                  : closed ? 'Add at least one point' : 'Trace a field to continue'}
+              </span>
             </p>
-            <button type="button" className="btn btn--primary" onClick={() => goStep(2)} disabled={points.length < 1}>
-              Next: soil readings →
+            <button type="button" className="btn btn--primary btn--lg" onClick={() => goStep(2)} disabled={points.length < 1}>
+              Enter readings <Arrow />
             </button>
           </div>
-        </div>
+        </aside>
       </div>
     </section>
   )

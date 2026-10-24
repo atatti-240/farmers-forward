@@ -123,16 +123,20 @@ export default function FarmFinder({ map }) {
   return (
     <div className="finder">
       <form className="finder__form" role="search" onSubmit={handleSubmit}>
-        <label className="label" htmlFor={id}>
-          Find a farm
+        <label className="visually-hidden" htmlFor={id}>
+          Find a farm by address or coordinates
         </label>
         <div className="finder__row">
+          <svg className="finder__icon" viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.75" />
+            <path d="M10.5 10.5 14 14" />
+          </svg>
           <input
             id={id}
             className="input finder__input"
             type="text"
             value={query}
-            placeholder="Address or 29.5310, -95.7730"
+            placeholder="Search an address or 29.5310, -95.7730"
             autoComplete="off"
             spellCheck={false}
             enterKeyHint="search"
@@ -145,7 +149,7 @@ export default function FarmFinder({ map }) {
           />
           <button
             type="submit"
-            className="btn btn--secondary"
+            className="btn btn--primary btn--sm finder__go"
             disabled={busy || !query.trim()}
           >
             {busy ? 'Finding…' : 'Find'}
@@ -159,12 +163,11 @@ export default function FarmFinder({ map }) {
         <p className="finder__status" role="status">
           {error ? '' : status}
         </p>
-        <p id={helpId} className="help finder__msg">
-          Each search adds a pin. Addresses are looked up with{' '}
+        <p id={helpId} className="finder__credit">
+          Each search drops a pin. Address search by{' '}
           <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
             OpenStreetMap
           </a>
-          .
         </p>
       </form>
 
@@ -197,7 +200,7 @@ export default function FarmFinder({ map }) {
           {finderPins.length > 1 && (
             <button
               type="button"
-              className="btn btn--ghost btn--sm"
+              className="btn btn--quiet btn--sm finder__clear"
               onClick={clearFinderPins}
             >
               Clear all pins

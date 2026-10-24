@@ -17,6 +17,9 @@ export const DEMO_POLYGON = [
 
 export const DEMO_GRID = { rows: 5, cols: 5 }
 
+/** Where the example field is, for the "Load the example field" band. */
+export const DEMO_CAPTION = '29.4492° N · 95.9022° W · 13 sample points'
+
 /** The store patch that loads the demo field with baseline points. */
 export function demoField() {
   return {

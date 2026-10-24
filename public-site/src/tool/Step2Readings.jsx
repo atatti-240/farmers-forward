@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { MapContainer, Pane, TileLayer, Polygon, CircleMarker, Tooltip, useMap } from 'react-leaflet'
 
+import Arrow from '../components/Arrow.jsx'
 import CropPicker from './CropPicker.jsx'
 import { exampleReadings } from './demo.js'
 import { gridCellRing } from './geo.js'
@@ -16,14 +17,15 @@ import { ESRI_ATTR, ESRI_URL, FIELD_BLUE, START_CENTER, START_ZOOM } from './map
 import { InvalidateSizeOnVisible, TrackMapView } from './mapView.js'
 import ScoreLegend from './ScoreLegend.jsx'
 import { scoreColor } from './soilColor.js'
+import StepHead from './StepHead.jsx'
 import { readingError, useTool } from './ToolProvider.jsx'
 
 export const FIELDS = [
   { key: 'ph', label: 'pH', unit: '', hint: 'Acidity, 0–14', placeholder: '6.5' },
   { key: 'ec', label: 'EC', unit: 'dS/m', hint: 'Salinity, 1:2 soil:water', placeholder: '0.8' },
-  { key: 'nitrogen', label: 'Nitrogen (N)', unit: 'ppm', hint: 'Nitrate-N', placeholder: '20' },
-  { key: 'phosphorus', label: 'Phosphorus (P)', unit: 'ppm', hint: '', placeholder: '25' },
-  { key: 'potassium', label: 'Potassium (K)', unit: 'ppm', hint: '', placeholder: '180' },
+  { key: 'nitrogen', label: 'Nitrogen', unit: 'ppm', hint: 'Nitrate-N', placeholder: '20' },
+  { key: 'phosphorus', label: 'Phosphorus', unit: 'ppm', hint: 'Available P', placeholder: '25' },
+  { key: 'potassium', label: 'Potassium', unit: 'ppm', hint: 'Available K', placeholder: '180' },
 ]
 
 function FitView({ polygon, points }) {
@@ -84,85 +86,83 @@ export default function Step2Readings() {
   }
 
   return (
-    <section aria-labelledby="step2-title">
-      <div className="step-head">
-        <p className="eyebrow">Step 2 of 4</p>
-        <h1 id="step2-title" className="step-head__title">Enter soil readings</h1>
-        <p className="step-head__lead">
-          Pick a point on the map or in the list, choose the crop, and type
-          its five sensor readings. Each point lights up with its soil health
-          as soon as it’s complete.
-        </p>
-      </div>
+    <section className="step" aria-labelledby="step2-title">
+      <StepHead id="step2-title" num="03" kicker="Readings" title={<>Enter the <em>readings.</em></>}
+        aside={(
+          <div className="meter" aria-label={`${completeCount} of ${total} points complete`}>
+            <p className="meter__text">
+              <span className="meter__big mono">{completeCount}</span>
+              <span className="mono meter__of">/ {total} points complete</span>
+            </p>
+            <div className="meter__track" aria-hidden="true">
+              <span className="meter__fill" style={{ transform: `scaleX(${pct / 100})` }} />
+            </div>
+          </div>
+        )}>
+        Pick a point, choose its crop and type the five sensor readings. Each
+        point takes its soil health colour the moment it’s complete.
+      </StepHead>
 
-      <div className="progress" aria-label={`${completeCount} of ${total} points complete`}>
-        <div className="progress__meta">
-          <span>Points complete</span>
-          <span className="mono">{completeCount} / {total}</span>
-        </div>
-        <div className="progress__track" aria-hidden="true">
-          <div className="progress__bar" style={{ width: `${pct}%` }} />
-        </div>
-      </div>
-
-      <div className="split">
-        <div className="map" role="region" aria-label="Map of sample points coloured by soil health">
-          <MapContainer
-            center={mapView ? mapView.center : START_CENTER}
-            zoom={mapView ? mapView.zoom : START_ZOOM}
-            scrollWheelZoom
-          >
-            <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} />
-            <TrackMapView onChange={setMapView} />
-            <InvalidateSizeOnVisible />
-            <ScoreLegend showNoData />
-            {!mapView && <FitView polygon={polygon} points={points} />}
-            {polygon.length >= 3 && (
-              <Polygon positions={polygon} pathOptions={{
-                color: FIELD_BLUE, weight: 2, fillColor: FIELD_BLUE, fillOpacity: 0.08, interactive: false,
-              }} />
-            )}
-            <Pane name="score-cells" style={{ zIndex: 390 }}>
+      <div className="workspace">
+        <div className="workspace__map">
+          <div className="map map--tall" role="region" aria-label="Map of sample points coloured by soil health">
+            <MapContainer
+              center={mapView ? mapView.center : START_CENTER}
+              zoom={mapView ? mapView.zoom : START_ZOOM}
+              scrollWheelZoom={false}
+            >
+              <TileLayer url={ESRI_URL} attribution={ESRI_ATTR} maxZoom={19} />
+              <TrackMapView onChange={setMapView} />
+              <InvalidateSizeOnVisible />
+              <ScoreLegend showNoData />
+              {!mapView && <FitView polygon={polygon} points={points} />}
+              {polygon.length >= 3 && (
+                <Polygon positions={polygon} pathOptions={{
+                  color: FIELD_BLUE, weight: 2, fillColor: FIELD_BLUE, fillOpacity: 0.08, interactive: false,
+                }} />
+              )}
+              <Pane name="score-cells" style={{ zIndex: 390 }}>
+                {points.map((p) => {
+                  if (scores[p.label] === undefined) return null
+                  const ring = gridCellRing(polygon, p.cell)
+                  if (!ring) return null
+                  const color = scoreColor(scores[p.label])
+                  return (
+                    <Polygon key={`cell-${p.label}`} positions={ring}
+                      pathOptions={{ color, weight: 1, opacity: 0.6, fillColor: color, fillOpacity: 0.4 }}
+                      eventHandlers={{ click: () => setSelected(p.label) }} />
+                  )
+                })}
+              </Pane>
               {points.map((p) => {
-                if (scores[p.label] === undefined) return null
-                const ring = gridCellRing(polygon, p.cell)
-                if (!ring) return null
-                const color = scoreColor(scores[p.label])
+                const isActive = p.label === selected
                 return (
-                  <Polygon key={`cell-${p.label}`} positions={ring}
-                    pathOptions={{ color, weight: 1, opacity: 0.6, fillColor: color, fillOpacity: 0.4 }}
-                    eventHandlers={{ click: () => setSelected(p.label) }} />
+                  <CircleMarker key={p.label} center={[p.lat, p.lng]} radius={isActive ? 10 : 7}
+                    pathOptions={{
+                      color: isActive ? '#ffffff' : 'rgba(255,255,255,0.85)',
+                      weight: isActive ? 4 : 2,
+                      fillColor: scoreColor(scores[p.label]),
+                      fillOpacity: 1,
+                    }}
+                    eventHandlers={{ click: () => setSelected(p.label) }}>
+                    <Tooltip permanent direction="top" className="label-tip">{p.label}</Tooltip>
+                  </CircleMarker>
                 )
               })}
-            </Pane>
-            {points.map((p) => {
-              const isActive = p.label === selected
-              return (
-                <CircleMarker key={p.label} center={[p.lat, p.lng]} radius={isActive ? 10 : 7}
-                  pathOptions={{
-                    color: isActive ? '#ffffff' : 'rgba(255,255,255,0.85)',
-                    weight: isActive ? 4 : 2,
-                    fillColor: scoreColor(scores[p.label]),
-                    fillOpacity: 1,
-                  }}
-                  eventHandlers={{ click: () => setSelected(p.label) }}>
-                  <Tooltip permanent direction="top" className="label-tip">{p.label}</Tooltip>
-                </CircleMarker>
-              )
-            })}
-          </MapContainer>
+            </MapContainer>
+          </div>
         </div>
 
-        <div className="side">
-          <div className="panel">
-            <div className="inline inline--between">
-              <h2 className="panel__title panel__title--plain">Sample points</h2>
-              <button type="button" className="btn btn--ghost btn--sm" onClick={fillExamples}>
+        <aside className="sheet" aria-label="Soil readings">
+          <div className="sheet__sec">
+            <div className="sheet__row sheet__row--between">
+              <h2 className="sheet__head sheet__head--plain">Sample points</h2>
+              <button type="button" className="btn btn--accent btn--sm" onClick={fillExamples}>
                 Fill example readings
               </button>
             </div>
             {filledNote && <p className="note" role="status">{filledNote}</p>}
-            <ul className="chips-list" aria-label="Sample points">
+            <ul className="chips" aria-label="Sample points">
               {points.map((p) => {
                 const complete = sectionComplete(p.label)
                 const isActive = p.label === selected
@@ -170,14 +170,13 @@ export default function Step2Readings() {
                   <li key={p.label}>
                     <button
                       type="button"
-                      className={`pt-chip${isActive ? ' pt-chip--active' : ''}`}
+                      className={`chip${isActive ? ' chip--active' : ''}${complete ? ' chip--done' : ''}`}
                       aria-pressed={isActive}
                       aria-label={`Point ${p.label}, ${complete ? 'complete' : 'needs readings'}`}
                       onClick={() => setSelected(p.label)}
                     >
-                      <span className="pt-chip__dot" style={{ background: scoreColor(scores[p.label]) }} aria-hidden="true" />
-                      {p.label}
-                      {complete && <span className="pt-chip__tick" aria-hidden="true">✓</span>}
+                      <span className="chip__dot" style={{ background: scoreColor(scores[p.label]) }} aria-hidden="true" />
+                      <span className="mono">{p.label}</span>
                     </button>
                   </li>
                 )
@@ -186,10 +185,10 @@ export default function Step2Readings() {
           </div>
 
           {active && (
-            <div className="panel panel--entry">
-              <div className="entry-head">
-                <span className="entry-head__label">Point {active.label}</span>
-                <span className="entry-head__coords mono">{active.lat.toFixed(5)}, {active.lng.toFixed(5)}</span>
+            <div className="sheet__sec entry">
+              <div className="entry__head">
+                <h3 className="h3 entry__title">Point <span className="mono">{active.label}</span></h3>
+                <span className="entry__coords mono">{active.lat.toFixed(5)}, {active.lng.toFixed(5)}</span>
               </div>
 
               <CropPicker
@@ -198,64 +197,66 @@ export default function Step2Readings() {
                 onChange={(crop) => setSectionData(active.label, 'crop_type', crop)}
               />
               {points.length > 1 && (activeData.crop_type || '').trim() && (
-                <button type="button" className="btn btn--link" onClick={cropForAll}>
+                <button type="button" className="btn btn--link entry__all" onClick={cropForAll}>
                   Use {activeData.crop_type.trim()} for every point
                 </button>
               )}
 
-              <div className="entry-grid">
+              <div className="readings-form">
                 {FIELDS.map((f) => {
                   const value = activeData[f.key] ?? ''
                   const err = readingError(f.key, value)
                   const id = `in-${f.key}`
                   return (
-                    <div key={f.key} className={`field${f.key === 'potassium' ? ' field--full' : ''}`}>
-                      <label className="label" htmlFor={id}>
-                        {f.label} {f.unit && <span className="label__unit">{f.unit}</span>}
+                    <div key={f.key} className={`reading${err ? ' reading--bad' : ''}`}>
+                      <label className="reading__label" htmlFor={id}>
+                        <span className="reading__name">{f.label}</span>
+                        <span className="reading__hint" id={`${id}-hint`}>{f.hint}</span>
                       </label>
-                      <input
-                        id={id}
-                        className={`input mono${err ? ' input--bad' : ''}`}
-                        type="number"
-                        step="any"
-                        min="0"
-                        inputMode="decimal"
-                        placeholder={f.placeholder}
-                        value={value}
-                        aria-invalid={err ? true : undefined}
-                        aria-describedby={err ? `${id}-err` : f.hint ? `${id}-hint` : undefined}
-                        onChange={(e) => setSectionData(active.label, f.key, e.target.value)}
-                      />
-                      {err
-                        ? <span id={`${id}-err`} className="error-text">{err}</span>
-                        : f.hint && <span id={`${id}-hint`} className="help">{f.hint}</span>}
+                      <div className="reading__box">
+                        <input
+                          id={id}
+                          className={`input reading__input mono${err ? ' input--bad' : ''}`}
+                          type="number"
+                          step="any"
+                          min="0"
+                          inputMode="decimal"
+                          placeholder={f.placeholder}
+                          value={value}
+                          aria-invalid={err ? true : undefined}
+                          aria-describedby={err ? `${id}-err` : `${id}-hint`}
+                          onChange={(e) => setSectionData(active.label, f.key, e.target.value)}
+                        />
+                        <span className="reading__unit mono" aria-hidden="true">{f.unit}</span>
+                      </div>
+                      {err && <span id={`${id}-err`} className="error-text reading__err">{err}</span>}
                     </div>
                   )
                 })}
               </div>
 
-              <div className="inline inline--between">
+              <div className="sheet__row sheet__row--between">
                 <p className="help">
                   {sectionComplete(active.label)
-                    ? 'This point is complete.'
+                    ? <><span className="ok-dot" aria-hidden="true" /> Point {active.label} is complete.</>
                     : 'Choose a crop and enter all five readings.'}
                 </p>
                 {completeCount < total && (
                   <button type="button" className="btn btn--ghost btn--sm" onClick={nextIncomplete}>
-                    Next empty point →
+                    Next empty point <Arrow />
                   </button>
                 )}
               </div>
             </div>
           )}
-        </div>
+        </aside>
       </div>
 
       <div className="actions">
-        <button type="button" className="btn btn--secondary" onClick={() => goStep(1)}>← Back</button>
+        <button type="button" className="btn btn--quiet btn--back" onClick={() => goStep(1)}><Arrow back /> Field</button>
         <span className="actions__spacer" />
-        <button type="button" className="btn btn--primary" onClick={() => goStep(3)} disabled={points.length < 1}>
-          Review →
+        <button type="button" className="btn btn--primary btn--lg" onClick={() => goStep(3)} disabled={points.length < 1}>
+          Check and run <Arrow />
         </button>
       </div>
     </section>

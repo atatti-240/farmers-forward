@@ -8,10 +8,13 @@
 import { useState } from 'react'
 
 import { createAssessment } from '../api/client.js'
+import Arrow from '../components/Arrow.jsx'
 import { polygonCentroid } from './geo.js'
+import StepHead from './StepHead.jsx'
 import { MEASUREMENTS, useTool } from './ToolProvider.jsx'
 
 const HEAD = { ph: 'pH', ec: 'EC', nitrogen: 'N', phosphorus: 'P', potassium: 'K' }
+const UNIT = { ph: '', ec: 'dS/m', nitrogen: 'ppm', phosphorus: 'ppm', potassium: 'ppm' }
 
 function cell(data, label, key) {
   const v = data[label] && data[label][key]
@@ -56,42 +59,40 @@ export default function Step3Review() {
     }
   }
 
+  const crops = [...new Set(points.map((p) => (data[p.label]?.crop_type || '').trim()).filter(Boolean))]
+
   return (
-    <section aria-labelledby="step3-title">
+    <section className="step" aria-labelledby="step3-title">
       {submitting && (
-        <div className="overlay" role="alert" aria-live="assertive">
-          <div className="overlay__box">
-            <div className="analyzing" aria-hidden="true">
+        <div className="analyzing" role="alert" aria-live="assertive">
+          <div className="analyzing__inner">
+            <p className="kicker kicker--rule"><span className="kicker__num">●</span> Running</p>
+            <p className="h2 analyzing__title">Reading the <em>soil.</em></p>
+            <ol className="analyzing__steps" aria-hidden="true">
               {MEASUREMENTS.map((m, i) => (
-                <span key={m} className="analyzing__chip" style={{ '--i': i }}>{HEAD[m]}</span>
+                <li key={m} className="analyzing__step mono" style={{ '--i': i }}>{HEAD[m]}</li>
               ))}
-              <span className="analyzing__core" />
-            </div>
-            <p className="overlay__title">Analyzing your soil…</p>
-            <p className="help">Scoring every point and matching it to the Texas A&amp;M tables for its crop.</p>
+            </ol>
+            <div className="analyzing__track" aria-hidden="true"><span /></div>
+            <p className="help">
+              Scoring {points.length} point{points.length === 1 ? '' : 's'} and matching each to the
+              Texas A&amp;M soil-test tables for its crop.
+            </p>
           </div>
         </div>
       )}
 
-      <div className="step-head">
-        <p className="eyebrow">Step 3 of 4</p>
-        <h1 id="step3-title" className="step-head__title">Check and run</h1>
-        <p className="step-head__lead">
-          Here’s everything you entered. When it looks right, run the
-          assessment. It takes a few seconds.
-        </p>
-      </div>
+      <StepHead id="step3-title" num="03" kicker="Readings · check" title={<>Check, then <em>run.</em></>}>
+        Everything you entered, in one place. When it looks right, run the
+        assessment. It takes a few seconds.
+      </StepHead>
 
-      <div className="panel review-meta">
-        <div>
-          <p className="label">Field</p>
-          <p className="review-meta__value">{farmName.trim() || 'My field'}</p>
-        </div>
-        <div>
-          <p className="label">Points</p>
-          <p className="review-meta__value mono">{points.length}</p>
-        </div>
-      </div>
+      <dl className="facts-strip">
+        <div><dt className="label">Field</dt><dd>{farmName.trim() || 'My field'}</dd></div>
+        <div><dt className="label">Sample points</dt><dd className="mono">{points.length}</dd></div>
+        <div><dt className="label">Crop{crops.length === 1 ? '' : 's'}</dt><dd>{crops.length ? crops.join(', ') : '—'}</dd></div>
+        <div><dt className="label">Ready</dt><dd className="mono">{points.length - incomplete.length} / {points.length}</dd></div>
+      </dl>
 
       <div className="table-wrap" role="region" aria-label="Soil readings by point" tabIndex={0}>
         <table className="table">
@@ -99,7 +100,11 @@ export default function Step3Review() {
             <tr>
               <th scope="col">Point</th>
               <th scope="col">Crop</th>
-              {MEASUREMENTS.map((m) => <th key={m} scope="col">{HEAD[m]}</th>)}
+              {MEASUREMENTS.map((m) => (
+                <th key={m} scope="col" className="num">
+                  {HEAD[m]}{UNIT[m] && <span className="table__unit"> {UNIT[m]}</span>}
+                </th>
+              ))}
               <th scope="col">Status</th>
             </tr>
           </thead>
@@ -108,9 +113,9 @@ export default function Step3Review() {
               const complete = sectionComplete(p.label)
               return (
                 <tr key={p.label}>
-                  <th scope="row">{p.label}</th>
+                  <th scope="row" className="mono">{p.label}</th>
                   <td>{cell(data, p.label, 'crop_type')}</td>
-                  {MEASUREMENTS.map((m) => <td key={m} className="mono">{cell(data, p.label, m)}</td>)}
+                  {MEASUREMENTS.map((m) => <td key={m} className="mono num">{cell(data, p.label, m)}</td>)}
                   <td>
                     <span className={`status${complete ? ' status--ok' : ' status--todo'}`}>
                       {complete ? 'Ready' : 'Missing'}
@@ -126,17 +131,17 @@ export default function Step3Review() {
       {incomplete.length > 0 && (
         <p className="note note--warn">
           {incomplete.length} point{incomplete.length === 1 ? '' : 's'} still need{incomplete.length === 1 ? 's' : ''} a
-          crop or readings: {incomplete.map((p) => p.label).join(', ')}.{' '}
+          crop or readings: <span className="mono">{incomplete.map((p) => p.label).join(', ')}</span>.{' '}
           <button type="button" className="btn btn--link" onClick={() => goStep(2)}>Finish them</button>
         </p>
       )}
       {error && <p className="note note--error" role="alert">{error}</p>}
 
       <div className="actions">
-        <button type="button" className="btn btn--secondary" onClick={() => goStep(2)} disabled={submitting}>← Back</button>
+        <button type="button" className="btn btn--quiet btn--back" onClick={() => goStep(2)} disabled={submitting}><Arrow back /> Readings</button>
         <span className="actions__spacer" />
         <button type="button" className="btn btn--primary btn--lg" onClick={run} disabled={!allComplete || submitting}>
-          Run my assessment
+          Run my assessment <Arrow />
         </button>
       </div>
     </section>
