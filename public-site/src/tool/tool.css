@@ -160,6 +160,7 @@
 
 .stephead__title {
   margin-top: var(--s-2);
+  text-wrap: balance;
   font-size: clamp(2.5rem, 1.6rem + 3.4vw, 4.75rem);
 }
 

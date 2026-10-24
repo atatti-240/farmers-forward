@@ -191,12 +191,14 @@ button {
   letter-spacing: -0.015em;
 }
 
+/* Headings are one face and one colour throughout: an <em> inside a title
+   reads exactly like the words around it. */
 .display em,
 .h1 em,
 .h2 em,
 .h3 em {
-  font-style: italic;
-  color: var(--blue-soft);
+  font-style: normal;
+  color: inherit;
 }
 
 .lead {
