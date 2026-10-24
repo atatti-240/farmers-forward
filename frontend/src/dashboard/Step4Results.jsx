@@ -12,17 +12,17 @@ import {
   Pane,
   TileLayer,
   Polygon,
-  CircleMarker,
-  Tooltip,
   useMap,
 } from 'react-leaflet'
 
 import api from '../api/client.js'
 import { useDashboard } from './DashboardProvider.jsx'
+import FertilizerPlan, { FieldFertilizerTotal } from './FertilizerPlan.jsx'
 import { gridCellRing, polygonCentroid } from './geo.js'
 import { captureMapImage } from './mapCapture.js'
 import { InvalidateSizeOnVisible } from './mapView.js'
 import ScoreLegend from './ScoreLegend.jsx'
+import ScoreMarkers from './ScoreMarkers.jsx'
 import { scoreColor } from './soilColor.js'
 
 const ESRI_URL =
@@ -205,29 +205,10 @@ export default function Step4Results() {
             })}
           </Pane>
 
-          {results.map((r) => {
-            const hex = scoreColor(r.health_score)
-            const lat = Number(r.latitude)
-            const lng = Number(r.longitude)
-            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-            return (
-              <CircleMarker
-                key={r.section_label}
-                center={[lat, lng]}
-                radius={9}
-                pathOptions={{
-                  color: '#fff',
-                  weight: 2,
-                  fillColor: hex,
-                  fillOpacity: 1,
-                }}
-              >
-                <Tooltip permanent direction="top" className="ff-label-tip">
-                  {r.section_label} · {fmtScore(r.health_score)}
-                </Tooltip>
-              </CircleMarker>
-            )
-          })}
+          <ScoreMarkers
+            results={results}
+            labelOf={(r) => `${r.section_label} · ${fmtScore(r.health_score)}`}
+          />
         </MapContainer>
       </div>
 
@@ -353,12 +334,7 @@ export default function Step4Results() {
                         <div className="ff-rec__meta">
                           {rec.rate && (
                             <span>
-                              <b>Rate:</b> {rec.rate}
-                            </span>
-                          )}
-                          {(rec.cost_estimate || rec.cost_estimate === 0) && (
-                            <span>
-                              <b>Cost:</b> {rec.cost_estimate}
+                              <b>Amount:</b> {rec.rate}
                             </span>
                           )}
                           {rec.timing && (
@@ -377,6 +353,8 @@ export default function Step4Results() {
                 )}
               </div>
 
+              <FertilizerPlan plan={r.fertilizer_plan} />
+
               <div className="ff-result-card__foot">
                 <a
                   className="ff-btn ff-btn--secondary ff-btn--sm ff-btn--block"
@@ -390,6 +368,8 @@ export default function Step4Results() {
           )
         })}
       </div>
+
+      <FieldFertilizerTotal total={analysis.fertilizer_total} />
 
       {/* Field-level actions */}
       <div className="ff-actions">

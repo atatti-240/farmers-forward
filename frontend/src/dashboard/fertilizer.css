@@ -1,0 +1,93 @@
+/* ==========================================================================
+   Farmers Forward - Fertilizer plan (FertilizerPlan.jsx)
+   A section inside each result card plus the whole-field total box. Kept in
+   its own file, with its own .ff-fert classes: this file is bundled before
+   dashboard.css, so it never restyles the classes defined there.
+   ========================================================================== */
+
+.ff-fert {
+  padding-top: 14px;
+  border-top: 1px dashed var(--ff-border);
+}
+.ff-fert__area {
+  margin: -4px 0 10px;
+  font-size: 0.82rem;
+  color: var(--ff-text-muted);
+}
+.ff-fert__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ff-fert__product {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+.ff-fert__detail {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ff-text-muted);
+}
+.ff-fert__line {
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.ff-fert__line--none_needed {
+  color: var(--ff-green);
+  font-weight: 600;
+}
+.ff-fert__line--no_rate,
+.ff-fert__line--uncovered {
+  color: var(--ff-text-muted);
+  overflow-wrap: anywhere;
+}
+.ff-fert__warn {
+  margin: 12px 0 0;
+  padding: 9px 12px;
+  border-left: 3px solid var(--pub-amber, #e0a13c);
+  border-radius: 4px;
+  background: #faedcc;
+  color: #79531a;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.ff-fert__warn + .ff-fert__warn {
+  margin-top: 8px;
+}
+.ff-fert__note {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  color: var(--ff-text-muted);
+}
+.ff-fert__source {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--ff-text-muted);
+}
+
+.ff-fert-total {
+  margin-bottom: 28px;
+}
+.ff-fert-total__title {
+  margin: 0 0 4px;
+  font-size: 1.35rem;
+}
+.ff-fert-total__list {
+  margin-top: 14px;
+}
+.ff-fert-total__excluded {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--ff-border);
+}
+.ff-fert-total__excluded ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.85rem;
+  color: var(--ff-text-muted);
+}

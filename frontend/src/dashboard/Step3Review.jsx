@@ -11,6 +11,7 @@ import { useState } from 'react'
 import api from '../api/client.js'
 import Spinner from '../components/Spinner.jsx'
 import { useDashboard } from './DashboardProvider.jsx'
+import { sampleAcres } from './fieldArea.js'
 
 const FIELDS = ['ph', 'ec', 'nitrogen', 'phosphorus', 'potassium']
 
@@ -26,6 +27,7 @@ export default function Step3Review() {
     farmName,
     date,
     points,
+    polygon,
     data,
     sectionComplete,
     allComplete,
@@ -45,6 +47,8 @@ export default function Step3Review() {
     setError('')
     setSubmitting(true)
 
+    // Each sample's share of the field, for the fertilizer plan's totals.
+    const acres = sampleAcres(polygon, points)
     const sections = points.map((p) => {
       const d = data[p.label] || {}
       return {
@@ -57,6 +61,7 @@ export default function Step3Review() {
         nitrogen: Number(d.nitrogen),
         phosphorus: Number(d.phosphorus),
         potassium: Number(d.potassium),
+        area_acres: acres[p.label] ?? null,
       }
     })
 

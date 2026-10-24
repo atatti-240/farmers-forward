@@ -147,8 +147,7 @@ def build_text_report(field: Dict) -> str:
         L.append("")
         L.append("  %d. %s  [%s]" % (i, r["title"], r["severity"].upper()))
         L.append(_wrap(r["action"], "     "))
-        L.append("     Rate  : %s" % r["rate"])
-        L.append("     Cost  : %s" % r["cost_estimate"])
+        L.append("     Amount: %s" % r["rate"])
         L.append("     When  : %s" % r["timing"])
         if r.get("notes"):
             L.append(_wrap("Note  : %s" % r["notes"], "     "))

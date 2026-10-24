@@ -201,6 +201,18 @@ def _validate_sections(payload, require_crop: bool = True,
                 row[key] = float(sec[key])
             except (KeyError, TypeError, ValueError):
                 return [], "section '%s' is missing a numeric '%s'" % (label, key)
+            if not math.isfinite(row[key]):
+                return [], "section '%s' has a non-finite '%s'" % (label, key)
+        # Optional: the acres of the field this sample stands for, which turns
+        # the fertilizer plan's per-acre amounts into totals and bags. A
+        # million acres is larger than any farm and keeps the totals finite.
+        if sec.get("area_acres") is not None:
+            try:
+                row["area_acres"] = float(sec["area_acres"])
+            except (TypeError, ValueError):
+                row["area_acres"] = -1.0
+            if not (math.isfinite(row["area_acres"]) and 0 <= row["area_acres"] <= 1e6):
+                return [], "section '%s' has an invalid area_acres" % label
         clean.append(row)
 
     return clean, ""

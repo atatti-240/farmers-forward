@@ -1,0 +1,9 @@
+{
+  "about": "Products the fertilizer calculator (backend/fert_calc.py) applies, in this order. grade is N-P2O5-K2O percent by weight. price_per_ton is US dollars per 2,000 lb; leave it null to keep costs off the plan. bag_lb is the bag size used to count bags.",
+  "bag_lb": 50,
+  "products": [
+    {"name": "Urea", "grade": "46-0-0", "price_per_ton": null},
+    {"name": "Triple superphosphate", "grade": "0-46-0", "price_per_ton": null},
+    {"name": "Potash", "grade": "0-0-60", "price_per_ton": null}
+  ]
+}

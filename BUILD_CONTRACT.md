@@ -74,6 +74,11 @@ sessions (signed cookie). SQLite DB at `backend/farmersforward.db`.
   `login_required` decorator, admin seeding.
 - `backend/model_runner.py` - run the soil pipeline on submitted sections.
 - `backend/pdf_report.py` - ReportLab PDF generation.
+- `backend/fert_calc.py` - passive fertilizer calculator: each section's Texas A&M
+  N/P2O5/K2O rates -> product lbs/acre, totals and bags, plus pH/salinity
+  warnings; whole-field totals. Products, bag size and prices in
+  `backend/fert_products.json` (price `null` = no cost shown).
+- `backend/fert_pdf.py` - the Fertilizer Plan and Whole Field Total PDF blocks.
 - `backend/app.py` - Flask app + all endpoints + startup seeding + `main`.
 - `backend/wsgi.py` - `from app import app` (gunicorn entry `wsgi:app`).
 - `backend/requirements.txt` - web deps list (flask, flask-cors, bcrypt, twilio,
@@ -183,7 +188,9 @@ Public function:
 run_analysis(farm_name: str, date: str, sections: list[dict], farm_id=None) -> dict
 ```
 `sections` = list of `{'section_label','crop_type','latitude','longitude','ph','ec',
-'nitrogen','phosphorus','potassium'}`. Build a DataFrame with columns
+'nitrogen','phosphorus','potassium'}`, plus optional `area_acres` (the part of the
+drawn field closest to that sample, computed in the browser at submit by
+`frontend/src/dashboard/fieldArea.js`). Build a DataFrame with columns
 `sample_id`(=f"{farm_id or 'F'}-{section_label}"), `latitude`, `longitude`,
 `region`='fort_bend', `zone`=section_label, and the five measurements; run
 `preprocess.build_features` + `model.predict_frame`. Return EXACTLY:
@@ -198,6 +205,9 @@ run_analysis(farm_name: str, date: str, sections: list[dict], farm_id=None) -> d
      "dominant_problem_code": str, "dominant_problem_label": str,
      "n_sections": int
   },
+  "fertilizer_total": {n_samples, n_counted, field_acres, acres, bag_lb, summary, none_needed,
+                       products: [{label, total_lb, bags, bags_text, cost_total|null, amounts}],
+                       excluded: [str]},   # bags counted on each product's field total
   "results": [
     {
       "section_label": str, "sample_id": str,
@@ -205,6 +215,11 @@ run_analysis(farm_name: str, date: str, sections: list[dict], farm_id=None) -> d
       "selected_crop": {profile_name, profile_available, fit, within_profile, limiting_factors,
                         note, yield_goal, am_table, basis},  # fit: ideal|viable_with_adjustments|not_viable
       "crop_assessment": { ... crop_data/crop_lookup.assess() + yield_goal ... } | null,
+      "fertilizer_plan": {available, message|null, area_acres|null, area_text, bag_lb,
+                          nutrients: {N, P, K},   # = crop_assessment adds (lbs/acre)
+                          items: [{kind: product|none_needed|no_rate|uncovered, ...}],
+                          warnings: [str], notes: [str], source: str|null},
+                          # display text included: results page and PDF print it as is
       "latitude": float, "longitude": float,
       "inputs": {"ph":f,"ec":f,"nitrogen":f,"phosphorus":f,"potassium":f,
                  "ece":f, "ec_method":"1:2"},   # ec as entered; ece = what the models used
@@ -218,7 +233,7 @@ run_analysis(farm_name: str, date: str, sections: list[dict], farm_id=None) -> d
       "color": {"bucket": "green|yellow|red", "hex": "#RRGGBB"},
       "primary_problem": {"code":str,"label":str,"severity":str,"message":str},
       "problems": [ ... agronomy problem dicts ... ],
-      "recommendations": [ {title,action,rate,cost_estimate,timing,notes,severity,fix_code} ],
+      "recommendations": [ {title,action,rate,timing,notes,severity,fix_code} ],  # rate = the amount; N/P/K: "see Fertilizer Plan below."
       "crop_suitability": {"viable_now":[str],             # ideal + viable_with_adjustments
                            "ideal":[str], "viable_with_adjustments":[str],
                            "not_viable":[{"crop":str,"limiting_factors":[str]}]},
@@ -237,9 +252,11 @@ reuse `reporter.problem_label` for labels. Import label helper from
   section. Include: Farmers Forward header (brand blue), farm name, date, section
   label, lat/long, input values table (pH/EC/N/P/K), health score (big, colored by
   §1 rule) + category, crop recommendations (viable now list), and action items
-  (each recommendation: title, action, rate, cost, timing). Footer disclaimer.
+  (each recommendation: title, action, amount, timing; no costs), then the section's
+  Fertilizer Plan (`fert_pdf.section_flowables`). Footer disclaimer.
 - `build_combined_pdf(analysis: dict) -> bytes` - cover page (farm name, date,
-  field summary, mean score) then one section per page (reuse the section layout).
+  field summary, mean score) then one section per page (reuse the section layout),
+  then a Whole Field Total page (`fert_pdf.field_total_flowables`).
 Return `bytes` (use `io.BytesIO`, `SimpleDocTemplate`). Brand colors via
 `reportlab.lib.colors.HexColor`.
 
